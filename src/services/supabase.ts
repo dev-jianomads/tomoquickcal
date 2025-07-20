@@ -1,8 +1,8 @@
 import { createClient } from '@supabase/supabase-js';
 import { loggingService } from './logging';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://placeholder.supabase.co';
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'placeholder-key';
 
 // Validate Supabase URL format
 const isValidUrl = (url: string): boolean => {
@@ -19,7 +19,9 @@ const hasValidSupabaseConfig = supabaseUrl &&
   supabaseAnonKey && 
   isValidUrl(supabaseUrl) &&
   !supabaseUrl.includes('your-project') &&
-  !supabaseAnonKey.includes('your_supabase');
+  !supabaseUrl.includes('placeholder') &&
+  !supabaseAnonKey.includes('your_supabase') &&
+  !supabaseAnonKey.includes('placeholder');
 
 if (!hasValidSupabaseConfig) {
   console.warn('⚠️ Supabase not configured properly. Using mock mode.');
