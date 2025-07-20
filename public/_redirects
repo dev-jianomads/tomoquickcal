@@ -1,8 +1,0 @@
-/* /index.html 200
-
-# Handle OAuth callback specifically
-/oauth-success /index.html 200
-/oauth-success/* /index.html 200
-
-# Handle all other routes
-/* /index.html 200
