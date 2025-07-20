@@ -1,14 +1,33 @@
 import { createClient } from '@supabase/supabase-js';
 import { loggingService } from './logging';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Missing Supabase environment variables');
+// Validate Supabase URL format
+const isValidUrl = (url: string): boolean => {
+  try {
+    new URL(url);
+    return url.includes('supabase.co') || url.includes('localhost');
+  } catch {
+    return false;
+  }
+};
+
+// Check if we have valid Supabase configuration
+const hasValidSupabaseConfig = supabaseUrl && 
+  supabaseAnonKey && 
+  isValidUrl(supabaseUrl) &&
+  !supabaseUrl.includes('your-project') &&
+  !supabaseAnonKey.includes('your_supabase');
+
+if (!hasValidSupabaseConfig) {
+  console.warn('⚠️ Supabase not configured properly. Using mock mode.');
+  console.warn('To enable Supabase:');
+  console.warn('1. Set VITE_SUPABASE_URL to your actual Supabase project URL');
+  console.warn('2. Set VITE_SUPABASE_ANON_KEY to your actual anonymous key');
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 export interface UserData {
   id: string;
