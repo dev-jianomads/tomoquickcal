@@ -4,17 +4,16 @@
 
 ### 1. **Prepare Your Repository**
 
-Make sure your repository contains only the frontend files:
+Make sure your repository contains:
 - ✅ `src/` folder with React components
-- ✅ `package.json` with frontend dependencies only
+- ✅ `package.json` with frontend dependencies
 - ✅ `netlify.toml` configuration file
-- ✅ `.gitignore` excluding backend files
-- ❌ No `backend/` folder
-- ❌ No Signal CLI dependencies
+- ✅ `.gitignore` excluding sensitive files
+- ✅ Environment variable examples
 
 ### 2. **Set Up Environment Variables**
 
-In Netlify Dashboard → Site Settings → Environment Variables, add these **4 variables**:
+In **Netlify Dashboard → Site Settings → Environment Variables**, add these **4 variables**:
 
 | Variable Name | Example Value | Description |
 |---------------|---------------|-------------|

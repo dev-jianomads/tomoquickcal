@@ -19,45 +19,88 @@ A React frontend for Tomo QuickCal that handles Google Calendar integration and 
 - **Supabase** for database and user management
 - **Google APIs** for Calendar and Contacts integration
 
-## 📦 Deployment
+## 📦 Quick Start
 
-This frontend is designed to be deployed to **Netlify** and works independently of the Signal backend.
+### 1. Clone and Install
 
-### Environment Variables
-
-Set these 4 variables in Netlify Dashboard → Site Settings → Environment Variables:
-
+```bash
+git clone <your-repo-url>
+cd tomo-quickcal-frontend
+npm install
 ```
-VITE_SUPABASE_URL=your_supabase_url_here
+
+### 2. Environment Setup
+
+```bash
+cp .env.example .env
+# Edit .env with your actual values
+```
+
+### 3. Development
+
+```bash
+npm run dev
+```
+
+### 4. Build for Production
+
+```bash
+npm run build
+```
+
+## 🔧 Environment Variables
+
+Create a `.env` file with these variables:
+
+```env
+VITE_SUPABASE_URL=https://your-project.supabase.co
 VITE_SUPABASE_ANON_KEY=your_supabase_anon_key_here
 VITE_GOOGLE_CLIENT_ID=your_google_client_id_here
 VITE_GOOGLE_CLIENT_SECRET=your_google_client_secret_here
 ```
 
-### Deploy to Netlify
+## 📦 Deployment to Netlify
 
-1. **Connect Repository**: Link your GitHub repo to Netlify
-2. **Build Settings**: 
-   - Build command: `npm run build`
-   - Publish directory: `dist`
-3. **Environment Variables**: Add the 4 variables above
-4. **Deploy**: Netlify will automatically build and deploy
+### Option 1: GitHub Integration (Recommended)
 
-## 🏗️ Local Development
+1. Push your code to GitHub
+2. Connect your GitHub repo to Netlify
+3. Set environment variables in Netlify dashboard
+4. Deploy automatically on every push
+
+### Option 2: Manual Deploy
 
 ```bash
-# Install dependencies
-npm install
-
-# Start development server
-npm run dev
-
-# Build for production
 npm run build
-
-# Preview production build
-npm run preview
+# Upload the 'dist' folder to Netlify
 ```
+
+### Environment Variables for Netlify
+
+Set these in **Netlify Dashboard → Site Settings → Environment Variables**:
+
+- `VITE_SUPABASE_URL`
+- `VITE_SUPABASE_ANON_KEY`
+- `VITE_GOOGLE_CLIENT_ID`
+- `VITE_GOOGLE_CLIENT_SECRET`
+
+## 🔗 Google OAuth Setup
+
+1. Go to [Google Cloud Console](https://console.cloud.google.com/)
+2. Create a new project or select existing
+3. Enable Calendar API and Contacts API
+4. Create OAuth 2.0 credentials
+5. Add your domain to authorized redirect URIs:
+   ```
+   https://your-domain.netlify.app/oauth-success
+   ```
+
+## 📊 Supabase Setup
+
+1. Create a new Supabase project
+2. Run the SQL migrations in the `supabase/migrations` folder
+3. Enable Row Level Security (RLS)
+4. Get your project URL and anon key
 
 ## 📁 Project Structure
 
@@ -71,19 +114,11 @@ src/
 └── main.tsx           # Application entry point
 ```
 
-## 🔗 Integration
-
-This frontend collects user data and saves it to Supabase. Your separate Signal backend can:
-
-1. **Read user data** from Supabase
-2. **Process Signal messages** using the stored phone numbers
-3. **Create calendar events** using the stored Google tokens
-
 ## 🔒 Security
 
 - Environment variables are properly prefixed with `VITE_`
 - Google OAuth tokens are securely stored in Supabase
-- No sensitive backend logic exposed to frontend
+- Row Level Security (RLS) enabled on all tables
 - Proper CORS and security headers configured
 
 ## 📱 User Flow
@@ -93,10 +128,28 @@ This frontend collects user data and saves it to Supabase. Your separate Signal 
 3. **Connect Bot** - Enter Signal phone number
 4. **Success** - Setup complete, ready for Signal integration
 
+## 🔗 Backend Integration
+
+This frontend saves user data to Supabase. Your Signal backend can:
+
+1. **Read user data** from Supabase
+2. **Process Signal messages** using stored phone numbers
+3. **Create calendar events** using stored Google tokens
+
 ## 🤝 Contributing
 
-This is the frontend portion of Tomo QuickCal. The Signal CLI backend is handled separately.
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Submit a pull request
 
 ## 📄 License
 
 MIT License - see LICENSE file for details
+
+## 🆘 Support
+
+For issues and questions:
+- Check the GitHub Issues
+- Review the deployment documentation
+- Verify environment variables are set correctly
