@@ -28,6 +28,7 @@ if (!hasValidSupabaseConfig) {
   console.warn('2. Set VITE_SUPABASE_ANON_KEY to your actual anonymous key');
 }
 
+export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 export interface UserData {
   id: string;
