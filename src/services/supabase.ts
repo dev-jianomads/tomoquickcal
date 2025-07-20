@@ -1,8 +1,8 @@
 import { createClient } from '@supabase/supabase-js';
 import { loggingService } from './logging';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://placeholder.supabase.co';
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'placeholder-key';
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 // Validate Supabase URL format
 const isValidUrl = (url: string): boolean => {
@@ -15,7 +15,7 @@ const isValidUrl = (url: string): boolean => {
 };
 
 // Check if we have valid Supabase configuration
-const hasValidSupabaseConfig = supabaseUrl && 
+const hasValidSupabaseConfig = supabaseUrl &&
   supabaseAnonKey && 
   isValidUrl(supabaseUrl) &&
   !supabaseUrl.includes('your-project') &&
@@ -28,9 +28,13 @@ if (!hasValidSupabaseConfig) {
   console.warn('To enable Supabase:');
   console.warn('1. Set VITE_SUPABASE_URL to your actual Supabase project URL');
   console.warn('2. Set VITE_SUPABASE_ANON_KEY to your actual anonymous key');
+  console.warn('3. Create a .env file in your project root with these variables');
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// Only create Supabase client if we have valid configuration
+export const supabase = hasValidSupabaseConfig 
+  ? createClient(supabaseUrl, supabaseAnonKey)
+  : createClient('https://mock.supabase.co', 'mock-key');
 
 export interface UserData {
   id: string;
