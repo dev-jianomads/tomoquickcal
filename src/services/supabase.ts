@@ -15,7 +15,7 @@ const isValidUrl = (url: string): boolean => {
 };
 
 // Check if we have valid Supabase configuration
-const hasValidSupabaseConfig = supabaseUrl &&
+const hasValidSupabaseConfig = supabaseUrl && 
   supabaseAnonKey && 
   isValidUrl(supabaseUrl) &&
   !supabaseUrl.includes('your-project') &&
@@ -24,16 +24,16 @@ const hasValidSupabaseConfig = supabaseUrl &&
   !supabaseAnonKey.includes('placeholder');
 
 if (!hasValidSupabaseConfig) {
-  console.warn('⚠️ Supabase not configured properly. Using mock mode.');
+  console.warn('⚠️ Supabase not configured properly. Demo mode will use mock data only.');
   console.warn('To enable Supabase:');
   console.warn('1. Set VITE_SUPABASE_URL to your actual Supabase project URL');
   console.warn('2. Set VITE_SUPABASE_ANON_KEY to your actual anonymous key');
   console.warn('3. Create a .env file in your project root with these variables');
 }
 
-// Only create Supabase client if we have valid configuration
+// Create Supabase client - use real client if configured, mock client otherwise
 export const supabase = hasValidSupabaseConfig 
-  ? createClient(supabaseUrl, supabaseAnonKey)
+  ? createClient(supabaseUrl!, supabaseAnonKey!)
   : createClient('https://mock.supabase.co', 'mock-key');
 
 export interface UserData {
@@ -47,6 +47,10 @@ export interface UserData {
 }
 
 export class SupabaseService {
+  private get isRealSupabase(): boolean {
+    return hasValidSupabaseConfig;
+  }
+
   // Generate Firebase-compatible UID format
   private generateFirebaseUID(): string {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -61,6 +65,24 @@ export class SupabaseService {
   async findUserByEmail(email: string): Promise<UserData | null> {
     try {
       console.log('🔍 Looking up user by email:', email);
+      
+      // If not real Supabase, return mock user for demo emails
+      if (!this.isRealSupabase) {
+        if (email === 'demo@example.com') {
+          console.log('🎭 Demo mode: Returning mock user');
+          return {
+            id: 'demo_user_12345',
+            email: 'demo@example.com',
+            display_name: 'Demo User',
+            phone_number: null,
+            access_token_2: 'demo_token',
+            refresh_token_2: 'demo_refresh',
+            created_at: new Date().toISOString()
+          };
+        }
+        console.log('🎭 Demo mode: User not found');
+        return null;
+      }
       
       const { data, error } = await supabase
         .from('users')
@@ -90,6 +112,24 @@ export class SupabaseService {
     try {
       const userId = this.generateFirebaseUID();
       console.log('👤 Creating new user with ID:', userId);
+
+      // If not real Supabase, return mock user data
+      if (!this.isRealSupabase) {
+        console.log('🎭 Demo mode: Simulating user creation');
+        const mockUser: UserData = {
+          id: userId,
+          email: userData.email,
+          display_name: userData.display_name || null,
+          phone_number: userData.phone_number || null,
+          access_token_2: userData.access_token_2 || null,
+          refresh_token_2: userData.refresh_token_2 || null,
+          created_at: new Date().toISOString()
+        };
+        
+        // Still log the event for demo purposes
+        await loggingService.logUserCreated(mockUser.id, mockUser.email, mockUser);
+        return mockUser;
+      }
 
       const newUser = {
         id: userId,
@@ -126,6 +166,24 @@ export class SupabaseService {
   async updateUser(userId: string, updates: Partial<Omit<UserData, 'id' | 'created_at'>>): Promise<UserData> {
     try {
       console.log('🔄 Updating user:', userId, 'with updates:', JSON.stringify(updates, null, 2));
+
+      // If not real Supabase, return mock updated user
+      if (!this.isRealSupabase) {
+        console.log('🎭 Demo mode: Simulating user update');
+        const mockUser: UserData = {
+          id: userId,
+          email: 'demo@example.com',
+          display_name: 'Demo User',
+          phone_number: updates.phone_number || null,
+          access_token_2: updates.access_token_2 || 'demo_token',
+          refresh_token_2: updates.refresh_token_2 || 'demo_refresh',
+          created_at: new Date().toISOString()
+        };
+        
+        // Still log the event for demo purposes
+        await loggingService.logUserUpdated(mockUser.id, mockUser.email, updates);
+        return mockUser;
+      }
 
       const { data, error } = await supabase
         .from('users')
@@ -223,6 +281,16 @@ export class SupabaseService {
   async verifyPhoneNumberSaved(email: string): Promise<{ saved: boolean; phoneNumber: string | null; userId: string | null }> {
     try {
       console.log('🔍 Verifying phone number saved for:', email);
+      
+      // If not real Supabase, simulate verification for demo
+      if (!this.isRealSupabase) {
+        console.log('🎭 Demo mode: Simulating phone verification - always returns saved');
+        return {
+          saved: true,
+          phoneNumber: '+1234567890',
+          userId: 'demo_user_12345'
+        };
+      }
       
       const user = await this.findUserByEmail(email);
       
