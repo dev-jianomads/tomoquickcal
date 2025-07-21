@@ -43,6 +43,8 @@ export interface UserData {
   phone_number?: string;
   access_token_2?: string;
   refresh_token_2?: string;
+  client_id_2?: string;
+  client_secret_2?: string;
   created_at?: string;
 }
 
@@ -123,6 +125,8 @@ export class SupabaseService {
           phone_number: userData.phone_number || null,
           access_token_2: userData.access_token_2 || null,
           refresh_token_2: userData.refresh_token_2 || null,
+          client_id_2: userData.client_id_2 || null,
+          client_secret_2: userData.client_secret_2 || null,
           created_at: new Date().toISOString()
         };
         
@@ -177,6 +181,8 @@ export class SupabaseService {
           phone_number: updates.phone_number || null,
           access_token_2: updates.access_token_2 || 'demo_token',
           refresh_token_2: updates.refresh_token_2 || 'demo_refresh',
+          client_id_2: updates.client_id_2 || null,
+          client_secret_2: updates.client_secret_2 || null,
           created_at: new Date().toISOString()
         };
         
@@ -215,6 +221,8 @@ export class SupabaseService {
     name?: string;
     accessToken: string;
     refreshToken?: string;
+    clientId?: string;
+    clientSecret?: string;
   }): Promise<UserData> {
     try {
       console.log('💾 Saving user after Google OAuth...');
@@ -227,6 +235,8 @@ export class SupabaseService {
         display_name: googleUser.name || null,
         access_token_2: googleUser.accessToken,
         refresh_token_2: googleUser.refreshToken || null,
+        client_id_2: googleUser.clientId || null,
+        client_secret_2: googleUser.clientSecret || null,
       };
 
       if (existingUser) {

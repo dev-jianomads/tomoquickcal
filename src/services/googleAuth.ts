@@ -310,7 +310,9 @@ export class GoogleAuthService {
           email: this.currentUser.email,
           name: this.currentUser.name,
           accessToken: this.accessToken,
-          refreshToken: refreshToken
+          refreshToken: refreshToken,
+          clientId: this.clientId,
+          clientSecret: import.meta.env.VITE_GOOGLE_CLIENT_SECRET
         });
         console.log('✅ User data saved to Supabase:', userData.id);
         
