@@ -44,17 +44,38 @@ const Success: React.FC = () => {
   }, [setAppData, appData.userId, appData.userEmail]);
 
   const handleFinish = () => {
-    // Try to close the window/tab first
-    try {
-      window.close();
-    } catch (error) {
-      console.log('Could not close window:', error);
+    console.log('🔄 Success: Close Setup clicked');
+    
+    // Check if this window was opened by another window (popup/new tab from a link)
+    const canClose = window.opener !== null || window.history.length <= 1;
+    
+    if (canClose) {
+      console.log('🔄 Success: Attempting to close window...');
+      try {
+        window.close();
+        // If close succeeds, this code won't execute
+        console.log('🔄 Success: Window close may have failed, showing message');
+      } catch (error) {
+        console.log('🔄 Success: Window close failed:', error);
+      }
     }
     
-    // If window.close() doesn't work, navigate to welcome as fallback
-    setTimeout(() => {
-      navigate('/welcome');
-    }, 100);
+    // Show a message to user about closing manually
+    const shouldShowMessage = !canClose || window.opener === null;
+    
+    if (shouldShowMessage) {
+      // Update the button text to indicate manual close
+      const button = document.querySelector('button');
+      if (button) {
+        button.textContent = 'Please close this tab manually';
+        button.disabled = true;
+      }
+      
+      // Show a more prominent message
+      setTimeout(() => {
+        alert('Setup complete! You can now close this tab and start using Tomo QuickCal through Signal.');
+      }, 500);
+    }
   };
 
   return (
