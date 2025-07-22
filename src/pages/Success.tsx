@@ -137,6 +137,8 @@ const Success: React.FC = () => {
             <p className="text-blue-700 text-xs">
               {window.opener ? 'This tab will close automatically' : 'You can now close this tab and start using Tomo QuickCal through Signal'}
             </p>
+          </div>
+          
           <p className="text-sm text-gray-500 text-center mt-3">
             You can now close this tab and start using Tomo QuickCal through Signal
           </p>
