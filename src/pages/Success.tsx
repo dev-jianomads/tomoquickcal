@@ -159,19 +159,6 @@ const Success: React.FC = () => {
           </p>
         </div>
       </div>
-      
-      <div className="pt-6">
-        <button
-          onClick={() => navigate('/delete-account')}
-          className="text-red-600 hover:text-red-700 text-sm font-medium transition-colors flex items-center space-x-1 mx-auto"
-        >
-          <Trash2 className="w-4 h-4" />
-          <span>Delete Account</span>
-        </button>
-      </div>
-      
-        </div>
-      </div>
     </PageContainer>
   );
 };
