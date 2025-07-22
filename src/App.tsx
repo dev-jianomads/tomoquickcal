@@ -12,6 +12,7 @@ import OAuthSuccess from './pages/OAuthSuccess';
 import TestCalendar from './pages/TestCalendar';
 import ReconnectCalendar from './pages/ReconnectCalendar';
 import DeleteAccount from './pages/DeleteAccount';
+import DeleteAccount from './pages/DeleteAccount';
 
 function App() {
   return (
@@ -28,6 +29,7 @@ function App() {
             <Route path="/success" element={<Success />} />
             <Route path="/test-calendar" element={<TestCalendar />} />
             <Route path="/reconnect-calendar" element={<ReconnectCalendar />} />
+            <Route path="/delete-account" element={<DeleteAccount />} />
             <Route path="/delete-account" element={<DeleteAccount />} />
             {/* Legacy redirects */}
             <Route path="/landing" element={<Navigate to="/welcome" replace />} />
