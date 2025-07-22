@@ -85,6 +85,9 @@ const ConnectCalendar: React.FC = () => {
         return;
       }
       
+      // Show loading state immediately
+      console.log('ConnectCalendar: Starting OAuth flow...');
+      
       // Start the OAuth flow - it will redirect to connect-bot on success
       const success = await signIn();
       
@@ -93,6 +96,9 @@ const ConnectCalendar: React.FC = () => {
       if (success) {
         console.log('ConnectCalendar: OAuth successful, navigating to connect-bot');
         navigate('/connect-bot');
+      } else {
+        console.log('ConnectCalendar: OAuth failed or timed out');
+        // Error will be shown by the useGoogleAuth hook
       }
     } catch (err) {
       console.error('ConnectCalendar: Sign in failed:', err);

@@ -48,18 +48,24 @@ export const useGoogleAuth = () => {
     try {
       console.log('useGoogleAuth: Starting sign-in...');
       
-      // Add timeout to prevent hanging
-      const signInPromise = googleAuthService.signIn();
-      const timeoutPromise = new Promise<boolean>((_, reject) => {
-        setTimeout(() => reject(new Error('Sign-in timeout')), 30000); // 30 second timeout
-      });
-      
-      const success = await Promise.race([signInPromise, timeoutPromise]);
+      const success = await googleAuthService.signIn();
       console.log('useGoogleAuth: Sign-in success:', success);
       
       if (success) {
         setIsSignedIn(true);
         setUser(googleAuthService.getCurrentUser());
+      } else {
+        // Provide more helpful error message
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+        
+        if (isMobile && isSafari) {
+          setError('Connection timeout. Try: Settings → Safari → Privacy & Security → Prevent Cross-Site Tracking (turn OFF), then try again.');
+        } else if (isMobile) {
+          setError('Connection timeout. Please check your internet connection and try again.');
+        } else {
+          setError('Connection timeout. Please allow popups for this site and try again.');
+        }
       }
       
       return success;
@@ -68,10 +74,10 @@ export const useGoogleAuth = () => {
       let errorMessage = err instanceof Error ? err.message : 'Sign in failed';
       
       // Handle specific error cases
-      if (errorMessage.includes('timeout')) {
-        errorMessage = 'Connection timeout. Please try again.';
-      } else if (errorMessage.includes('popup')) {
+      if (errorMessage.includes('popup')) {
         errorMessage = 'Popup blocked. Please allow popups and try again.';
+      } else if (errorMessage.includes('network')) {
+        errorMessage = 'Network error. Please check your connection and try again.';
       }
       
       setError(errorMessage);

@@ -180,6 +180,10 @@ export class GoogleAuthService {
       console.warn('Failed to log OAuth start:', error);
     }
     
+    // Detect mobile device
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+    
     // Generate OAuth URL
     const scope = encodeURIComponent('https://www.googleapis.com/auth/calendar https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/meetings.space.created https://www.googleapis.com/auth/contacts.readonly');
     const state = Math.random().toString(36).substring(2, 15);
@@ -196,20 +200,47 @@ export class GoogleAuthService {
     
     console.log('🔐 OAuth URL generated:', authUrl);
     console.log('🔐 Redirect URI:', this.redirectUri);
+    console.log('🔐 Device info:', { isMobile, isSafari, userAgent: navigator.userAgent });
     
     // Store state for verification
     localStorage.setItem('oauth_state', state);
     
-    // Check if we're on mobile or if popups might be blocked
-    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    
-    // Open OAuth in a new tab
-    console.log('🔐 Opening OAuth in new tab');
-    window.open(authUrl, '_blank');
+    try {
+      // For mobile Safari, try direct navigation first
+      if (isMobile && isSafari) {
+        console.log('🔐 Mobile Safari detected, using direct navigation');
+        window.location.href = authUrl;
+        return new Promise(() => {}); // Never resolves, page will navigate away
+      }
+      
+      // For other browsers, try popup first
+      console.log('🔐 Opening OAuth in new tab');
+      const popup = window.open(authUrl, '_blank', 'width=500,height=600,scrollbars=yes,resizable=yes');
+      
+      if (!popup || popup.closed || typeof popup.closed === 'undefined') {
+        console.log('🔐 Popup blocked, falling back to direct navigation');
+        window.location.href = authUrl;
+        return new Promise(() => {}); // Never resolves, page will navigate away
+      }
+    } catch (error) {
+      console.error('🔐 Error opening OAuth window:', error);
+      console.log('🔐 Falling back to direct navigation');
+      window.location.href = authUrl;
+      return new Promise(() => {}); // Never resolves, page will navigate away
+    }
     
     // Return a promise that resolves when auth is complete
     // The OAuth success page will handle the redirect
     return new Promise((resolve) => {
+      let resolved = false;
+      
+      const resolveOnce = (value: boolean) => {
+        if (!resolved) {
+          resolved = true;
+          resolve(value);
+        }
+      };
+      
       // Set up a listener for when the user returns to this tab
       const handleFocus = () => {
         // Check if auth was successful when user returns to this tab
@@ -217,7 +248,7 @@ export class GoogleAuthService {
           const token = localStorage.getItem('google_access_token');
           if (token) {
             window.removeEventListener('focus', handleFocus);
-            resolve(true);
+            resolveOnce(true);
           }
         }, 500);
       };
@@ -230,16 +261,18 @@ export class GoogleAuthService {
         if (token) {
           clearInterval(checkInterval);
           window.removeEventListener('focus', handleFocus);
-          resolve(true);
+          resolveOnce(true);
         }
       }, 1000);
       
-      // Timeout after 5 minutes
+      // Longer timeout for mobile users (2 minutes)
+      const timeoutDuration = isMobile ? 120000 : 60000;
       setTimeout(() => {
         clearInterval(checkInterval);
         window.removeEventListener('focus', handleFocus);
-        resolve(false);
-      }, 5 * 60 * 1000);
+        console.log('🔐 OAuth timeout after', timeoutDuration / 1000, 'seconds');
+        resolveOnce(false);
+      }, timeoutDuration);
     });
   }
 
