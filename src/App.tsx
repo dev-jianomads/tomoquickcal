@@ -12,7 +12,6 @@ import OAuthSuccess from './pages/OAuthSuccess';
 import TestCalendar from './pages/TestCalendar';
 import ReconnectCalendar from './pages/ReconnectCalendar';
 import DeleteAccount from './pages/DeleteAccount';
-import DeleteAccount from './pages/DeleteAccount';
 
 function App() {
   return (
