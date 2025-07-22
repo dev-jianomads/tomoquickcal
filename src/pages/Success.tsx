@@ -44,7 +44,17 @@ const Success: React.FC = () => {
   }, [setAppData, appData.userId, appData.userEmail]);
 
   const handleFinish = () => {
-    navigate('/welcome');
+    // Try to close the window/tab first
+    try {
+      window.close();
+    } catch (error) {
+      console.log('Could not close window:', error);
+    }
+    
+    // If window.close() doesn't work, navigate to welcome as fallback
+    setTimeout(() => {
+      navigate('/welcome');
+    }, 100);
   };
 
   return (
@@ -101,11 +111,11 @@ const Success: React.FC = () => {
           
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-4">
             <div className="flex items-center space-x-2 mb-2">
-              <Sparkles className="w-4 h-4 text-blue-600" />
+            <Button onClick={handleFinish}>
               <span className="text-blue-800 font-medium text-sm">Coming Soon: Proactive Scheduling</span>
             </div>
             <p className="text-blue-700 text-xs">
-              Device linking and automatic scheduling suggestions will be available soon. For now, send explicit scheduling commands to the bot.
+              {window.opener ? 'This tab will close automatically' : 'You can now close this tab and start using Tomo QuickCal through Signal'}
             </p>
           </div>
         </div>
