@@ -111,7 +111,6 @@ const Success: React.FC = () => {
           
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-4">
             <div className="flex items-center space-x-2 mb-2">
-            <Button onClick={handleFinish}>
               <span className="text-blue-800 font-medium text-sm">Coming Soon: Proactive Scheduling</span>
             </div>
             <p className="text-blue-700 text-xs">
@@ -121,7 +120,7 @@ const Success: React.FC = () => {
         </div>
         
         <div className="pt-4">
-          <Button onClick={() => window.close()}>
+          <Button onClick={handleFinish}>
             Close Setup
           </Button>
           <p className="text-sm text-gray-500 text-center mt-3">
