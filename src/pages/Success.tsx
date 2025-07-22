@@ -137,26 +137,20 @@ const Success: React.FC = () => {
             <p className="text-blue-700 text-xs">
               {window.opener ? 'This tab will close automatically' : 'You can now close this tab and start using Tomo QuickCal through Signal'}
             </p>
-          </div>
-        </div>
-        
-        <div className="pt-2">
-          <button
-            onClick={() => navigate('/delete-account')}
-            className="text-red-600 hover:text-red-700 text-sm font-medium transition-colors flex items-center space-x-1 mx-auto"
-          >
-            <Trash2 className="w-4 h-4" />
-            <span>Delete Account</span>
-          </button>
-        </div>
-        
-        <div className="pt-4">
-          <Button onClick={handleFinish}>
-            Close Setup
-          </Button>
           <p className="text-sm text-gray-500 text-center mt-3">
             You can now close this tab and start using Tomo QuickCal through Signal
           </p>
+          
+          {/* Delete Account Link - Very Bottom */}
+          <div className="pt-6 mt-6 border-t border-gray-200">
+            <button
+              onClick={() => navigate('/delete-account')}
+              className="text-red-600 hover:text-red-700 text-sm font-medium transition-colors flex items-center space-x-1 mx-auto"
+            >
+              <Trash2 className="w-4 h-4" />
+              <span>Delete Account</span>
+            </button>
+          </div>
         </div>
       </div>
     </PageContainer>
