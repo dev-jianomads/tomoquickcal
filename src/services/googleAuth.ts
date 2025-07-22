@@ -318,6 +318,7 @@ export class GoogleAuthService {
         
         // Update client credentials via Netlify function (server-side)
         try {
+          console.log('🔧 Calling Netlify function to update client credentials...');
           const response = await fetch('/.netlify/functions/update-user-credentials', {
             method: 'POST',
             headers: {
@@ -329,10 +330,13 @@ export class GoogleAuthService {
             })
           });
           
+          const responseData = await response.json();
+          console.log('🔧 Netlify function response:', responseData);
+          
           if (response.ok) {
-            console.log('✅ Client credentials updated via Netlify function');
+            console.log('✅ Client credentials updated via Netlify function:', responseData.message);
           } else {
-            console.warn('⚠️ Failed to update client credentials:', await response.text());
+            console.warn('⚠️ Failed to update client credentials:', responseData);
           }
         } catch (error) {
           console.warn('⚠️ Error calling Netlify function:', error);
