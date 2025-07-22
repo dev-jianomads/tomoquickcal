@@ -182,7 +182,8 @@ export class GoogleAuthService {
     
     // Detect mobile device
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent) || /iPhone|iPad|iPod/i.test(navigator.userAgent);
+    const isMobileSafari = isMobile && isSafari;
     
     // Generate OAuth URL
     const scope = encodeURIComponent('https://www.googleapis.com/auth/calendar https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/meetings.space.created https://www.googleapis.com/auth/contacts.readonly');
@@ -200,28 +201,46 @@ export class GoogleAuthService {
     
     console.log('🔐 OAuth URL generated:', authUrl);
     console.log('🔐 Redirect URI:', this.redirectUri);
-    console.log('🔐 Device info:', { isMobile, isSafari, userAgent: navigator.userAgent });
+    console.log('🔐 Device info:', { isMobile, isSafari, isMobileSafari, userAgent: navigator.userAgent });
     
     // Store state for verification
     localStorage.setItem('oauth_state', state);
     
     try {
-      // For mobile Safari, try direct navigation first
-      if (isMobile && isSafari) {
-        console.log('🔐 Mobile Safari detected, using direct navigation');
+      // For mobile Safari, ALWAYS use direct navigation (popups don't work)
+      if (isMobileSafari) {
+        console.log('🔐 Mobile Safari detected, using direct navigation (popups blocked)');
         window.location.href = authUrl;
         return new Promise(() => {}); // Never resolves, page will navigate away
       }
       
-      // For other browsers, try popup first
-      console.log('🔐 Opening OAuth in new tab');
+      // For desktop browsers, try popup first
+      console.log('🔐 Desktop browser detected, trying popup');
       const popup = window.open(authUrl, '_blank', 'width=500,height=600,scrollbars=yes,resizable=yes');
       
       if (!popup || popup.closed || typeof popup.closed === 'undefined') {
-        console.log('🔐 Popup blocked, falling back to direct navigation');
+        console.log('🔐 Popup blocked or failed, falling back to direct navigation');
         window.location.href = authUrl;
         return new Promise(() => {}); // Never resolves, page will navigate away
       }
+      
+      // Monitor popup for closure (desktop only)
+      const checkClosed = setInterval(() => {
+        if (popup.closed) {
+          clearInterval(checkClosed);
+          // Check if auth was successful
+          setTimeout(() => {
+            const token = localStorage.getItem('google_access_token');
+            if (token) {
+              console.log('🔐 Popup OAuth successful');
+              // Auth success will be handled by the focus listener below
+            } else {
+              console.log('🔐 Popup closed without auth success');
+            }
+          }, 500);
+        }
+      }, 1000);
+      
     } catch (error) {
       console.error('🔐 Error opening OAuth window:', error);
       console.log('🔐 Falling back to direct navigation');
@@ -265,12 +284,12 @@ export class GoogleAuthService {
         }
       }, 1000);
       
-      // Longer timeout for mobile users (2 minutes)
-      const timeoutDuration = isMobile ? 120000 : 60000;
+      // Longer timeout for mobile users (3 minutes for Safari)
+      const timeoutDuration = isMobileSafari ? 180000 : (isMobile ? 120000 : 60000);
       setTimeout(() => {
         clearInterval(checkInterval);
         window.removeEventListener('focus', handleFocus);
-        console.log('🔐 OAuth timeout after', timeoutDuration / 1000, 'seconds');
+        console.log('🔐 OAuth timeout after', timeoutDuration / 1000, 'seconds for', isMobileSafari ? 'Mobile Safari' : (isMobile ? 'Mobile' : 'Desktop'));
         resolveOnce(false);
       }, timeoutDuration);
     });

@@ -74,7 +74,11 @@ export const useGoogleAuth = () => {
       let errorMessage = err instanceof Error ? err.message : 'Sign in failed';
       
       // Handle specific error cases
-      if (errorMessage.includes('popup')) {
+      const isMobileSafari = /iPhone|iPad|iPod/i.test(navigator.userAgent) && /Safari/i.test(navigator.userAgent);
+      
+      if (isMobileSafari && errorMessage.includes('timeout')) {
+        errorMessage = 'Safari timeout. Try: Settings → Safari → Privacy & Security → Prevent Cross-Site Tracking (turn OFF), then try again.';
+      } else if (errorMessage.includes('popup')) {
         errorMessage = 'Popup blocked. Please allow popups and try again.';
       } else if (errorMessage.includes('network')) {
         errorMessage = 'Network error. Please check your connection and try again.';
