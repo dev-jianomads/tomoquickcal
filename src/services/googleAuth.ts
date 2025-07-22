@@ -311,8 +311,8 @@ export class GoogleAuthService {
           name: this.currentUser.name,
           accessToken: this.accessToken,
           refreshToken: refreshToken,
-          clientId: this.clientId,
-          clientSecret: import.meta.env.VITE_GOOGLE_CLIENT_SECRET
+          clientId: this.clientId
+          // Note: clientSecret should NOT be stored from client-side for security
         });
         console.log('✅ User data saved to Supabase:', userData.id);
         
