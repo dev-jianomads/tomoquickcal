@@ -160,16 +160,16 @@ const Success: React.FC = () => {
         </div>
       </div>
       
-      <div className="bg-blue-50 border border-blue-200 rounded-2xl p-6 text-left">
-        <h3 className="font-semibold text-blue-900 mb-3">Start scheduling now:</h3>
-        <div className="space-y-2 text-blue-800">
-          <p className="text-sm">Send a message to the Tomo bot like:</p>
-          <div className="bg-white/60 rounded-lg p-3 border border-white/40">
-            <code className="text-sm">"Schedule meeting with John tomorrow at 2pm"</code>
-          </div>
-          <p className="text-xs text-blue-600 mt-2">
-            The bot will automatically create the calendar event and send invites!
-          </p>
+      <div className="pt-6">
+        <button
+          onClick={() => navigate('/delete-account')}
+          className="text-red-600 hover:text-red-700 text-sm font-medium transition-colors flex items-center space-x-1 mx-auto"
+        >
+          <Trash2 className="w-4 h-4" />
+          <span>Delete Account</span>
+        </button>
+      </div>
+      
         </div>
       </div>
     </PageContainer>
