@@ -53,6 +53,11 @@ export class SupabaseService {
     return hasValidSupabaseConfig;
   }
 
+  // Expose supabase client for direct operations (like delete)
+  public get supabase() {
+    return supabase;
+  }
+
   // Generate Firebase-compatible UID format
   private generateFirebaseUID(): string {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';

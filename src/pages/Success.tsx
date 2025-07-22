@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { CheckCircle2, Calendar, MessageCircle, Sparkles } from 'lucide-react';
+import { CheckCircle2, Calendar, MessageCircle, Sparkles, Trash2 } from 'lucide-react';
 import PageContainer from '../components/PageContainer';
 import Button from '../components/Button';
 import { useApp } from '../contexts/AppContext';
@@ -138,6 +138,16 @@ const Success: React.FC = () => {
               {window.opener ? 'This tab will close automatically' : 'You can now close this tab and start using Tomo QuickCal through Signal'}
             </p>
           </div>
+        </div>
+        
+        <div className="pt-2">
+          <button
+            onClick={() => navigate('/delete-account')}
+            className="text-red-600 hover:text-red-700 text-sm font-medium transition-colors flex items-center space-x-1 mx-auto"
+          >
+            <Trash2 className="w-4 h-4" />
+            <span>Delete Account</span>
+          </button>
         </div>
         
         <div className="pt-4">

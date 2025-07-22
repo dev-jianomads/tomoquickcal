@@ -24,6 +24,7 @@ export type EventType =
   | 'device_linking_started'
   | 'device_linking_success'
   | 'device_linking_skipped'
+  | 'account_deleted'
   | 'setup_completed';
 
 export class LoggingService {
