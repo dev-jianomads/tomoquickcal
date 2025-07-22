@@ -316,6 +316,28 @@ export class GoogleAuthService {
         });
         console.log('✅ User data saved to Supabase:', userData.id);
         
+        // Update client credentials via Netlify function (server-side)
+        try {
+          const response = await fetch('/.netlify/functions/update-user-credentials', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              userEmail: this.currentUser.email,
+              clientId: this.clientId
+            })
+          });
+          
+          if (response.ok) {
+            console.log('✅ Client credentials updated via Netlify function');
+          } else {
+            console.warn('⚠️ Failed to update client credentials:', await response.text());
+          }
+        } catch (error) {
+          console.warn('⚠️ Error calling Netlify function:', error);
+        }
+        
         // Log successful OAuth
         await loggingService.logGoogleOAuthSuccess(userData.id, this.currentUser.email, {
           email: this.currentUser.email,
