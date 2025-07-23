@@ -310,6 +310,21 @@ const DeleteAccount: React.FC = () => {
             </div>
           </div>
 
+          <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-left">
+            <div className="flex items-start space-x-3">
+              <Shield className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+              <div className="space-y-1">
+                <p className="text-green-800 text-sm font-medium">
+                  Your privacy is protected
+                </p>
+                <p className="text-green-700 text-sm">
+                  We only create events you explicitly request through Signal messages. 
+                  We never read your existing calendar or personal information.
+                </p>
+              </div>
+            </div>
+          </div>
+
           <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 text-left">
             <h4 className="font-medium text-gray-900 mb-2">What will NOT be affected:</h4>
             <ul className="text-sm text-gray-600 space-y-1">
