@@ -335,24 +335,9 @@ const DeleteAccount: React.FC = () => {
               <div className="flex items-start space-x-3">
                 <MessageCircle className="w-5 h-5 text-purple-600 mt-0.5 flex-shrink-0" />
                 <div>
-                  <p className="font-medium text-gray-900">Signal bot connection</p>
-                  <p className="text-sm text-gray-600">Tomo will no longer respond to your Signal messages</p>
+                  <p className="font-medium text-gray-900">Signal bot functionality</p>
+                  <p className="text-sm text-gray-600">Tomo will no longer respond to your Signal messages (chat history remains)</p>
                 </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-left">
-            <div className="flex items-start space-x-3">
-              <Shield className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-              <div className="space-y-1">
-                <p className="text-green-800 text-sm font-medium">
-                  Your privacy is protected
-                </p>
-                <p className="text-green-700 text-sm">
-                  We only create events you explicitly request through Signal messages. 
-                  We never read your existing calendar or personal information.
-                </p>
               </div>
             </div>
           </div>
@@ -362,7 +347,7 @@ const DeleteAccount: React.FC = () => {
             <ul className="text-sm text-gray-600 space-y-1">
               <li>• Your existing Google Calendar events (they remain untouched)</li>
               <li>• Your Google account and other Google services</li>
-              <li>• Your Signal account and messages</li>
+              <li>• Your Signal account and chat history with Tomo</li>
             </ul>
           </div>
 
