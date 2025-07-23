@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Trash2, ArrowLeft, AlertTriangle, Shield, Calendar, MessageCircle, CheckCircle } from 'lucide-react';
+import { Trash2, ArrowLeft, AlertTriangle, Shield, Calendar, MessageCircle } from 'lucide-react';
 import PageContainer from '../components/PageContainer';
 import Button from '../components/Button';
 import { useApp } from '../contexts/AppContext';
 import { supabaseService } from '../services/supabase';
 import { loggingService } from '../services/logging';
+import { useGoogleAuth } from '../hooks/useGoogleAuth';
 
 const DeleteAccount: React.FC = () => {
   const navigate = useNavigate();
