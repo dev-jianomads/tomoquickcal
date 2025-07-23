@@ -30,9 +30,11 @@ export class GoogleAuthService {
     this.redirectUri = `${window.location.origin}/oauth-success`;
     
     console.log('🔐 GoogleAuth: Configuration:', {
-      clientId: this.clientId ? 'Set' : 'Missing',
+      clientId: this.clientId ? `${this.clientId.substring(0, 10)}...` : 'Missing',
       redirectUri: this.redirectUri,
-      origin: window.location.origin
+      origin: window.location.origin,
+      hasClientId: !!this.clientId,
+      clientIdLength: this.clientId?.length || 0
     });
   }
 

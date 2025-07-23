@@ -6,12 +6,10 @@ import Button from '../components/Button';
 import { useApp } from '../contexts/AppContext';
 import { supabaseService } from '../services/supabase';
 import { loggingService } from '../services/logging';
-import { useGoogleAuth } from '../hooks/useGoogleAuth';
 
 const DeleteAccount: React.FC = () => {
   const navigate = useNavigate();
   const { appData } = useApp();
-  const { getCurrentUser } = useGoogleAuth();
   const [confirmText, setConfirmText] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState<string>('');
@@ -21,8 +19,42 @@ const DeleteAccount: React.FC = () => {
     errors: string[];
   } | null>(null);
 
-  const currentUser = getCurrentUser();
-  const userEmail = currentUser?.email || appData.userEmail;
+  // Get user email from app context or try to get from Google Auth safely
+  const [userEmail, setUserEmail] = useState<string>('');
+  
+  React.useEffect(() => {
+    const getUserEmail = async () => {
+      try {
+        // Try to get from app context first
+        if (appData.userEmail) {
+          setUserEmail(appData.userEmail);
+          return;
+        }
+        
+        // Try to get from Google Auth if available
+        const { useGoogleAuth } = await import('../hooks/useGoogleAuth');
+        const { getCurrentUser } = useGoogleAuth();
+        const currentUser = getCurrentUser();
+        if (currentUser?.email) {
+          setUserEmail(currentUser.email);
+        }
+      } catch (error) {
+        console.warn('Could not get user email from Google Auth:', error);
+        // Fallback to stored user data
+        const storedUser = localStorage.getItem('google_user');
+        if (storedUser) {
+          try {
+            const userData = JSON.parse(storedUser);
+            setUserEmail(userData.email);
+          } catch (e) {
+            console.warn('Could not parse stored user data:', e);
+          }
+        }
+      }
+    };
+    
+    getUserEmail();
+  }, [appData.userEmail]);
 
   const handleDelete = async () => {
     if (confirmText !== 'DELETE') {
