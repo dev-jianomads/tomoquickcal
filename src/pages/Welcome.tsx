@@ -59,25 +59,6 @@ const Welcome: React.FC = () => {
               </div>
             </div>
 
-            <div className="flex items-center justify-center">
-              <ArrowRight className="w-4 h-4 text-gray-400" />
-            </div>
-
-            <div className="flex items-center space-x-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
-              <div className="w-8 h-8 bg-gray-400 rounded-full flex items-center justify-center flex-shrink-0">
-                <span className="text-white text-sm font-bold">3</span>
-              </div>
-              <div className="flex items-center space-x-3 flex-1">
-                <QrCode className="w-5 h-5 text-gray-500" />
-                <div className="flex-1">
-                  <div className="flex items-center space-x-2">
-                    <span className="text-gray-600 font-medium">Link Signal Device</span>
-                    <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full border">Coming Soon</span>
-                  </div>
-                  <p className="text-gray-500 text-xs mt-1">Enables proactive scheduling suggestions</p>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
 
