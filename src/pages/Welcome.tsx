@@ -1,14 +1,82 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Calendar, MessageCircle, QrCode, ArrowRight } from 'lucide-react';
+import { Calendar, MessageCircle, Shield, Clock, Users, Loader2 } from 'lucide-react';
 import PageContainer from '../components/PageContainer';
 import Button from '../components/Button';
+import { useGoogleAuth } from '../hooks/useGoogleAuth';
+import { useApp } from '../contexts/AppContext';
 
 const Welcome: React.FC = () => {
   const navigate = useNavigate();
+  const { signIn, isLoading, error, isSignedIn, isInitialized } = useGoogleAuth();
+  const { setAppData } = useApp();
+  const [isCheckingAuth, setIsCheckingAuth] = React.useState(true);
 
-  const handleGetStarted = () => {
-    navigate('/connect-calendar');
+  React.useEffect(() => {
+    const checkAuthState = async () => {
+      try {
+        // Don't auto-redirect on this page - let user manually proceed
+        console.log('Welcome: Auth state check (no auto-redirect):', {
+          isSignedIn,
+          isInitialized
+        });
+        
+      } catch (error) {
+        console.error('Welcome: Error during auth check:', error);
+      } finally {
+        setIsCheckingAuth(false);
+      }
+    };
+    
+    // Always show the page, don't auto-redirect
+    setIsCheckingAuth(false);
+    checkAuthState();
+  }, [isSignedIn, isInitialized]);
+
+  const handleConnectGoogle = async () => {
+    try {
+      console.log('Welcome: Connect Google button clicked');
+      
+      // Check if Google OAuth is configured
+      const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+      const clientSecret = import.meta.env.VITE_GOOGLE_CLIENT_SECRET;
+      
+      console.log('Welcome: OAuth config check:', {
+        hasClientId: !!clientId,
+        hasClientSecret: !!clientSecret,
+        clientIdLength: clientId?.length || 0
+      });
+      
+      if (!clientId || !clientSecret) {
+        console.log('Welcome: OAuth not configured, using demo mode');
+        // Simulate successful auth for demo
+        setAppData(prev => ({ 
+          ...prev, 
+          gcalLinked: true,
+          userEmail: 'demo@example.com' 
+        }));
+        navigate('/connect-bot');
+        return;
+      }
+      
+      // Show loading state immediately
+      console.log('Welcome: Starting OAuth flow...');
+      
+      // Start the OAuth flow - it will redirect to connect-bot on success
+      const success = await signIn();
+      
+      // If signIn returns true, it means auth completed successfully
+      // and we should navigate to connect-bot
+      if (success) {
+        console.log('Welcome: OAuth successful, navigating to connect-bot');
+        navigate('/connect-bot');
+      } else {
+        console.log('Welcome: OAuth failed or timed out');
+        // Error will be shown by the useGoogleAuth hook
+      }
+    } catch (err) {
+      console.error('Welcome: Connect Google failed:', err);
+    }
   };
 
   return (
@@ -31,62 +99,82 @@ const Welcome: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-4">
-          <h3 className="font-semibold text-gray-900 text-lg">Setup Process</h3>
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 text-left space-y-4">
+          <h3 className="font-semibold text-gray-900">What we'll access:</h3>
           
-          <div className="space-y-4">
-            <div className="flex items-center space-x-4 p-3 bg-blue-50 rounded-lg border border-blue-100">
-              <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0">
-                <span className="text-white text-sm font-bold">1</span>
-              </div>
-              <div className="flex items-center space-x-3 flex-1">
-                <Calendar className="w-5 h-5 text-blue-600" />
-                <span className="text-blue-800 font-medium">Connect Google Calendar and Contacts</span>
+          <div className="space-y-3">
+            <div className="flex items-start space-x-3">
+              <Calendar className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+              <div>
+                <p className="font-medium text-gray-900">Create calendar events</p>
+                <p className="text-sm text-gray-600">Add meetings and appointments to your calendar</p>
               </div>
             </div>
-
-            <div className="flex items-center justify-center">
-              <ArrowRight className="w-4 h-4 text-gray-400" />
-            </div>
-
-            <div className="flex items-center space-x-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
-              <div className="w-8 h-8 bg-gray-400 rounded-full flex items-center justify-center flex-shrink-0">
-                <span className="text-white text-sm font-bold">2</span>
-              </div>
-              <div className="flex items-center space-x-3 flex-1">
-                <MessageCircle className="w-5 h-5 text-gray-500" />
-                <span className="text-gray-600 font-medium">Connect Tomo QuickCal</span>
+            
+            <div className="flex items-start space-x-3">
+              <Users className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+              <div>
+                <p className="font-medium text-gray-900">Invite attendees</p>
+                <p className="text-sm text-gray-600">Send calendar invites to meeting participants</p>
               </div>
             </div>
-
+            
+            <div className="flex items-start space-x-3">
+              <Users className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+              <div>
+                <p className="font-medium text-gray-900">Find and invite people from your Google Contacts</p>
+                <p className="text-sm text-gray-600">Contact information is used only for meeting invitations</p>
+              </div>
+            </div>
+            
+            <div className="flex items-start space-x-3">
+              <MessageCircle className="w-5 h-5 text-purple-600 mt-0.5 flex-shrink-0" />
+              <div>
+                <p className="font-medium text-gray-900">Create instant Google Meet calls</p>
+                <p className="text-sm text-gray-600">Generate Meet links for quick huddles without calendar events</p>
+              </div>
+            </div>
+            
+            <div className="flex items-start space-x-3">
+              <Clock className="w-5 h-5 text-purple-600 mt-0.5 flex-shrink-0" />
+              <div>
+                <p className="font-medium text-gray-900">Set reminders</p>
+                <p className="text-sm text-gray-600">Configure notifications for your events</p>
+              </div>
+            </div>
           </div>
         </div>
 
-        <div className="bg-gradient-to-r from-green-50 to-blue-50 rounded-2xl p-6 text-left">
-          <h3 className="font-semibold text-gray-900 mb-3">What you'll be able to do:</h3>
-          <ul className="space-y-2 text-gray-700">
-            <li className="flex items-start space-x-2">
-              <span className="text-green-600 mt-1">✓</span>
-              <span>Send messages like "Schedule meeting with John tomorrow at 2pm"</span>
-            </li>
-            <li className="flex items-start space-x-2">
-              <span className="text-green-600 mt-1">✓</span>
-              <span>Automatically create Google Calendar events</span>
-            </li>
-            <li className="flex items-start space-x-2">
-              <span className="text-green-600 mt-1">✓</span>
-              <span>Invite attendees and set reminders</span>
-            </li>
-            <li className="flex items-start space-x-2">
-              <span className="text-green-600 mt-1">✓</span>
-              <span>Manage your schedule through simple conversations</span>
-            </li>
-          </ul>
+        <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-left">
+          <div className="flex items-start space-x-3">
+            <Shield className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+            <div className="space-y-1">
+              <p className="text-green-800 text-sm font-medium">
+                Your privacy is protected
+              </p>
+              <p className="text-green-700 text-sm">
+                We only create events you explicitly request through Signal messages. 
+                We never read your existing calendar or personal information.
+              </p>
+            </div>
+          </div>
         </div>
 
+        {error && (
+          <div className="w-full max-w-80 mx-auto p-3 bg-red-50 border border-red-200 rounded-lg">
+            <p className="text-red-600 text-sm text-center">{error}</p>
+            {/iPhone|iPad|iPod/i.test(navigator.userAgent) && (
+              <div className="mt-2 text-xs text-red-500 text-center">
+                <p className="font-medium">Safari users:</p>
+                <p>Settings → Safari → Privacy & Security → Turn OFF "Prevent Cross-Site Tracking"</p>
+              </div>
+            )}
+          </div>
+        )}
+
         <div className="pt-4">
-          <Button onClick={handleGetStarted}>
-            Get Started
+          <Button onClick={handleConnectGoogle} disabled={isLoading || isCheckingAuth}>
+            {isLoading ? 'Connecting...' : 'Connect Google Calendar and Contacts'}
           </Button>
         </div>
       </div>

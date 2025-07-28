@@ -21,7 +21,6 @@ function App() {
           <Routes>
             <Route path="/" element={<Navigate to="/welcome" replace />} />
             <Route path="/welcome" element={<Welcome />} />
-            <Route path="/connect-calendar" element={<ConnectCalendar />} />
             <Route path="/connect-bot" element={<ConnectBot />} />
             <Route path="/show-qr" element={<ShowQR />} />
             <Route path="/waiting" element={<Waiting />} />
@@ -32,7 +31,6 @@ function App() {
             <Route path="/delete-account" element={<DeleteAccount />} />
             {/* Legacy redirects */}
             <Route path="/landing" element={<Navigate to="/welcome" replace />} />
-            <Route path="/gcal-oauth" element={<Navigate to="/connect-calendar" replace />} />
             {/* OAuth success page for handling redirects */}
             <Route path="/oauth-success" element={<OAuthSuccessHandler />} />
           </Routes>
