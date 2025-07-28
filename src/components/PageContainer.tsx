@@ -54,7 +54,7 @@ const PageContainer: React.FC<PageContainerProps> = ({ children, className = '' 
                      bg-white/90 backdrop-blur-sm border border-gray-200 
                      rounded-full p-3 shadow-lg hover:shadow-xl
                      transition-all duration-300 ease-in-out
-                     animate-bounce hover:animate-none
+                     animate-pulse hover:animate-none hover:scale-110
                      focus:outline-none focus:ring-2 focus:ring-indigo-500"
           aria-label="Scroll down to see more content"
         >
