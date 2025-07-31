@@ -114,27 +114,34 @@ const Welcome: React.FC = () => {
         </div>
 
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 text-left space-y-4">
-          <h3 className="font-semibold text-gray-900">What we'll access:</h3>
+          <h3 className="font-semibold text-gray-900">What Tomo'll access and be able to do for you:</h3>
           
           <div className="space-y-3">
             <div className="flex items-start space-x-3">
-              <Calendar className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+              <Clock className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
               <div>
-                <p className="font-medium text-gray-900">Add events to your calendar</p>
+                <p className="font-medium text-gray-900">Check your availability in Google Calendar</p>
               </div>
             </div>
             
             <div className="flex items-start space-x-3">
-              <Users className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+              <Calendar className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
               <div>
-                <p className="font-medium text-gray-900">Send invites to your events</p>
+                <p className="font-medium text-gray-900">Add and amend events in your calendar</p>
               </div>
             </div>
             
             <div className="flex items-start space-x-3">
-              <Users className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+              <Users className="w-5 h-5 text-purple-600 mt-0.5 flex-shrink-0" />
               <div>
                 <p className="font-medium text-gray-900">Find and invite people from your Google Contacts</p>
+              </div>
+            </div>
+            
+            <div className="flex items-start space-x-3">
+              <MessageCircle className="w-5 h-5 text-orange-600 mt-0.5 flex-shrink-0" />
+              <div>
+                <p className="font-medium text-gray-900">Create instant Google Meet calls</p>
               </div>
             </div>
           </div>
