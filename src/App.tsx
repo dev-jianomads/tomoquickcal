@@ -2,13 +2,8 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AppProvider } from './contexts/AppContext';
 import Welcome from './pages/Welcome';
-import ConnectCalendar from './pages/ConnectCalendar';
 import ConnectBot from './pages/ConnectBot';
-import ShowQR from './pages/ShowQR';
-import Waiting from './pages/Waiting';
 import Success from './pages/Success';
-import ProactiveScheduling from './pages/ProactiveScheduling';
-import OAuthSuccess from './pages/OAuthSuccess';
 import TestCalendar from './pages/TestCalendar';
 import ReconnectCalendar from './pages/ReconnectCalendar';
 import DeleteAccount from './pages/DeleteAccount';
@@ -22,12 +17,9 @@ function App() {
             <Route path="/" element={<Navigate to="/welcome" replace />} />
             <Route path="/welcome" element={<Welcome />} />
             <Route path="/connect-bot" element={<ConnectBot />} />
-            <Route path="/show-qr" element={<ShowQR />} />
-            <Route path="/waiting" element={<Waiting />} />
             <Route path="/success" element={<Success />} />
             <Route path="/test-calendar" element={<TestCalendar />} />
             <Route path="/reconnect-calendar" element={<ReconnectCalendar />} />
-            <Route path="/delete-account" element={<DeleteAccount />} />
             <Route path="/delete-account" element={<DeleteAccount />} />
             {/* Legacy redirects */}
             <Route path="/landing" element={<Navigate to="/welcome" replace />} />

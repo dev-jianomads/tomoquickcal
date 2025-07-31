@@ -20,10 +20,7 @@ export type EventType =
   | 'user_updated'
   | 'phone_number_entered'
   | 'phone_number_saved'
-  | 'signal_message_sent'
-  | 'device_linking_started'
-  | 'device_linking_success'
-  | 'device_linking_skipped'
+  | 'telegram_sms_sent'
   | 'account_deleted'
   | 'setup_completed';
 
@@ -174,8 +171,8 @@ export class LoggingService {
     });
   }
 
-  async logSignalMessageSent(userId: string, userEmail: string, phoneNumber: string): Promise<void> {
-    await this.log('signal_message_sent', {
+  async logTelegramSmsSent(userId: string, userEmail: string, phoneNumber: string): Promise<void> {
+    await this.log('telegram_sms_sent', {
       userId,
       userEmail,
       eventData: {
@@ -185,38 +182,13 @@ export class LoggingService {
     });
   }
 
-  async logDeviceLinkingStarted(userId?: string, userEmail?: string): Promise<void> {
-    await this.log('device_linking_started', {
-      userId,
-      userEmail,
-      eventData: { timestamp: new Date().toISOString() }
-    });
-  }
-
-  async logDeviceLinkingSuccess(userId?: string, userEmail?: string): Promise<void> {
-    await this.log('device_linking_success', {
-      userId,
-      userEmail,
-      eventData: { timestamp: new Date().toISOString() }
-    });
-  }
-
-  async logDeviceLinkingSkipped(userId?: string, userEmail?: string): Promise<void> {
-    await this.log('device_linking_skipped', {
-      userId,
-      userEmail,
-      eventData: { timestamp: new Date().toISOString() }
-    });
-  }
-
   async logSetupCompleted(userId: string, userEmail: string, setupData: any): Promise<void> {
     await this.log('setup_completed', {
       userId,
       userEmail,
       eventData: {
         google_calendar_connected: setupData.gcalLinked,
-        signal_connected: setupData.signalLinked,
-        proactive_scheduling: setupData.proactiveScheduling,
+        telegram_connected: setupData.signalLinked, // Keep field name for compatibility
         phone_number: setupData.phoneNumber
       }
     });

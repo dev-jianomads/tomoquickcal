@@ -1,14 +1,15 @@
-# Tomo QuickCal - Frontend
+# Tomo QuickCal - Telegram Frontend
 
-A React frontend for Tomo QuickCal that handles Google Calendar integration and user onboarding. Users can connect their Google Calendar, enter their Signal phone number, and the data is saved to Supabase for backend processing.
+A React frontend for Tomo QuickCal that handles Google Calendar integration and user onboarding. Users can connect their Google Calendar, enter their phone number, and receive an SMS link to start chatting with @AskTomoBot on Telegram.
 
 ## 🚀 Features
 
 - **Google OAuth Integration** - Connect Google Calendar and Contacts
-- **Phone Number Collection** - Users enter their Signal number
+- **Phone Number Collection** - Users enter their phone number for SMS delivery
 - **Supabase Storage** - User data and tokens saved securely
 - **Responsive Design** - Works on desktop and mobile
 - **Clean UI/UX** - Step-by-step onboarding flow
+- **Telegram Integration** - SMS link to start chatting with @AskTomoBot
 
 ## 🛠️ Tech Stack
 
@@ -18,6 +19,7 @@ A React frontend for Tomo QuickCal that handles Google Calendar integration and 
 - **React Router** for navigation
 - **Supabase** for database and user management
 - **Google APIs** for Calendar and Contacts integration
+- **Telegram Bot** integration via SMS links
 
 ## 📦 Quick Start
 
@@ -124,17 +126,18 @@ src/
 ## 📱 User Flow
 
 1. **Welcome** - Introduction to Tomo QuickCal
-2. **Connect Calendar** - Google OAuth for Calendar and Contacts
-3. **Connect Bot** - Enter Signal phone number
+2. **Connect Bot** - Enter phone number for SMS
+3. **Success** - Setup complete, SMS sent with Telegram link
 4. **Success** - Setup complete, ready for Signal integration
 
-## 🔗 Backend Integration
+## 🔗 Telegram Integration
 
-This frontend saves user data to Supabase. Your Signal backend can:
+This frontend saves user data to Supabase. Your Telegram backend can:
 
 1. **Read user data** from Supabase
-2. **Process Signal messages** using stored phone numbers
+2. **Send SMS** with Telegram bot links using stored phone numbers
 3. **Create calendar events** using stored Google tokens
+4. **Process Telegram messages** from @AskTomoBot
 
 ## 🤝 Contributing
 

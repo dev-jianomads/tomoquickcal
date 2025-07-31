@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { CheckCircle2, Calendar, MessageCircle, Sparkles, Trash2 } from 'lucide-react';
+import { CheckCircle2, Calendar, MessageCircle, Trash2, Zap } from 'lucide-react';
 import PageContainer from '../components/PageContainer';
 import Button from '../components/Button';
 import { useApp } from '../contexts/AppContext';
@@ -12,9 +12,8 @@ const Success: React.FC = () => {
   const { setAppData, appData } = useApp();
 
   useEffect(() => {
-    // Set Signal as linked when page loads, but handle proactive scheduling correctly
-    // Device linking is coming soon, so proactive scheduling is not available yet
-    console.log('✅ Success page: Device linking coming soon');
+    // Set Telegram as linked when page loads
+    console.log('✅ Success page: Telegram integration complete');
     console.log('✅ Success page: location.state =', location.state);
     
     const isExistingUser = location.state?.existingUser;
@@ -24,11 +23,11 @@ const Success: React.FC = () => {
     
     setAppData(prev => ({ 
       ...prev, 
-      signalLinked: true,
-      proactiveScheduling: false // Coming soon
+      signalLinked: true, // Keep same field name for compatibility
+      proactiveScheduling: false
     }));
     
-    console.log('✅ Success page: Setting proactiveScheduling to false (coming soon)');
+    console.log('✅ Success page: Telegram integration ready');
     
     // Log setup completion
     if (appData.userId && appData.userEmail && !isExistingUser && !isReconnected) {
@@ -94,12 +93,12 @@ const Success: React.FC = () => {
           <div className="space-y-2">
             <p className="text-gray-600 text-lg leading-relaxed">
               {location.state?.reconnected 
-                ? 'Your Google Calendar has been reconnected. Tomo QuickCal is ready to help you schedule meetings through Signal.'
-                : 'Tomo QuickCal is connected and ready to help you schedule meetings through Signal.'
+                ? 'Your Google Calendar has been reconnected. Tomo QuickCal is ready to help you schedule meetings through Telegram.'
+                : 'Tomo QuickCal is connected and ready to help you schedule meetings through Telegram.'
               }
             </p>
             <div className="inline-flex items-center space-x-2 px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-sm">
-              <MessageCircle className="w-4 h-4" />
+              <Zap className="w-4 h-4" />
               <span>Manual scheduling ready</span>
             </div>
           </div>
@@ -107,11 +106,11 @@ const Success: React.FC = () => {
 
         <div className="bg-gradient-to-r from-green-50 to-blue-50 rounded-2xl p-6 space-y-4">
           <div className="flex items-center justify-center space-x-2 mb-4">
-            <Sparkles className="w-5 h-5 text-yellow-500" />
+            <Zap className="w-5 h-5 text-blue-500" />
             <h3 className="font-semibold text-gray-900">
-              {appData.proactiveScheduling ? "You're all set with smart scheduling!" : "You're all set!"}
+              You're all set!
             </h3>
-            <Sparkles className="w-5 h-5 text-yellow-500" />
+            <Zap className="w-5 h-5 text-blue-500" />
           </div>
           
           <div className="grid grid-cols-1 gap-3">
@@ -123,19 +122,20 @@ const Success: React.FC = () => {
             </div>
             
             <div className="flex items-center space-x-3 p-3 bg-white/60 rounded-lg border border-white/40">
-              <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                <MessageCircle className="w-4 h-4 text-blue-600" />
+              <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
+                <Zap className="w-4 h-4 text-purple-600" />
               </div>
-              <span className="text-gray-800 font-medium">Signal bot linked</span>
+              <span className="text-gray-800 font-medium">Telegram bot connected</span>
             </div>
           </div>
           
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-4">
-            <div className="flex items-center space-x-2 mb-2">
-              <span className="text-blue-800 font-medium text-sm">Coming Soon: Proactive Scheduling</span>
+          <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 mt-4">
+            <div className="flex items-center space-x-2 mb-1">
+              <Zap className="w-4 h-4 text-purple-600" />
+              <span className="text-purple-800 font-medium text-sm">Ready to Schedule</span>
             </div>
-            <p className="text-blue-700 text-xs">
-              {window.opener ? 'This tab will close automatically' : 'You can now close this tab and start using Tomo QuickCal through Signal'}
+            <p className="text-purple-700 text-xs">
+              {window.opener ? 'This tab will close automatically' : 'Check your SMS for the Telegram link to start chatting with @AskTomoBot'}
             </p>
           </div>
         </div>
@@ -147,7 +147,7 @@ const Success: React.FC = () => {
         </div>
 
         <p className="text-sm text-gray-500 text-center">
-          You can now close this tab and start using Tomo QuickCal through Signal
+          Check your SMS for the Telegram link to start scheduling
         </p>
 
         {/* Delete Account Link - Very Bottom */}

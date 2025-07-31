@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MessageCircle, ArrowLeft, Smartphone, MessageSquare, Send, CheckCircle, ChevronDown } from 'lucide-react';
+import { MessageCircle, ArrowLeft, Smartphone, MessageSquare, Send, CheckCircle, ChevronDown, Zap } from 'lucide-react';
 import PageContainer from '../components/PageContainer';
 import Button from '../components/Button';
 import { useApp } from '../contexts/AppContext';
@@ -21,9 +21,6 @@ const ConnectBot: React.FC = () => {
   const [messageSent, setMessageSent] = useState(false);
   const [error, setError] = useState('');
   
-  // This would come from your backend config
-  const botPhoneNumber = import.meta.env.VITE_SIGNAL_BOT_NUMBER || '+85291356545';
-
   // Check authentication state on component mount
   React.useEffect(() => {
     const checkAuthState = async () => {
@@ -547,10 +544,10 @@ const ConnectBot: React.FC = () => {
             
             <div className="space-y-3">
               <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
-                Phone Number Saved! 📱
+                SMS Sent! 📱
               </h1>
               <p className="text-gray-600 text-lg leading-relaxed">
-                You should receive an introduction Signal message from Tomo shortly.
+                Check your SMS for a link to start chatting with Tomo on Telegram.
               </p>
             </div>
 
@@ -560,16 +557,16 @@ const ConnectBot: React.FC = () => {
                 <h3 className="font-semibold text-blue-900">Next steps:</h3>
               </div>
               <ol className="list-decimal list-inside space-y-2 text-blue-800">
-                <li>You'll receive a Signal message from <strong>{botPhoneNumber}</strong> shortly</li>
-                <li>Accept the conversation request if prompted</li>
+                <li>Check your SMS for a Telegram link</li>
+                <li>Tap the link to open Telegram and chat with <strong>@AskTomoBot</strong></li>
                 <li>Start scheduling with simple messages!</li>
               </ol>
             </div>
 
-            <div className="bg-gradient-to-r from-green-50 to-blue-50 rounded-2xl p-6 text-left">
+            <div className="bg-gradient-to-r from-green-50 to-purple-50 rounded-2xl p-6 text-left">
               <div className="flex items-center space-x-2 mb-3">
-                <MessageSquare className="w-5 h-5 text-green-600" />
-                <h3 className="font-semibold text-gray-900">Try these commands once connected:</h3>
+                <MessageSquare className="w-5 h-5 text-purple-600" />
+                <h3 className="font-semibold text-gray-900">Try these commands in Telegram:</h3>
               </div>
               <div className="space-y-2 text-gray-700">
                 <div className="bg-white/60 rounded-lg p-3 border border-white/40">
@@ -622,16 +619,16 @@ const ConnectBot: React.FC = () => {
           
           <div className="space-y-3">
             <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
-              Connect Tomo QuickCal
+              Connect to Telegram
             </h1>
             <p className="text-gray-600 text-lg leading-relaxed">
-              Enter your Signal phone number and Tomo will send you the first message to get started.
+              Enter your phone number and we'll send you an SMS with a link to start chatting with Tomo on Telegram.
             </p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-4">
-              <h3 className="font-semibold text-gray-900">Your Signal Phone Number</h3>
+              <h3 className="font-semibold text-gray-900">Your Phone Number</h3>
               
               <div className="space-y-2">
                 <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3">
@@ -672,7 +669,7 @@ const ConnectBot: React.FC = () => {
                 </div>
                 
                 <p className="text-sm text-gray-500">
-                  Enter your complete phone number as you normally would
+                  We'll send an SMS with a Telegram link to this number
                 </p>
                 
                 {/* Preview of full number */}
@@ -697,13 +694,13 @@ const ConnectBot: React.FC = () => {
               <Button type="submit" disabled={isSubmitting || !phoneNumber.trim()}>
                 {isSubmitting ? (
                   <div className="flex items-center space-x-2">
-                    <Send className="w-4 h-4 animate-pulse" />
-                    <span>Sending Message...</span>
+                    <Zap className="w-4 h-4 animate-pulse" />
+                    <span>Sending SMS...</span>
                   </div>
                 ) : (
                   <div className="flex items-center space-x-2">
                     <Send className="w-4 h-4" />
-                    <span>Connect Tomo QuickCal</span>
+                    <span>Send Telegram Link</span>
                   </div>
                 )}
               </Button>
@@ -716,8 +713,8 @@ const ConnectBot: React.FC = () => {
               <h3 className="font-semibold text-blue-900">What happens next:</h3>
             </div>
             <ol className="list-decimal list-inside space-y-2 text-blue-800">
-              <li>Tomo will send you an introduction message on Signal</li>
-              <li>Accept the conversation if Signal asks for approval</li>
+              <li>You'll receive an SMS with a Telegram link</li>
+              <li>Tap the link to open Telegram and start chatting with @AskTomoBot</li>
               <li>Start scheduling with simple messages!</li>
             </ol>
           </div>
