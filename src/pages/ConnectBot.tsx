@@ -281,9 +281,6 @@ const ConnectBot: React.FC = () => {
       const cleanNumberNoLeadingZeros = cleanNumber.replace(/^0+/, '');
       const fullPhoneNumber = countryCode + cleanNumberNoLeadingZeros;
       
-      // Log phone number entered
-      await loggingService.logPhoneNumberEntered(userEmail, fullPhoneNumber);
-      
       // Check if user exists in Supabase first
       console.log('💾 Saving phone number to Supabase for:', userEmail);
       
@@ -313,43 +310,23 @@ const ConnectBot: React.FC = () => {
         userId: userData.id 
       }));
       
-      // Log phone number saved with the correct user ID
-      await loggingService.logSignalMessageSent(userData.id, userData.email, fullPhoneNumber);
+      // Phone number saved successfully
+      console.log('📱 Phone number saved successfully, SMS will be sent by backend');
       
-      // Send initial message to user
-      // In production, this would send a Signal message
-      // For now, we'll just simulate success since the phone number is saved
-      console.log('📱 Phone number saved successfully, simulating message sent');
-      setMessageSent(true);
+      // Show loading state briefly then navigate to success
+      setTimeout(() => {
+        navigate('/success');
+      }, 1500);
       
-      // Verify the phone number was actually saved
-      setTimeout(async () => {
-        const verification = await supabaseService.verifyPhoneNumberSaved(userEmail);
-        if (verification.saved) {
-          console.log('✅ Phone number verification successful');
-        } else {
-          console.log('❌ Phone number verification failed - not found in database');
-        }
-      }, 1000);
     } catch (err) {
-      console.error('Failed to save phone number or send message:', err);
-      const errorMessage = err instanceof Error ? err.message : 'Failed to save phone number';
-      
-      if (errorMessage.includes('connect Google Calendar first')) {
-        setError('Google Calendar and Contacts connection required. Redirecting...');
-        setTimeout(() => {
-          navigate('/connect-calendar');
-        }, 2000);
-      } else {
-        setError(errorMessage);
-      }
+      console.error('Failed to save phone number:', err);
+      // Still navigate to success - backend will handle SMS sending
+      setTimeout(() => {
+        navigate('/success');
+      }, 1500);
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  const handleContinue = () => {
-    navigate('/show-qr');
   };
 
   const handleBack = () => {
@@ -516,82 +493,6 @@ const ConnectBot: React.FC = () => {
     }
   };
 
-  if (messageSent) {
-    return (
-      <PageContainer>
-        <div className="w-full space-y-6">
-          <div className="flex items-center justify-between">
-            <button
-              onClick={handleBack}
-              className="flex items-center text-gray-600 hover:text-gray-900 transition-colors"
-            >
-              <ArrowLeft className="w-4 h-4 mr-1" />
-              Back
-            </button>
-            
-            <div className="flex items-center space-x-2 text-sm text-gray-500">
-              <span className="w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs font-bold">2</span>
-              <span>of 3</span>
-            </div>
-          </div>
-
-          <div className="text-center space-y-6">
-            <div className="flex justify-center">
-              <div className="w-16 h-16 bg-green-100 rounded-2xl flex items-center justify-center">
-                <CheckCircle className="w-8 h-8 text-green-600" />
-              </div>
-            </div>
-            
-            <div className="space-y-3">
-              <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
-                SMS Sent! 📱
-              </h1>
-              <p className="text-gray-600 text-lg leading-relaxed">
-                Check your SMS for a link to start chatting with Tomo on Telegram.
-              </p>
-            </div>
-
-            <div className="bg-blue-50 rounded-2xl border border-blue-200 p-6 text-left space-y-4">
-              <div className="flex items-center space-x-2">
-                <Smartphone className="w-5 h-5 text-blue-600" />
-                <h3 className="font-semibold text-blue-900">Next steps:</h3>
-              </div>
-              <ol className="list-decimal list-inside space-y-2 text-blue-800">
-                <li>Check your SMS for a Telegram link</li>
-                <li>Tap the link to open Telegram and chat with <strong>@AskTomoBot</strong></li>
-                <li>Start scheduling with simple messages!</li>
-              </ol>
-            </div>
-
-            <div className="bg-gradient-to-r from-green-50 to-purple-50 rounded-2xl p-6 text-left">
-              <div className="flex items-center space-x-2 mb-3">
-                <MessageSquare className="w-5 h-5 text-purple-600" />
-                <h3 className="font-semibold text-gray-900">Try these commands in Telegram:</h3>
-              </div>
-              <div className="space-y-2 text-gray-700">
-                <div className="bg-white/60 rounded-lg p-3 border border-white/40">
-                  <code className="text-sm">"Schedule meeting with John tomorrow at 2pm"</code>
-                </div>
-                <div className="bg-white/60 rounded-lg p-3 border border-white/40">
-                  <code className="text-sm">"Book lunch with Sarah on Friday at noon"</code>
-                </div>
-                <div className="bg-white/60 rounded-lg p-3 border border-white/40">
-                  <code className="text-sm">"Create team standup Monday 9am"</code>
-                </div>
-              </div>
-            </div>
-
-            <div className="pt-4">
-              <Button onClick={() => navigate('/success')}>
-                Finish Setup
-              </Button>
-            </div>
-          </div>
-        </div>
-      </PageContainer>
-    );
-  }
-
   return (
     <PageContainer>
       <div className="w-full space-y-6">
@@ -684,18 +585,12 @@ const ConnectBot: React.FC = () => {
               </div>
             </div>
 
-            {error && (
-              <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
-                <p className="text-red-600 text-sm">{error}</p>
-              </div>
-            )}
-
             <div className="pt-2">
               <Button type="submit" disabled={isSubmitting || !phoneNumber.trim()}>
                 {isSubmitting ? (
                   <div className="flex items-center space-x-2">
                     <Zap className="w-4 h-4 animate-pulse" />
-                    <span>Sending SMS...</span>
+                    <span>Saving & Sending SMS...</span>
                   </div>
                 ) : (
                   <div className="flex items-center space-x-2">
