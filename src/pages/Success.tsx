@@ -97,10 +97,6 @@ const Success: React.FC = () => {
                 : 'Tomo QuickCal is connected and ready to help you schedule meetings through Telegram.'
               }
             </p>
-            <div className="inline-flex items-center space-x-2 px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-sm">
-              <Zap className="w-4 h-4" />
-              <span>Manual scheduling ready</span>
-            </div>
           </div>
         </div>
 
@@ -145,10 +141,6 @@ const Success: React.FC = () => {
             Close Setup
           </Button>
         </div>
-
-        <p className="text-sm text-gray-500 text-center">
-          Check your SMS for the Telegram link to start scheduling
-        </p>
 
         {/* Delete Account Link - Very Bottom */}
         <div className="pt-6 mt-6 border-t border-gray-200">
