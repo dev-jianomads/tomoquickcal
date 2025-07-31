@@ -45,6 +45,8 @@ export interface UserData {
   refresh_token_2?: string;
   client_id_2?: string;
   client_secret_2?: string;
+  client_id_2?: string;
+  client_secret_2?: string;
   created_at?: string;
 }
 
@@ -131,6 +133,7 @@ export class SupabaseService {
           access_token_2: userData.access_token_2 || null,
           refresh_token_2: userData.refresh_token_2 || null,
           client_id_2: userData.client_id_2 || null,
+          client_secret_2: userData.client_secret_2 || null,
           created_at: new Date().toISOString()
         };
         
@@ -146,6 +149,8 @@ export class SupabaseService {
         phone_number: userData.phone_number || null,
         access_token_2: userData.access_token_2 || null,
         refresh_token_2: userData.refresh_token_2 || null,
+        client_id_2: userData.client_id_2 || null,
+        client_secret_2: userData.client_secret_2 || null,
       };
 
       const { data, error } = await supabase

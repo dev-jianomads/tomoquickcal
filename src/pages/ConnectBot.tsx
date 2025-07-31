@@ -281,27 +281,60 @@ const ConnectBot: React.FC = () => {
       const cleanNumberNoLeadingZeros = cleanNumber.replace(/^0+/, '');
       const fullPhoneNumber = countryCode + cleanNumberNoLeadingZeros;
       
-      // Check if user exists in Supabase first
-      console.log('💾 Saving phone number to Supabase for:', userEmail);
-      
-      // First, ensure user exists in database (create if needed)
-      let userData;
-      try {
-        userData = await supabaseService.saveUserPhoneNumber(userEmail, fullPhoneNumber);
-      } catch (error) {
-        console.log('❌ User not found, creating user first...');
-        // If user doesn't exist, create them first
-        const newUser = await supabaseService.saveUserAfterGoogleAuth({
-          email: userEmail,
-          name: currentUser?.name || 'User',
-          accessToken: googleAuthService.getAccessToken() || '',
-          refreshToken: localStorage.getItem('google_refresh_token') || undefined
-        });
-        console.log('✅ User created, now saving phone number...');
-        userData = await supabaseService.saveUserPhoneNumber(userEmail, fullPhoneNumber);
+      // Get temporary Google auth data from sessionStorage
+      const tempAuthDataStr = sessionStorage.getItem('temp_google_auth');
+      if (!tempAuthDataStr) {
+        console.error('❌ No temporary auth data found');
+        setError('Session expired. Please reconnect Google Calendar.');
+        setTimeout(() => {
+          navigate('/welcome');
+        }, 2000);
+        return;
       }
       
-      console.log('✅ Phone number saved, user data:', userData);
+      const tempAuthData = JSON.parse(tempAuthDataStr);
+      console.log('💾 Creating/updating Supabase record with complete data for:', userEmail);
+      
+      // Create or update user with complete data (Google auth + phone number)
+      let userData;
+      try {
+        // Check if user already exists
+        const existingUser = await supabaseService.findUserByEmail(userEmail);
+        
+        if (existingUser) {
+          console.log('📝 Updating existing user with Google auth and phone number');
+          // Update existing user with fresh Google auth data and phone number
+          userData = await supabaseService.updateUser(existingUser.id, {
+            display_name: tempAuthData.name,
+            phone_number: fullPhoneNumber,
+            access_token_2: tempAuthData.accessToken,
+            refresh_token_2: tempAuthData.refreshToken,
+            client_id_2: tempAuthData.clientId,
+            client_secret_2: tempAuthData.clientSecret
+          });
+        } else {
+          console.log('👤 Creating new user with complete data');
+          // Create new user with all data at once
+          userData = await supabaseService.createUser({
+            email: tempAuthData.email,
+            display_name: tempAuthData.name,
+            phone_number: fullPhoneNumber,
+            access_token_2: tempAuthData.accessToken,
+            refresh_token_2: tempAuthData.refreshToken,
+            client_id_2: tempAuthData.clientId,
+            client_secret_2: tempAuthData.clientSecret
+          });
+        }
+      } catch (error) {
+        console.error('❌ Failed to create/update user in Supabase:', error);
+        throw error;
+      }
+      
+      console.log('✅ User record created/updated with complete data:', userData);
+      
+      // Clear temporary auth data from sessionStorage
+      sessionStorage.removeItem('temp_google_auth');
+      console.log('🧹 Cleared temporary auth data from sessionStorage');
       
       // Update app context with user data
       setAppData(prev => ({ 
@@ -310,8 +343,8 @@ const ConnectBot: React.FC = () => {
         userId: userData.id 
       }));
       
-      // Phone number saved successfully
-      console.log('📱 Phone number saved successfully, SMS will be sent by backend');
+      // Complete setup successful
+      console.log('✅ Complete user setup successful, SMS/email will be sent by backend');
       
       // Show loading state briefly then navigate to success
       setTimeout(() => {
@@ -319,11 +352,8 @@ const ConnectBot: React.FC = () => {
       }, 1500);
       
     } catch (err) {
-      console.error('Failed to save phone number:', err);
-      // Still navigate to success - backend will handle SMS sending
-      setTimeout(() => {
-        navigate('/success');
-      }, 1500);
+      console.error('Failed to create/update user record:', err);
+      setError('Failed to complete setup. Please try again.');
     } finally {
       setIsSubmitting(false);
     }

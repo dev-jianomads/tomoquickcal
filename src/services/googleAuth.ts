@@ -357,64 +357,25 @@ export class GoogleAuthService {
       }
       localStorage.removeItem('oauth_state');
       
-      // Save to Supabase
-      try {
-        const { supabaseService } = await import('./supabase');
-        const userData = await supabaseService.saveUserAfterGoogleAuth({
-          email: this.currentUser.email,
-          name: this.currentUser.name,
-          accessToken: this.accessToken,
-          refreshToken: refreshToken,
-          clientId: this.clientId
-          // Note: clientSecret should NOT be stored from client-side for security
-        });
-        console.log('✅ User data saved to Supabase:', userData.id);
-        
-        // Update client credentials via Netlify function (server-side)
-        try {
-          console.log('🔧 Calling Netlify function to update client credentials...');
-          const response = await fetch('/.netlify/functions/update-user-credentials', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              userEmail: this.currentUser.email,
-              clientId: this.clientId
-            })
-          });
-          
-          const responseData = await response.json();
-          console.log('🔧 Netlify function response:', responseData);
-          
-          if (response.ok) {
-            console.log('✅ Client credentials updated via Netlify function:', responseData.message);
-          } else {
-            console.warn('⚠️ Failed to update client credentials:', responseData);
-          }
-        } catch (error) {
-          console.warn('⚠️ Error calling Netlify function:', error);
-        }
-        
-        // Log successful OAuth
-        await loggingService.logGoogleOAuthSuccess(userData.id, this.currentUser.email, {
-          email: this.currentUser.email,
-          name: this.currentUser.name,
-          refreshToken: !!refreshToken
-        });
-        
-        // Store user data in localStorage for immediate access
-        localStorage.setItem('user_data', JSON.stringify({
-          id: userData.id,
-          email: userData.email,
-          phone_number: userData.phone_number,
-          has_phone: !!(userData.phone_number && userData.phone_number.trim() !== '')
-        }));
-      } catch (error) {
-        console.error('❌ Failed to save user to Supabase:', error);
-        await loggingService.logGoogleOAuthError(this.currentUser?.email, error instanceof Error ? error.message : 'Unknown error');
-        // Don't fail the auth flow, just log the error
-      }
+      // Store auth data temporarily in sessionStorage for later Supabase creation
+      const tempAuthData = {
+        email: this.currentUser.email,
+        name: this.currentUser.name,
+        accessToken: this.accessToken,
+        refreshToken: refreshToken,
+        clientId: this.clientId,
+        clientSecret: import.meta.env.VITE_GOOGLE_CLIENT_SECRET
+      };
+      
+      sessionStorage.setItem('temp_google_auth', JSON.stringify(tempAuthData));
+      console.log('✅ Google auth data stored temporarily, will create Supabase record after phone collection');
+      
+      // Log successful OAuth (but not full record creation yet)
+      await loggingService.logGoogleOAuthSuccess('temp_user', this.currentUser.email, {
+        email: this.currentUser.email,
+        name: this.currentUser.name,
+        refreshToken: !!refreshToken
+      });
       
       console.log('✅ Google OAuth successful');
       
