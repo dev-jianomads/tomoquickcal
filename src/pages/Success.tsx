@@ -114,7 +114,7 @@ const Success: React.FC = () => {
               <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
                 <Calendar className="w-4 h-4 text-green-600" />
               </div>
-              <span className="text-gray-800 font-medium">Google Calendar and Contacts connected</span>
+              <span className="text-gray-800 font-medium text-left">Google Calendar and Contacts connected</span>
             </div>
             
             <div className="flex items-center space-x-3 p-3 bg-white/60 rounded-lg border border-white/40">
