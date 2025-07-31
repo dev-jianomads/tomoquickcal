@@ -120,16 +120,14 @@ const Welcome: React.FC = () => {
             <div className="flex items-start space-x-3">
               <Calendar className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
               <div>
-                <p className="font-medium text-gray-900">Create calendar events</p>
-                <p className="text-sm text-gray-600">Add meetings and appointments to your calendar</p>
+                <p className="font-medium text-gray-900">Add events to your calendar</p>
               </div>
             </div>
             
             <div className="flex items-start space-x-3">
               <Users className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
               <div>
-                <p className="font-medium text-gray-900">Invite attendees</p>
-                <p className="text-sm text-gray-600">Send calendar invites to meeting participants</p>
+                <p className="font-medium text-gray-900">Send invites to your events</p>
               </div>
             </div>
             
@@ -137,23 +135,6 @@ const Welcome: React.FC = () => {
               <Users className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
               <div>
                 <p className="font-medium text-gray-900">Find and invite people from your Google Contacts</p>
-                <p className="text-sm text-gray-600">Contact information is used only for meeting invitations</p>
-              </div>
-            </div>
-            
-            <div className="flex items-start space-x-3">
-              <MessageCircle className="w-5 h-5 text-purple-600 mt-0.5 flex-shrink-0" />
-              <div>
-                <p className="font-medium text-gray-900">Create instant Google Meet calls</p>
-                <p className="text-sm text-gray-600">Generate Meet links for quick huddles without calendar events</p>
-              </div>
-            </div>
-            
-            <div className="flex items-start space-x-3">
-              <Clock className="w-5 h-5 text-purple-600 mt-0.5 flex-shrink-0" />
-              <div>
-                <p className="font-medium text-gray-900">Set reminders</p>
-                <p className="text-sm text-gray-600">Configure notifications for your events</p>
               </div>
             </div>
           </div>
