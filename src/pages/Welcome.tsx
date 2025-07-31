@@ -89,12 +89,10 @@ const Welcome: React.FC = () => {
             </div>
             
             <div className="flex items-center space-x-2">
-              <div className="flex items-center space-x-1">
-                <div className="w-6 h-0.5 bg-gradient-to-r from-indigo-400 to-blue-500"></div>
-                <div className="text-blue-500 text-xs">←</div>
+              <div className="flex items-center space-x-3">
+                <div className="text-blue-500 text-lg">←</div>
                 <div className="w-1 h-1 bg-blue-500 rounded-full"></div>
-                <div className="text-blue-500 text-xs">→</div>
-                <div className="w-6 h-0.5 bg-gradient-to-r from-blue-500 to-blue-600"></div>
+                <div className="text-blue-500 text-lg">→</div>
               </div>
             </div>
             
