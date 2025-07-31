@@ -224,7 +224,7 @@ const ReconnectCalendar: React.FC = () => {
                   Your privacy is protected
                 </p>
                 <p className="text-green-700 text-sm">
-                  We only create events you explicitly request through Signal messages. 
+                  We only create events you explicitly request through Telegram messages. 
                   We never read your existing calendar or personal information. Your Telegram connection and phone number remain unchanged.
                 </p>
               </div>

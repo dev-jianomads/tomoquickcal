@@ -72,7 +72,7 @@ const Success: React.FC = () => {
       
       // Show a more prominent message
       setTimeout(() => {
-        alert('Setup complete! You can now close this tab and start using Tomo QuickCal through Signal.');
+        alert('Setup complete! You can now close this tab and start using Tomo QuickCal through Telegram.');
       }, 500);
     }
   };

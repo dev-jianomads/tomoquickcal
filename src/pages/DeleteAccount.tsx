@@ -335,7 +335,7 @@ const DeleteAccount: React.FC = () => {
               <div className="flex items-start space-x-3">
                 <MessageCircle className="w-5 h-5 text-purple-600 mt-0.5 flex-shrink-0" />
                 <div>
-                  <p className="font-medium text-gray-900">Signal bot functionality</p>
+                  <p className="font-medium text-gray-900">Telegram bot functionality</p>
                   <p className="text-sm text-gray-600">Tomo will no longer respond to your Telegram messages (chat history remains)</p>
                 </div>
               </div>
