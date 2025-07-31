@@ -94,7 +94,7 @@ const Welcome: React.FC = () => {
               Tomo QuickCal
             </h1>
             <p className="text-gray-600 text-lg leading-relaxed max-w-md mx-auto">
-              Schedule meetings effortlessly through Signal messages. Let's get you set up in just a few steps.
+              Schedule meetings effortlessly through Telegram messages. Let's get you set up in just a few steps.
             </p>
           </div>
         </div>
@@ -153,7 +153,7 @@ const Welcome: React.FC = () => {
                 Your privacy is protected
               </p>
               <p className="text-green-700 text-sm">
-                We only create events you explicitly request through Signal messages. 
+                We only create events you explicitly request through Telegram messages. 
                 We never read your existing calendar or personal information.
               </p>
             </div>

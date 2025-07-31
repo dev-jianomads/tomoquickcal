@@ -336,7 +336,7 @@ const DeleteAccount: React.FC = () => {
                 <MessageCircle className="w-5 h-5 text-purple-600 mt-0.5 flex-shrink-0" />
                 <div>
                   <p className="font-medium text-gray-900">Signal bot functionality</p>
-                  <p className="text-sm text-gray-600">Tomo will no longer respond to your Signal messages (chat history remains)</p>
+                  <p className="text-sm text-gray-600">Tomo will no longer respond to your Telegram messages (chat history remains)</p>
                 </div>
               </div>
             </div>
@@ -347,7 +347,7 @@ const DeleteAccount: React.FC = () => {
             <ul className="text-sm text-gray-600 space-y-1">
               <li>• Your existing Google Calendar events (they remain untouched)</li>
               <li>• Your Google account and other Google services</li>
-              <li>• Your Signal account and chat history with Tomo</li>
+              <li>• Your Telegram account and chat history with Tomo</li>
             </ul>
           </div>
 

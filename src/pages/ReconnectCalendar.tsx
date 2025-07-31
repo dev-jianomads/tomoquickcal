@@ -225,7 +225,7 @@ const ReconnectCalendar: React.FC = () => {
                 </p>
                 <p className="text-green-700 text-sm">
                   We only create events you explicitly request through Signal messages. 
-                  We never read your existing calendar or personal information. Your Signal connection and phone number remain unchanged.
+                  We never read your existing calendar or personal information. Your Telegram connection and phone number remain unchanged.
                 </p>
               </div>
             </div>
@@ -250,7 +250,7 @@ const ReconnectCalendar: React.FC = () => {
               </p>
               <p className="text-blue-700 text-sm">
                 This process takes just 30 seconds. Once reconnected, your Tomo QuickCal bot 
-                will immediately resume creating calendar events and finding contacts from your Signal messages.
+                will immediately resume creating calendar events and finding contacts from your Telegram messages.
               </p>
             </div>
           </div>
