@@ -539,7 +539,6 @@ const ConnectBot: React.FC = () => {
                       value={countryCode}
                       onChange={(e) => setCountryCode(e.target.value)}
                       className="appearance-none bg-white border border-gray-300 rounded-lg px-3 py-3 pr-8 text-base font-mono focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent cursor-pointer w-full sm:w-auto min-w-[120px]"
-                      className="appearance-none bg-white border border-gray-300 rounded-lg px-3 py-3 pr-8 text-base font-mono focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent cursor-pointer min-w-0"
                     >
                       {countryCodes.map((country) => (
                         <option key={country.code} value={country.code}>

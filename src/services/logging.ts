@@ -188,7 +188,7 @@ export class LoggingService {
       userEmail,
       eventData: {
         google_calendar_connected: setupData.gcalLinked,
-        telegram_connected: setupData.signalLinked, // Keep field name for compatibility
+        telegram_connected: setupData.telegramLinked,
         phone_number: setupData.phoneNumber
       }
     });

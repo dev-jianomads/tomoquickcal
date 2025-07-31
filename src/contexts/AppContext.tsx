@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 
 interface AppData {
-  signalLinked: boolean;
+  telegramLinked: boolean;
   gcalLinked: boolean;
   proactiveScheduling?: boolean;
   userEmail?: string;
@@ -29,7 +29,7 @@ interface AppProviderProps {
 
 export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   const [appData, setAppData] = useState<AppData>({
-    signalLinked: false,
+    telegramLinked: false,
     gcalLinked: false,
     proactiveScheduling: false,
   });
