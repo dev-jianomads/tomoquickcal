@@ -105,7 +105,7 @@ const Welcome: React.FC = () => {
           
           <div className="space-y-3">
             <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
-              Tomo QuickCal
+              Hello Tomo QuickCal
             </h1>
             <p className="text-gray-600 text-lg leading-relaxed max-w-md mx-auto">
               Schedule meetings effortlessly through Telegram messages.
