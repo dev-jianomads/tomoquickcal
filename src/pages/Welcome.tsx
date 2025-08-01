@@ -155,8 +155,8 @@ const Welcome: React.FC = () => {
                 Your privacy is protected
               </p>
               <p className="text-green-700 text-sm">
-                We only create events you explicitly request through Telegram messages. 
-                We never read your existing calendar or personal information.
+                Tomo only creates and edits calendar events that you explicitly request through Telegram messages. 
+                We never read your existing calendar events or access your personal information beyond what's needed for scheduling.
               </p>
             </div>
           </div>
