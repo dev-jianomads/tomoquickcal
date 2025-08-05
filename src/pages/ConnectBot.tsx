@@ -130,7 +130,7 @@ const ConnectBot: React.FC = () => {
     } else {
       setIsCheckingAuth(false);
     }
-  }, [isSignedIn, isInitialized, user, appData.gcalLinked, appData.userEmail, navigate]);
+  }, [isSignedIn, isInitialized, user, appData.gcalLinked, appData.userEmail, navigate, setAppData]);
 
   // Show loading state while checking authentication
   if (isCheckingAuth) {
@@ -391,6 +391,8 @@ const ConnectBot: React.FC = () => {
         console.warn('Failed to log local storage check:', logError);
       }
       
+      let tempAuthData;
+      
       if (!tempAuthDataStr) {
         console.error('❌ No temporary auth data found');
         console.error('❌ LocalStorage contents:', {
@@ -471,30 +473,9 @@ const ConnectBot: React.FC = () => {
           return;
         }
       } else {
-        const tempAuthData = JSON.parse(tempAuthDataStr);
+        tempAuthData = JSON.parse(tempAuthDataStr);
       }
-        // Log missing temp auth data
-        try {
-          await loggingService.log('phone_number_entered', {
-            userEmail,
-            success: false,
-            errorMessage: 'No temporary auth data found',
-            eventData: {
-              missing_temp_auth: true,
-              session_storage_keys: Object.keys(sessionStorage),
-              local_storage_keys: Object.keys(localStorage)
-            }
-          });
-        } catch (logError) {
-          console.warn('Failed to log missing auth data:', logError);
-        }
-        
-        setError('Session expired. Please reconnect Google Calendar.');
-        setTimeout(() => {
-          navigate('/welcome');
-        }, 2000);
-        return;
-      }
+      
       console.log('💾 Parsed temporary auth data:', {
         email: tempAuthData.email,
         hasAccessToken: !!tempAuthData.accessToken,
@@ -921,6 +902,12 @@ const ConnectBot: React.FC = () => {
                 )}
               </div>
             </div>
+
+            {error && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                <p className="text-red-600 text-sm">{error}</p>
+              </div>
+            )}
 
             <div className="pt-2">
               <Button type="submit" disabled={isSubmitting || !phoneNumber.trim()}>
