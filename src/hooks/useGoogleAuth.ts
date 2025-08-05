@@ -7,6 +7,7 @@ export const useGoogleAuth = () => {
   const [error, setError] = useState<string | null>(null);
   const [user, setUser] = useState<any>(null);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [showCheckAgain, setShowCheckAgain] = useState(false);
 
   useEffect(() => {
     const checkAuthStatus = async () => {
@@ -85,12 +86,52 @@ export const useGoogleAuth = () => {
       }
       
       setError(errorMessage);
+      setShowCheckAgain(true);
       return false;
     } finally {
       setIsLoading(false);
     }
   };
 
+  const checkAgain = async () => {
+    setError(null);
+    setShowCheckAgain(false);
+    setIsLoading(true);
+    
+    try {
+      console.log('🔄 Checking for completed OAuth...');
+      
+      // Re-initialize to check for stored tokens
+      await googleAuthService.initialize();
+      const currentUser = googleAuthService.getCurrentUser();
+      const isCurrentlySignedIn = googleAuthService.isSignedIn();
+      
+      console.log('🔄 Check again result:', {
+        isCurrentlySignedIn,
+        hasCurrentUser: !!currentUser,
+        userEmail: currentUser?.email
+      });
+      
+      if (isCurrentlySignedIn && currentUser) {
+        console.log('✅ OAuth was completed! Updating state...');
+        setIsSignedIn(true);
+        setUser(currentUser);
+        return true;
+      } else {
+        console.log('❌ OAuth still not completed');
+        setError('OAuth not completed yet. Please try connecting again.');
+        setShowCheckAgain(true);
+        return false;
+      }
+    } catch (error) {
+      console.error('Error checking OAuth status:', error);
+      setError('Error checking authentication status. Please try again.');
+      setShowCheckAgain(true);
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  };
   const signOut = async () => {
     setIsLoading(true);
     
@@ -129,6 +170,8 @@ export const useGoogleAuth = () => {
     user,
     signIn,
     signOut,
-    createEvent
+    createEvent,
+    checkAgain,
+    showCheckAgain
   };
 };

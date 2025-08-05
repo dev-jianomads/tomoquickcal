@@ -8,7 +8,7 @@ import { useApp } from '../contexts/AppContext';
 
 const Welcome: React.FC = () => {
   const navigate = useNavigate();
-  const { signIn, isLoading, error, isSignedIn, isInitialized } = useGoogleAuth();
+  const { signIn, isLoading, error, isSignedIn, isInitialized, checkAgain, showCheckAgain } = useGoogleAuth();
   const { setAppData } = useApp();
   const [isCheckingAuth, setIsCheckingAuth] = React.useState(true);
 
@@ -79,6 +79,14 @@ const Welcome: React.FC = () => {
     }
   };
 
+  const handleCheckAgain = async () => {
+    console.log('Welcome: Check Again button clicked');
+    const success = await checkAgain();
+    if (success) {
+      console.log('Welcome: Check again successful, navigating to connect-bot');
+      navigate('/connect-bot');
+    }
+  };
   return (
     <PageContainer>
       <div className="text-center space-y-8">
@@ -169,6 +177,20 @@ const Welcome: React.FC = () => {
               <div className="mt-2 text-xs text-red-500 text-center">
                 <p className="font-medium">Safari users:</p>
                 <p>Settings → Safari → Privacy & Security → Turn OFF "Prevent Cross-Site Tracking"</p>
+              </div>
+            )}
+            {showCheckAgain && (
+              <div className="mt-3 pt-3 border-t border-red-200">
+                <button
+                  onClick={handleCheckAgain}
+                  disabled={isLoading}
+                  className="w-full px-4 py-2 text-sm font-medium text-red-700 bg-red-100 border border-red-300 rounded-md hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  {isLoading ? 'Checking...' : 'Check Again'}
+                </button>
+                <p className="mt-1 text-xs text-red-600 text-center">
+                  Click if you completed authentication in another tab
+                </p>
               </div>
             )}
           </div>
