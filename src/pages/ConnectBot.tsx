@@ -346,13 +346,31 @@ const ConnectBot: React.FC = () => {
       // Complete setup successful
       console.log('✅ Complete user setup successful, SMS/email will be sent by backend');
       
+      // Log successful completion with more details
+      console.log('✅ User data saved:', {
+        userId: userData.id,
+        email: userData.email,
+        hasPhoneNumber: !!userData.phone_number,
+        phoneNumberLength: userData.phone_number?.length || 0
+      });
+      
       // Show loading state briefly then navigate to success
-      setTimeout(() => {
+      console.log('🔄 Navigating to success page in 1.5 seconds...');
+      const timeoutId = setTimeout(() => {
+        console.log('🔄 Executing navigation to /success');
         navigate('/success');
       }, 1500);
       
+      // Also add immediate navigation option for debugging
+      console.log('🔄 You can also navigate immediately by uncommenting the next line');
+      // navigate('/success'); // Uncomment this line to skip the delay
+      
     } catch (err) {
       console.error('Failed to create/update user record:', err);
+      console.error('Error details:', {
+        message: err instanceof Error ? err.message : 'Unknown error',
+        stack: err instanceof Error ? err.stack : undefined
+      });
       setError('Failed to complete setup. Please try again.');
     } finally {
       setIsSubmitting(false);

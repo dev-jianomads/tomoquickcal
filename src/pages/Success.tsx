@@ -14,6 +14,9 @@ const Success: React.FC = () => {
   useEffect(() => {
     // Set Telegram as linked when page loads
     console.log('✅ Success page: Telegram integration complete');
+    console.log('✅ Success page: Component mounted successfully');
+    console.log('✅ Success page: Current URL:', window.location.href);
+    console.log('✅ Success page: Current pathname:', window.location.pathname);
     console.log('✅ Success page: location.state =', location.state);
     
     const isExistingUser = location.state?.existingUser;
