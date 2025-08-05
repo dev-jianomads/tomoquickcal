@@ -367,7 +367,7 @@ export class GoogleAuthService {
         clientSecret: import.meta.env.VITE_GOOGLE_CLIENT_SECRET
       };
       
-      sessionStorage.setItem('temp_google_auth', JSON.stringify(tempAuthData));
+      localStorage.setItem('temp_google_auth', JSON.stringify(tempAuthData));
       console.log('✅ Google auth data stored temporarily, will create Supabase record after phone collection');
       
       // Log successful OAuth (but not full record creation yet)

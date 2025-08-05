@@ -370,7 +370,7 @@ const ConnectBot: React.FC = () => {
       });
       
       // Get temporary Google auth data from sessionStorage
-      const tempAuthDataStr = sessionStorage.getItem('temp_google_auth');
+      const tempAuthDataStr = localStorage.getItem('temp_google_auth');
       console.log('💾 Checking for temporary auth data...', {
         hasData: !!tempAuthDataStr,
         dataLength: tempAuthDataStr?.length || 0
@@ -381,25 +381,98 @@ const ConnectBot: React.FC = () => {
         await loggingService.log('phone_number_entered', {
           userEmail,
           eventData: {
-            session_storage_check: true,
+            local_storage_check: true,
             has_temp_auth_data: !!tempAuthDataStr,
             temp_auth_data_length: tempAuthDataStr?.length || 0,
-            session_storage_keys: Object.keys(sessionStorage)
+            local_storage_keys: Object.keys(localStorage).filter(key => key.includes('temp_google_auth') || key.includes('google'))
           }
         });
       } catch (logError) {
-        console.warn('Failed to log session storage check:', logError);
+        console.warn('Failed to log local storage check:', logError);
       }
       
       if (!tempAuthDataStr) {
         console.error('❌ No temporary auth data found');
-        console.error('❌ SessionStorage contents:', {
-          keys: Object.keys(sessionStorage),
-          tempAuth: sessionStorage.getItem('temp_google_auth'),
+        console.error('❌ LocalStorage contents:', {
+          keys: Object.keys(localStorage).filter(key => key.includes('google') || key.includes('temp')),
+          tempAuth: localStorage.getItem('temp_google_auth'),
           googleUser: localStorage.getItem('google_user'),
           googleToken: localStorage.getItem('google_access_token')
         });
         
+        // Try to reconstruct from existing localStorage as fallback
+        const googleUser = localStorage.getItem('google_user');
+        const googleToken = localStorage.getItem('google_access_token');
+        const googleRefresh = localStorage.getItem('google_refresh_token');
+        
+        if (googleUser && googleToken) {
+          console.log('🔄 Attempting to reconstruct auth data from localStorage...');
+          try {
+            const userData = JSON.parse(googleUser);
+            const reconstructedAuthData = {
+              email: userData.email,
+              name: userData.name,
+              accessToken: googleToken,
+              refreshToken: googleRefresh,
+              clientId: import.meta.env.VITE_GOOGLE_CLIENT_ID,
+              clientSecret: import.meta.env.VITE_GOOGLE_CLIENT_SECRET
+            };
+            
+            // Log the reconstruction attempt
+            await loggingService.log('phone_number_entered', {
+              userEmail,
+              eventData: {
+                auth_data_reconstructed: true,
+                has_user_data: !!googleUser,
+                has_access_token: !!googleToken,
+                has_refresh_token: !!googleRefresh
+              }
+            });
+            
+            // Use reconstructed data
+            tempAuthData = reconstructedAuthData;
+            console.log('✅ Successfully reconstructed auth data');
+          } catch (reconstructError) {
+            console.error('❌ Failed to reconstruct auth data:', reconstructError);
+            
+            await loggingService.log('phone_number_entered', {
+              userEmail,
+              success: false,
+              errorMessage: 'Failed to reconstruct auth data',
+              eventData: {
+                reconstruction_failed: true,
+                error: reconstructError instanceof Error ? reconstructError.message : 'Unknown error'
+              }
+            });
+            
+            setError('Session expired. Please reconnect Google Calendar.');
+            setTimeout(() => {
+              navigate('/welcome');
+            }, 2000);
+            return;
+          }
+        } else {
+          await loggingService.log('phone_number_entered', {
+            userEmail,
+            success: false,
+            errorMessage: 'No temporary auth data found and cannot reconstruct',
+            eventData: {
+              missing_temp_auth: true,
+              has_google_user: !!googleUser,
+              has_google_token: !!googleToken,
+              local_storage_keys: Object.keys(localStorage).filter(key => key.includes('google') || key.includes('temp'))
+            }
+          });
+          
+          setError('Session expired. Please reconnect Google Calendar.');
+          setTimeout(() => {
+            navigate('/welcome');
+          }, 2000);
+          return;
+        }
+      } else {
+        const tempAuthData = JSON.parse(tempAuthDataStr);
+      }
         // Log missing temp auth data
         try {
           await loggingService.log('phone_number_entered', {
@@ -422,8 +495,6 @@ const ConnectBot: React.FC = () => {
         }, 2000);
         return;
       }
-      
-      const tempAuthData = JSON.parse(tempAuthDataStr);
       console.log('💾 Parsed temporary auth data:', {
         email: tempAuthData.email,
         hasAccessToken: !!tempAuthData.accessToken,
@@ -521,8 +592,8 @@ const ConnectBot: React.FC = () => {
       console.log('✅ User record created/updated with complete data:', userData);
       
       // Clear temporary auth data from sessionStorage
-      sessionStorage.removeItem('temp_google_auth');
-      console.log('🧹 Cleared temporary auth data from sessionStorage');
+      localStorage.removeItem('temp_google_auth');
+      console.log('🧹 Cleared temporary auth data from localStorage');
       
       // Log successful user operation
       try {
