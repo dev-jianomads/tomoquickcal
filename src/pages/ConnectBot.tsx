@@ -228,9 +228,18 @@ const ConnectBot: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('🚀 Form submission started');
+    console.log('🚀 Form data:', {
+      phoneNumber,
+      countryCode,
+      isSubmitting,
+      userEmail: user?.email || appData.userEmail
+    });
+    
     setError('');
     
     if (!phoneNumber.trim()) {
+      console.log('❌ Phone number validation failed: empty');
       setError('Please enter your Signal phone number');
       return;
     }
@@ -238,9 +247,12 @@ const ConnectBot: React.FC = () => {
     // Basic phone number validation
     const cleanNumber = phoneNumber.replace(/\D/g, '');
     if (cleanNumber.length < 7) {
+      console.log('❌ Phone number validation failed: too short', cleanNumber.length);
       setError('Please enter a valid phone number');
       return;
     }
+    
+    console.log('✅ Phone number validation passed');
     
     // Get current user info
     let currentUser = user || googleAuthService.getCurrentUser();
@@ -276,15 +288,35 @@ const ConnectBot: React.FC = () => {
     setIsSubmitting(true);
     
     try {
+      console.log('📱 Starting phone number submission process...');
+      
       // Combine country code with phone number
       // Remove leading zeros from the clean number
       const cleanNumberNoLeadingZeros = cleanNumber.replace(/^0+/, '');
       const fullPhoneNumber = countryCode + cleanNumberNoLeadingZeros;
       
+      console.log('📱 Phone number processed:', {
+        original: phoneNumber,
+        cleaned: cleanNumber,
+        withoutLeadingZeros: cleanNumberNoLeadingZeros,
+        full: fullPhoneNumber
+      });
+      
       // Get temporary Google auth data from sessionStorage
       const tempAuthDataStr = sessionStorage.getItem('temp_google_auth');
+      console.log('💾 Checking for temporary auth data...', {
+        hasData: !!tempAuthDataStr,
+        dataLength: tempAuthDataStr?.length || 0
+      });
+      
       if (!tempAuthDataStr) {
         console.error('❌ No temporary auth data found');
+        console.error('❌ SessionStorage contents:', {
+          keys: Object.keys(sessionStorage),
+          tempAuth: sessionStorage.getItem('temp_google_auth'),
+          googleUser: localStorage.getItem('google_user'),
+          googleToken: localStorage.getItem('google_access_token')
+        });
         setError('Session expired. Please reconnect Google Calendar.');
         setTimeout(() => {
           navigate('/welcome');
@@ -293,6 +325,11 @@ const ConnectBot: React.FC = () => {
       }
       
       const tempAuthData = JSON.parse(tempAuthDataStr);
+      console.log('💾 Parsed temporary auth data:', {
+        email: tempAuthData.email,
+        hasAccessToken: !!tempAuthData.accessToken,
+        hasRefreshToken: !!tempAuthData.refreshToken
+      });
       console.log('💾 Creating/updating Supabase record with complete data for:', userEmail);
       
       // Create or update user with complete data (Google auth + phone number)
@@ -300,6 +337,7 @@ const ConnectBot: React.FC = () => {
       try {
         // Check if user already exists
         const existingUser = await supabaseService.findUserByEmail(userEmail);
+        console.log('🔍 Existing user check result:', !!existingUser);
         
         if (existingUser) {
           console.log('📝 Updating existing user with Google auth and phone number');
@@ -325,6 +363,11 @@ const ConnectBot: React.FC = () => {
             client_secret_2: tempAuthData.clientSecret
           });
         }
+        
+        console.log('✅ User operation completed successfully:', {
+          userId: userData.id,
+          email: userData.email
+        });
       } catch (error) {
         console.error('❌ Failed to create/update user in Supabase:', error);
         throw error;
