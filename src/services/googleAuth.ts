@@ -286,12 +286,12 @@ export class GoogleAuthService {
         }
       }, 1000);
       
-      // Longer timeout for mobile users (3 minutes for Safari)
-      const timeoutDuration = isMobileSafari ? 180000 : (isMobile ? 120000 : 60000);
+      // 3 minutes timeout for all devices
+      const timeoutDuration = 180000;
       setTimeout(() => {
         clearInterval(checkInterval);
         window.removeEventListener('focus', handleFocus);
-        console.log('🔐 OAuth timeout after', timeoutDuration / 1000, 'seconds for', isMobileSafari ? 'Mobile Safari' : (isMobile ? 'Mobile' : 'Desktop'));
+        console.log('🔐 OAuth timeout after', timeoutDuration / 1000, 'seconds');
         resolveOnce(false);
       }, timeoutDuration);
     });
