@@ -236,10 +236,35 @@ const ConnectBot: React.FC = () => {
       userEmail: user?.email || appData.userEmail
     });
     
+    // Log form submission start
+    try {
+      await loggingService.log('phone_number_entered', {
+        userEmail: user?.email || appData.userEmail,
+        eventData: {
+          phone_number_masked: phoneNumber.substring(0, 3) + '***' + phoneNumber.substring(phoneNumber.length - 3),
+          country_code: countryCode,
+          phone_length: phoneNumber.replace(/\D/g, '').length,
+          form_submission_started: true
+        }
+      });
+    } catch (logError) {
+      console.warn('Failed to log phone number entry:', logError);
+    }
+    
     setError('');
     
     if (!phoneNumber.trim()) {
       console.log('❌ Phone number validation failed: empty');
+      try {
+        await loggingService.log('phone_number_entered', {
+          userEmail: user?.email || appData.userEmail,
+          success: false,
+          errorMessage: 'Phone number empty',
+          eventData: { validation_failed: 'empty_phone' }
+        });
+      } catch (logError) {
+        console.warn('Failed to log validation error:', logError);
+      }
       setError('Please enter your Signal phone number');
       return;
     }
@@ -248,11 +273,39 @@ const ConnectBot: React.FC = () => {
     const cleanNumber = phoneNumber.replace(/\D/g, '');
     if (cleanNumber.length < 7) {
       console.log('❌ Phone number validation failed: too short', cleanNumber.length);
+      try {
+        await loggingService.log('phone_number_entered', {
+          userEmail: user?.email || appData.userEmail,
+          success: false,
+          errorMessage: 'Phone number too short',
+          eventData: { 
+            validation_failed: 'too_short',
+            phone_length: cleanNumber.length
+          }
+        });
+      } catch (logError) {
+        console.warn('Failed to log validation error:', logError);
+      }
       setError('Please enter a valid phone number');
       return;
     }
     
     console.log('✅ Phone number validation passed');
+    
+    // Log validation success
+    try {
+      await loggingService.log('phone_number_entered', {
+        userEmail: user?.email || appData.userEmail,
+        eventData: {
+          phone_number_masked: phoneNumber.substring(0, 3) + '***' + phoneNumber.substring(phoneNumber.length - 3),
+          country_code: countryCode,
+          phone_length: cleanNumber.length,
+          validation_passed: true
+        }
+      });
+    } catch (logError) {
+      console.warn('Failed to log validation success:', logError);
+    }
     
     // Get current user info
     let currentUser = user || googleAuthService.getCurrentUser();
@@ -290,6 +343,20 @@ const ConnectBot: React.FC = () => {
     try {
       console.log('📱 Starting phone number submission process...');
       
+      // Log submission process start
+      try {
+        await loggingService.log('phone_number_entered', {
+          userEmail,
+          eventData: {
+            submission_process_started: true,
+            has_current_user: !!currentUser,
+            user_email_source: currentUser?.email ? 'current_user' : 'app_data'
+          }
+        });
+      } catch (logError) {
+        console.warn('Failed to log submission start:', logError);
+      }
+      
       // Combine country code with phone number
       // Remove leading zeros from the clean number
       const cleanNumberNoLeadingZeros = cleanNumber.replace(/^0+/, '');
@@ -309,6 +376,21 @@ const ConnectBot: React.FC = () => {
         dataLength: tempAuthDataStr?.length || 0
       });
       
+      // Log session storage check
+      try {
+        await loggingService.log('phone_number_entered', {
+          userEmail,
+          eventData: {
+            session_storage_check: true,
+            has_temp_auth_data: !!tempAuthDataStr,
+            temp_auth_data_length: tempAuthDataStr?.length || 0,
+            session_storage_keys: Object.keys(sessionStorage)
+          }
+        });
+      } catch (logError) {
+        console.warn('Failed to log session storage check:', logError);
+      }
+      
       if (!tempAuthDataStr) {
         console.error('❌ No temporary auth data found');
         console.error('❌ SessionStorage contents:', {
@@ -317,6 +399,23 @@ const ConnectBot: React.FC = () => {
           googleUser: localStorage.getItem('google_user'),
           googleToken: localStorage.getItem('google_access_token')
         });
+        
+        // Log missing temp auth data
+        try {
+          await loggingService.log('phone_number_entered', {
+            userEmail,
+            success: false,
+            errorMessage: 'No temporary auth data found',
+            eventData: {
+              missing_temp_auth: true,
+              session_storage_keys: Object.keys(sessionStorage),
+              local_storage_keys: Object.keys(localStorage)
+            }
+          });
+        } catch (logError) {
+          console.warn('Failed to log missing auth data:', logError);
+        }
+        
         setError('Session expired. Please reconnect Google Calendar.');
         setTimeout(() => {
           navigate('/welcome');
@@ -332,12 +431,42 @@ const ConnectBot: React.FC = () => {
       });
       console.log('💾 Creating/updating Supabase record with complete data for:', userEmail);
       
+      // Log parsed auth data
+      try {
+        await loggingService.log('phone_number_entered', {
+          userEmail,
+          eventData: {
+            temp_auth_parsed: true,
+            has_access_token: !!tempAuthData.accessToken,
+            has_refresh_token: !!tempAuthData.refreshToken,
+            ready_for_user_creation: true
+          }
+        });
+      } catch (logError) {
+        console.warn('Failed to log parsed auth data:', logError);
+      }
+      
       // Create or update user with complete data (Google auth + phone number)
       let userData;
       try {
         // Check if user already exists
         const existingUser = await supabaseService.findUserByEmail(userEmail);
         console.log('🔍 Existing user check result:', !!existingUser);
+        
+        // Log user lookup result
+        try {
+          await loggingService.log('phone_number_entered', {
+            userEmail,
+            eventData: {
+              user_lookup_completed: true,
+              existing_user_found: !!existingUser,
+              will_update: !!existingUser,
+              will_create: !existingUser
+            }
+          });
+        } catch (logError) {
+          console.warn('Failed to log user lookup:', logError);
+        }
         
         if (existingUser) {
           console.log('📝 Updating existing user with Google auth and phone number');
@@ -370,6 +499,22 @@ const ConnectBot: React.FC = () => {
         });
       } catch (error) {
         console.error('❌ Failed to create/update user in Supabase:', error);
+        
+        // Log Supabase operation failure
+        try {
+          await loggingService.log('phone_number_entered', {
+            userEmail,
+            success: false,
+            errorMessage: `Supabase operation failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+            eventData: {
+              supabase_operation_failed: true,
+              error_type: error instanceof Error ? error.constructor.name : 'Unknown'
+            }
+          });
+        } catch (logError) {
+          console.warn('Failed to log Supabase error:', logError);
+        }
+        
         throw error;
       }
       
@@ -378,6 +523,21 @@ const ConnectBot: React.FC = () => {
       // Clear temporary auth data from sessionStorage
       sessionStorage.removeItem('temp_google_auth');
       console.log('🧹 Cleared temporary auth data from sessionStorage');
+      
+      // Log successful user operation
+      try {
+        await loggingService.log('phone_number_saved', {
+          userId: userData.id,
+          userEmail: userData.email,
+          eventData: {
+            user_operation_successful: true,
+            phone_number_masked: fullPhoneNumber.substring(0, 3) + '***' + fullPhoneNumber.substring(fullPhoneNumber.length - 3),
+            ready_for_navigation: true
+          }
+        });
+      } catch (logError) {
+        console.warn('Failed to log successful operation:', logError);
+      }
       
       // Update app context with user data
       setAppData(prev => ({ 
@@ -414,6 +574,22 @@ const ConnectBot: React.FC = () => {
         message: err instanceof Error ? err.message : 'Unknown error',
         stack: err instanceof Error ? err.stack : undefined
       });
+      
+      // Log overall failure
+      try {
+        await loggingService.log('phone_number_entered', {
+          userEmail: user?.email || appData.userEmail,
+          success: false,
+          errorMessage: `Overall submission failed: ${err instanceof Error ? err.message : 'Unknown error'}`,
+          eventData: {
+            overall_submission_failed: true,
+            error_type: err instanceof Error ? err.constructor.name : 'Unknown'
+          }
+        });
+      } catch (logError) {
+        console.warn('Failed to log overall failure:', logError);
+      }
+      
       setError('Failed to complete setup. Please try again.');
     } finally {
       setIsSubmitting(false);
