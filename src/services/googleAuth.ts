@@ -188,7 +188,7 @@ export class GoogleAuthService {
     const isMobileSafari = isMobile && isSafari;
     
     // Generate OAuth URL
-    const scope = encodeURIComponent('https://www.googleapis.com/auth/calendar.events https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/meetings.space.created https://www.googleapis.com/auth/contacts.readonly https://www.googleapis.com/auth/contacts.other.readonly');
+    const scope = encodeURIComponent('https://www.googleapis.com/auth/calendar.events https://www.googleapis.com/auth/calendar.readonly https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/meetings.space.created https://www.googleapis.com/auth/contacts.readonly https://www.googleapis.com/auth/contacts.other.readonly');
     const state = Math.random().toString(36).substring(2, 15);
     
     const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?` +
