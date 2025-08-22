@@ -198,7 +198,7 @@ export class GoogleAuthService {
       `scope=${scope}&` +
       `state=${state}&` +
       `access_type=offline&` +
-      `prompt=consent&` +
+      `prompt=select_account&` +
       `include_granted_scopes=true`;
     
     console.log('🔐 OAuth URL generated:', authUrl);
