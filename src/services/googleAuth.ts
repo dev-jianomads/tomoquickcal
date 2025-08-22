@@ -299,15 +299,28 @@ export class GoogleAuthService {
 
   public async handleAuthCallback(code: string, state: string): Promise<boolean> {
     try {
-      console.log('🔐 Processing OAuth callback...');
+      console.log('🔐 Processing OAuth callback...', {
+        hasCode: !!code,
+        hasState: !!state,
+        codeLength: code?.length || 0,
+        stateLength: state?.length || 0
+      });
       
       // Verify state
       const storedState = localStorage.getItem('oauth_state');
+      console.log('🔐 State verification:', {
+        receivedState: state,
+        storedState: storedState,
+        statesMatch: state === storedState
+      });
+      
       if (state !== storedState) {
+        console.error('🔐 OAuth state mismatch!', { received: state, stored: storedState });
         throw new Error('Invalid OAuth state');
       }
       
       // Exchange code for tokens
+      console.log('🔐 Exchanging code for tokens...');
       const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
         method: 'POST',
         headers: {
@@ -323,14 +336,28 @@ export class GoogleAuthService {
       });
       
       if (!tokenResponse.ok) {
+        const errorText = await tokenResponse.text();
+        console.error('🔐 Token exchange failed:', {
+          status: tokenResponse.status,
+          statusText: tokenResponse.statusText,
+          error: errorText
+        });
         throw new Error('Failed to exchange code for tokens');
       }
       
       const tokens = await tokenResponse.json();
+      console.log('🔐 Token exchange successful:', {
+        hasAccessToken: !!tokens.access_token,
+        hasRefreshToken: !!tokens.refresh_token,
+        tokenType: tokens.token_type,
+        expiresIn: tokens.expires_in
+      });
+      
       this.accessToken = tokens.access_token;
       const refreshToken = tokens.refresh_token;
       
       // Get user info
+      console.log('🔐 Fetching user info...');
       const userResponse = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
         headers: {
           'Authorization': `Bearer ${this.accessToken}`,
@@ -338,10 +365,23 @@ export class GoogleAuthService {
       });
       
       if (!userResponse.ok) {
+        const errorText = await userResponse.text();
+        console.error('🔐 User info fetch failed:', {
+          status: userResponse.status,
+          statusText: userResponse.statusText,
+          error: errorText
+        });
         throw new Error('Failed to get user info');
       }
       
       const userInfo = await userResponse.json();
+      console.log('🔐 User info received:', {
+        hasId: !!userInfo.id,
+        hasEmail: !!userInfo.email,
+        hasName: !!userInfo.name,
+        email: userInfo.email
+      });
+      
       this.currentUser = {
         id: userInfo.id,
         email: userInfo.email,
@@ -350,12 +390,14 @@ export class GoogleAuthService {
       };
       
       // Store auth data
+      console.log('🔐 Storing auth data in localStorage...');
       localStorage.setItem('google_access_token', this.accessToken);
       localStorage.setItem('google_user', JSON.stringify(this.currentUser));
       if (refreshToken) {
         localStorage.setItem('google_refresh_token', refreshToken);
       }
       localStorage.removeItem('oauth_state');
+      console.log('🔐 Auth data stored successfully');
       
       // Store auth data temporarily in sessionStorage for later Supabase creation
       const tempAuthData = {
@@ -368,24 +410,37 @@ export class GoogleAuthService {
       };
       
       localStorage.setItem('temp_google_auth', JSON.stringify(tempAuthData));
-      console.log('✅ Google auth data stored temporarily, will create Supabase record after phone collection');
+      console.log('✅ Google auth data stored temporarily for Supabase creation');
       
       // Log successful OAuth (but not full record creation yet)
-      await loggingService.logGoogleOAuthSuccess('temp_user', this.currentUser.email, {
-        email: this.currentUser.email,
-        name: this.currentUser.name,
-        refreshToken: !!refreshToken
-      });
+      console.log('🔐 Logging OAuth success...');
+      try {
+        await loggingService.logGoogleOAuthSuccess('temp_user', this.currentUser.email, {
+          email: this.currentUser.email,
+          name: this.currentUser.name,
+          refreshToken: !!refreshToken
+        });
+        console.log('✅ OAuth success logged to Supabase');
+      } catch (logError) {
+        console.error('❌ Failed to log OAuth success:', logError);
+        // Don't fail the OAuth flow if logging fails
+      }
       
       console.log('✅ Google OAuth successful');
       
       return true;
     } catch (error) {
       console.error('OAuth callback error:', error);
+      console.error('OAuth callback error details:', {
+        message: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined
+      });
+      
       try {
         await loggingService.logGoogleOAuthError(undefined, error instanceof Error ? error.message : 'OAuth callback failed');
+        console.log('✅ OAuth error logged to Supabase');
       } catch (logError) {
-        console.warn('Failed to log OAuth error:', logError);
+        console.error('❌ Failed to log OAuth error:', logError);
       }
       this.clearStoredAuth();
       return false;

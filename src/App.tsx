@@ -39,18 +39,38 @@ const OAuthSuccessHandler: React.FC = () => {
   React.useEffect(() => {
     const handleOAuthSuccess = async () => {
       try {
-        console.log('🔄 OAuthSuccessHandler: Processing OAuth callback...');
+        console.log('🔄 OAuthSuccessHandler: Starting OAuth callback processing...');
+        console.log('🔄 OAuthSuccessHandler: Current URL:', window.location.href);
+        console.log('🔄 OAuthSuccessHandler: URL search params:', window.location.search);
         setIsProcessing(true);
         
         // Get URL parameters
         const urlParams = new URLSearchParams(window.location.search);
         const code = urlParams.get('code');
         const state = urlParams.get('state');
+        const error = urlParams.get('error');
+        
+        console.log('🔄 OAuthSuccessHandler: URL parameters:', {
+          hasCode: !!code,
+          hasState: !!state,
+          hasError: !!error,
+          codeLength: code?.length || 0,
+          stateLength: state?.length || 0,
+          error: error
+        });
+        
+        if (error) {
+          console.error('🔄 OAuthSuccessHandler: OAuth error in URL:', error);
+          throw new Error(`OAuth error: ${error}`);
+        }
         
         if (code && state) {
+          console.log('🔄 OAuthSuccessHandler: Valid code and state found, processing...');
           // Import and handle OAuth callback
           const { default: googleAuthService } = await import('./services/googleAuth');
+          console.log('🔄 OAuthSuccessHandler: GoogleAuthService imported, calling handleAuthCallback...');
           const success = await googleAuthService.handleAuthCallback(code, state);
+          console.log('🔄 OAuthSuccessHandler: handleAuthCallback result:', success);
           
           if (success) {
             console.log('🔄 OAuthSuccessHandler: OAuth successful, navigating to /connect-bot');
