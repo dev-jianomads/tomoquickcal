@@ -412,6 +412,29 @@ export class GoogleAuthService {
       localStorage.setItem('temp_google_auth', JSON.stringify(tempAuthData));
       console.log('✅ Google auth data stored temporarily for Supabase creation');
       
+      // For existing users: Update their tokens in Supabase immediately
+      try {
+        console.log('🔄 Checking if user exists in Supabase for token update...');
+        const { supabaseService } = await import('./supabase');
+        const existingUser = await supabaseService.findUserByEmail(this.currentUser.email);
+        
+        if (existingUser) {
+          console.log('👤 Existing user found, updating tokens in Supabase...');
+          await supabaseService.updateUser(existingUser.id, {
+            access_token_2: this.accessToken,
+            refresh_token_2: refreshToken,
+            client_id_2: this.clientId,
+            client_secret_2: import.meta.env.VITE_GOOGLE_CLIENT_SECRET
+          });
+          console.log('✅ Existing user tokens updated in Supabase');
+        } else {
+          console.log('👤 New user - tokens will be saved during ConnectBot flow');
+        }
+      } catch (error) {
+        console.error('⚠️ Failed to update existing user tokens (non-critical):', error);
+        // Don't fail the OAuth flow if token update fails
+      }
+      
       // Log successful OAuth (but not full record creation yet)
       console.log('🔐 Logging OAuth success...');
       try {
