@@ -336,7 +336,7 @@ const Welcome: React.FC = () => {
       </div>
       </PageContainer>
 
-      {/* Debug UI - Remove this after testing */}
+      {/* Debug UI - Hidden but preserved for later use
       <div className="fixed bottom-4 right-4 bg-black bg-opacity-75 text-white text-xs p-3 rounded-lg max-w-xs">
         <div className="font-bold mb-2">Debug Info:</div>
         <div>isTelegramBrowser: {isTelegramBrowser.toString()}</div>
@@ -351,6 +351,7 @@ const Welcome: React.FC = () => {
         <div>hash: {window.location.hash || 'none'}</div>
         <div>userAgent: {navigator.userAgent.substring(0, 50)}...</div>
       </div>
+      */}
     </>
   );
 };
