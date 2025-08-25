@@ -234,10 +234,7 @@ const Welcome: React.FC = () => {
                 <ExternalLink className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
                 <div className="space-y-2">
                   <p className="text-blue-800 text-sm font-medium">
-                    Open in phone's default browser (Chrome / Safari)
-                  </p>
-                  <p className="text-blue-700 text-sm">
-                    Tap the menu (⋯) in the top right corner, then select "Open in Browser"
+                    Tap the menu (⋯) then "Open in Browser"
                   </p>
                 </div>
               </div>
@@ -252,7 +249,7 @@ const Welcome: React.FC = () => {
                     Why do I need to switch browsers?
                   </p>
                   <p className="text-yellow-700 text-sm">
-                    Telegram's browser doesn't support Google authentication. This is a security feature to protect your Google account.
+                    Telegram's browser doesn't support Google authentication.
                   </p>
                 </div>
               </div>
