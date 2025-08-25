@@ -27,18 +27,7 @@ const Welcome: React.FC = () => {
   const isPossibleInAppBrowser = isMobileSafari && hasNoReferrer && isStandaloneSafari;
   
   const isTelegramBrowser = isTgMiniApp || isTelegramUA || isPossibleInAppBrowser;
-  const currentUrl = window.location.href;
 
-  console.log('🔍 Telegram Detection:', {
-    isTgMiniApp,
-    isTelegramUA,
-    isTelegramBrowser,
-    userAgent: navigator.userAgent,
-    referrer: document.referrer
-  });
-
-  // Visual debugging state
-  const [showDebug, setShowDebug] = React.useState(false);
 
   React.useEffect(() => {
     const checkAuthState = async () => {
@@ -282,36 +271,6 @@ const Welcome: React.FC = () => {
           // Telegram Browser - Show Instructions UI
           <div className="space-y-4">
             {/* Primary Method - Menu Option */}
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-center">
-              <div className="flex items-center justify-center space-x-2 mb-2">
-                <ExternalLink className="w-4 h-4 text-blue-600" />
-                <span className="text-blue-800 text-sm font-medium">Open in Browser</span>
-              </div>
-              <p className="text-blue-700 text-sm">
-                Tap the <strong>⋯</strong> menu → <strong>"Open in Browser"</strong>
-              </p>
-            </div>
-
-            {/* Explanation */}
-            <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 text-center">
-              <div className="flex items-center justify-center space-x-2 mb-1">
-                <AlertTriangle className="w-4 h-4 text-orange-600" />
-                <span className="text-orange-800 text-sm font-medium">Why?</span>
-              </div>
-              <p className="text-orange-700 text-sm">
-                Telegram's browser doesn't support Google authentication.
-              </p>
-            </div>
-          </div>
-        ) : (
-          // Normal browsers - Show Connect Button
-          <div className="pt-4">
-            <Button onClick={handleConnectGoogle} disabled={isLoading || isCheckingAuth}>
-              {isLoading ? 'Connecting...' : 'Connect Google Calendar and Contacts'}
-            </Button>
-          </div>
-        )}
-      </div>
     </PageContainer>
   );
 };
