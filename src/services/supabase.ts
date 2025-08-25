@@ -45,8 +45,7 @@ export interface UserData {
   refresh_token_2?: string;
   client_id_2?: string;
   client_secret_2?: string;
-  client_id_2?: string;
-  client_secret_2?: string;
+  granted_scopes?: any;
   created_at?: string;
 }
 

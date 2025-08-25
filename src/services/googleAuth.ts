@@ -356,6 +356,37 @@ export class GoogleAuthService {
       this.accessToken = tokens.access_token;
       const refreshToken = tokens.refresh_token;
       
+      // Check what scopes were actually granted by the user
+      console.log('🔐 Checking granted scopes...');
+      let grantedScopes = null;
+      try {
+        const scopeResponse = await fetch(`https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=${this.accessToken}`);
+        if (scopeResponse.ok) {
+          const scopeInfo = await scopeResponse.json();
+          const scopeString = scopeInfo.scope || '';
+          console.log('🔐 Raw granted scopes:', scopeString);
+          
+          // Parse and normalize scopes into structured object
+          grantedScopes = {
+            calendar_events: scopeString.includes('https://www.googleapis.com/auth/calendar.events'),
+            calendar_readonly: scopeString.includes('https://www.googleapis.com/auth/calendar.readonly'),
+            userinfo_profile: scopeString.includes('https://www.googleapis.com/auth/userinfo.profile'),
+            userinfo_email: scopeString.includes('https://www.googleapis.com/auth/userinfo.email'),
+            meetings_space: scopeString.includes('https://www.googleapis.com/auth/meetings.space.created'),
+            contacts_readonly: scopeString.includes('https://www.googleapis.com/auth/contacts.readonly'),
+            contacts_other_readonly: scopeString.includes('https://www.googleapis.com/auth/contacts.other.readonly'),
+            last_checked: new Date().toISOString(),
+            raw_scope_string: scopeString
+          };
+          
+          console.log('🔐 Parsed granted scopes:', grantedScopes);
+        } else {
+          console.warn('🔐 Failed to fetch scope info:', scopeResponse.status);
+        }
+      } catch (error) {
+        console.error('🔐 Error checking granted scopes:', error);
+      }
+      
       // Get user info
       console.log('🔐 Fetching user info...');
       const userResponse = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
@@ -406,7 +437,8 @@ export class GoogleAuthService {
         accessToken: this.accessToken,
         refreshToken: refreshToken,
         clientId: this.clientId,
-        clientSecret: import.meta.env.VITE_GOOGLE_CLIENT_SECRET
+        clientSecret: import.meta.env.VITE_GOOGLE_CLIENT_SECRET,
+        grantedScopes: grantedScopes
       };
       
       localStorage.setItem('temp_google_auth', JSON.stringify(tempAuthData));
@@ -424,7 +456,8 @@ export class GoogleAuthService {
             access_token_2: this.accessToken,
             refresh_token_2: refreshToken,
             client_id_2: this.clientId,
-            client_secret_2: import.meta.env.VITE_GOOGLE_CLIENT_SECRET
+            client_secret_2: import.meta.env.VITE_GOOGLE_CLIENT_SECRET,
+            granted_scopes: grantedScopes
           });
           console.log('✅ Existing user tokens updated in Supabase');
         } else {

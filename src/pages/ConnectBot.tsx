@@ -529,7 +529,8 @@ const ConnectBot: React.FC = () => {
             access_token_2: tempAuthData.accessToken,
             refresh_token_2: tempAuthData.refreshToken,
             client_id_2: tempAuthData.clientId,
-            client_secret_2: tempAuthData.clientSecret
+            client_secret_2: tempAuthData.clientSecret,
+            granted_scopes: tempAuthData.grantedScopes
           });
         } else {
           console.log('👤 Creating new user with complete data');
@@ -541,7 +542,8 @@ const ConnectBot: React.FC = () => {
             access_token_2: tempAuthData.accessToken,
             refresh_token_2: tempAuthData.refreshToken,
             client_id_2: tempAuthData.clientId,
-            client_secret_2: tempAuthData.clientSecret
+            client_secret_2: tempAuthData.clientSecret,
+            granted_scopes: tempAuthData.grantedScopes
           });
         }
         
