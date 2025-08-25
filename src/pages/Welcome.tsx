@@ -12,6 +12,26 @@ const Welcome: React.FC = () => {
   const { setAppData } = useApp();
   const [isCheckingAuth, setIsCheckingAuth] = React.useState(true);
 
+  // Debug: Log all detection variables
+  console.log('🔍 Telegram Detection Debug:', {
+    userAgent: navigator.userAgent,
+    referrer: document.referrer,
+    windowTelegram: !!(window as any).Telegram,
+    windowTelegramWebApp: !!(window as any).Telegram?.WebApp,
+    locationSearch: window.location.search,
+    locationHref: window.location.href,
+    isTgMiniApp: !!(window as any).Telegram?.WebApp,
+    isTelegramUA: /\bTelegram\b/i.test(navigator.userAgent) || /TgWebView/i.test(navigator.userAgent),
+    referrerIncludesTelegram: document.referrer.includes('t.me') || document.referrer.includes('telegram'),
+    urlHasTgParam: window.location.search.includes('tgWebAppPlatform'),
+    finalResult: !!(window as any).Telegram?.WebApp || 
+                 /\bTelegram\b/i.test(navigator.userAgent) || 
+                 /TgWebView/i.test(navigator.userAgent) ||
+                 document.referrer.includes('t.me') ||
+                 document.referrer.includes('telegram') ||
+                 window.location.search.includes('tgWebAppPlatform')
+  });
+
   // Enhanced Telegram detection
   const isTgMiniApp = !!(window as any).Telegram?.WebApp;
   const isTelegramUA = /\bTelegram\b/i.test(navigator.userAgent) || 
@@ -25,12 +45,12 @@ const Welcome: React.FC = () => {
                            (document.referrer && document.referrer.includes('telegram')) ||
                            window.location.search.includes('tgWebAppPlatform');
 
-  console.log('🔍 Telegram Detection:', {
+  console.log('🔍 Telegram Detection Result:', {
     isTgMiniApp,
     isTelegramUA,
+    referrerIncludesTelegram,
+    urlHasTgParam,
     isTelegramBrowser,
-    userAgent: navigator.userAgent,
-    referrer: document.referrer
   });
 
   React.useEffect(() => {
