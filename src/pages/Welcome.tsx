@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Calendar, MessageCircle, Shield, Clock, Users, Loader2, ExternalLink, Copy, AlertTriangle } from 'lucide-react';
+import { Calendar, MessageCircle, Shield, Clock, Users, Loader2, ExternalLink, AlertTriangle } from 'lucide-react';
 import PageContainer from '../components/PageContainer';
 import Button from '../components/Button';
 import { useGoogleAuth } from '../hooks/useGoogleAuth';
@@ -11,7 +11,6 @@ const Welcome: React.FC = () => {
   const { signIn, isLoading, error, isSignedIn, isInitialized, checkAgain, showCheckAgain } = useGoogleAuth();
   const { setAppData } = useApp();
   const [isCheckingAuth, setIsCheckingAuth] = React.useState(true);
-  const [showCopySuccess, setShowCopySuccess] = React.useState(false);
 
   // Enhanced Telegram detection
   const isTgMiniApp = !!(window as any).Telegram?.WebApp;
@@ -23,11 +22,9 @@ const Welcome: React.FC = () => {
   const isStandaloneSafari = window.navigator.standalone === false; // Not added to home screen
   
   // Heuristic: Mobile Safari with no referrer could be from in-app browser
-  // This is less reliable but catches cases where UA doesn't show "Telegram"
   const isPossibleInAppBrowser = isMobileSafari && hasNoReferrer && isStandaloneSafari;
   
   const isTelegramBrowser = isTgMiniApp || isTelegramUA || isPossibleInAppBrowser;
-  const currentUrl = window.location.href;
 
   console.log('🔍 Telegram Detection:', {
     isTgMiniApp,
@@ -36,9 +33,6 @@ const Welcome: React.FC = () => {
     userAgent: navigator.userAgent,
     referrer: document.referrer
   });
-
-  // Visual debugging state
-  const [showDebug, setShowDebug] = React.useState(false);
 
   React.useEffect(() => {
     const checkAuthState = async () => {
@@ -113,24 +107,6 @@ const Welcome: React.FC = () => {
     }
   };
 
-  const handleCopyLink = async () => {
-    try {
-      await navigator.clipboard.writeText(currentUrl);
-      setShowCopySuccess(true);
-      setTimeout(() => setShowCopySuccess(false), 2000);
-    } catch (error) {
-      // Fallback for older browsers
-      const textArea = document.createElement('textarea');
-      textArea.value = currentUrl;
-      document.body.appendChild(textArea);
-      textArea.select();
-      document.execCommand('copy');
-      document.body.removeChild(textArea);
-      setShowCopySuccess(true);
-      setTimeout(() => setShowCopySuccess(false), 2000);
-    }
-  };
-
   const handleCheckAgain = async () => {
     console.log('Welcome: Check Again button clicked');
     const success = await checkAgain();
@@ -139,6 +115,7 @@ const Welcome: React.FC = () => {
       navigate('/connect-bot');
     }
   };
+
   return (
     <PageContainer>
       <div className="text-center space-y-8">
@@ -248,36 +225,6 @@ const Welcome: React.FC = () => {
           </div>
         )}
 
-        {/* Visual Debug Info - tap to toggle */}
-        <div className="fixed bottom-4 right-4">
-          <button
-            onClick={() => setShowDebug(!showDebug)}
-            className="bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-50 hover:opacity-100"
-          >
-            Debug
-          </button>
-        </div>
-
-        {showDebug && (
-          <div className="fixed top-4 left-4 right-4 bg-black text-white text-xs p-3 rounded z-50 max-h-48 overflow-auto">
-            <div className="font-bold mb-2">Detection Debug:</div>
-            <div>isTgMiniApp: {isTgMiniApp ? 'true' : 'false'}</div>
-            <div>isTelegramUA: {isTelegramUA ? 'true' : 'false'}</div>
-            <div>isPossibleInAppBrowser: {isPossibleInAppBrowser ? 'true' : 'false'}</div>
-            <div>isTelegramBrowser: {isTelegramBrowser ? 'true' : 'false'}</div>
-            <div className="mt-2">Additional Info:</div>
-            <div>hasNoReferrer: {hasNoReferrer ? 'true' : 'false'}</div>
-            <div>isMobileSafari: {isMobileSafari ? 'true' : 'false'}</div>
-            <div>isStandaloneSafari: {isStandaloneSafari ? 'true' : 'false'}</div>
-            <div className="mt-2">User Agent:</div>
-            <div className="break-all">{navigator.userAgent}</div>
-            <div className="mt-2">Referrer:</div>
-            <div className="break-all">{document.referrer || 'none'}</div>
-            <div className="mt-2">URL:</div>
-            <div className="break-all">{window.location.href}</div>
-          </div>
-        )}
-
         {isTelegramBrowser ? (
           // Telegram Browser - Show Instructions UI
           <div className="space-y-4">
@@ -318,108 +265,6 @@ const Welcome: React.FC = () => {
               onClick={handleConnectGoogle}
               disabled={isLoading || isCheckingAuth}
               className="w-full max-w-80 mx-auto"
-            >
-              {isLoading ? (
-                <>
-                  <Loader2 className="w-5 h-5 animate-spin mr-2" />
-                  Connecting...
-                </>
-              ) : (
-                <>
-                  <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
-                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-                  </svg>
-                  Connect Google Calendar
-                </>
-              )}
-            </Button>
-            
-            <p className="text-gray-500 text-sm max-w-80 mx-auto">
-              You'll be redirected to Google to securely connect your calendar
-            </p>
-          </div>
-        )}
-      </div>
-    </PageContainer>
-  );
-};
-                <div className="space-y-2">
-                  <p className="text-blue-800 text-sm font-medium">
-                    Open in your default browser
-                  </p>
-                  <p className="text-blue-700 text-sm">
-                    Tap the menu (⋯) in the top right corner, then select "Open in Browser" or "Open in Safari"
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Alternative Method - Copy Link */}
-            <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-              <div className="flex items-start space-x-3">
-                <Copy className="w-5 h-5 text-gray-600 mt-0.5 flex-shrink-0" />
-                <div className="space-y-3 flex-1">
-                  <div>
-                    <p className="text-gray-800 text-sm font-medium">
-                      Or copy this link and open it in your browser
-                    </p>
-                    <p className="text-gray-600 text-sm">
-                      Copy the link below and paste it into Safari, Chrome, or your preferred browser
-                    </p>
-                  </div>
-                  
-                  <div className="flex items-center space-x-2">
-                    <button
-                      onClick={handleCopyLink}
-                      className="flex-1 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
-                    >
-                      {showCopySuccess ? (
-                        <span className="text-green-600">✓ Copied!</span>
-                      ) : (
-                        <>
-                          <Copy className="w-4 h-4 inline mr-2" />
-                          Copy Link
-                        </>
-                      )}
-                    </button>
-                  </div>
-                  
-                  <div className="bg-white border border-gray-200 rounded p-2">
-                    <p className="text-xs text-gray-600 break-all font-mono">
-                      {currentUrl}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Why this is needed */}
-            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-              <div className="flex items-start space-x-3">
-                <AlertTriangle className="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" />
-                <div className="space-y-1">
-                  <p className="text-amber-800 text-sm font-medium">
-                    Why do I need to switch browsers?
-                  </p>
-                  <p className="text-amber-700 text-sm">
-                    Google authentication requires a full browser environment that Telegram's built-in browser doesn't support. 
-                    This is a security feature to protect your Google account.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        ) : (
-          // Regular Browser - Show Connect Button
-          <div className="space-y-4">
-            <Button
-              onClick={handleConnectGoogle}
-              disabled={isLoading || isCheckingAuth}
-              className="w-full max-w-80 mx-auto"
-              size="lg"
             >
               {isLoading ? (
                 <>
