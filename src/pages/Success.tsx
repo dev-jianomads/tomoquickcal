@@ -134,7 +134,7 @@ const Success: React.FC = () => {
               <span className="text-purple-800 font-medium text-sm">Ready to Schedule</span>
             </div>
             <p className="text-purple-700 text-xs">
-              {window.opener ? 'This tab will close automatically' : 'Check your SMS or email for the Telegram link to start chatting with @AskTomoBot'}
+              {window.opener ? 'This tab will close automatically' : 'Check your SMS or email and click the link to add @AskTomoBot so you can start chatting with it in Telegram'}
             </p>
           </div>
         </div>
