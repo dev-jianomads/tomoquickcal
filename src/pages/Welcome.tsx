@@ -16,7 +16,17 @@ const Welcome: React.FC = () => {
   // Enhanced Telegram detection
   const isTgMiniApp = !!(window as any).Telegram?.WebApp;
   const isTelegramUA = /\bTelegram\b/i.test(navigator.userAgent) || document.referrer.includes('t.me');
-  const isTelegramBrowser = isTgMiniApp || isTelegramUA;
+  
+  // Additional detection methods for iOS Safari View Controller
+  const hasNoReferrer = !document.referrer || document.referrer === '';
+  const isMobileSafari = /iPhone|iPad|iPod/i.test(navigator.userAgent) && /Safari/i.test(navigator.userAgent);
+  const isStandaloneSafari = window.navigator.standalone === false; // Not added to home screen
+  
+  // Heuristic: Mobile Safari with no referrer could be from in-app browser
+  // This is less reliable but catches cases where UA doesn't show "Telegram"
+  const isPossibleInAppBrowser = isMobileSafari && hasNoReferrer && isStandaloneSafari;
+  
+  const isTelegramBrowser = isTgMiniApp || isTelegramUA || isPossibleInAppBrowser;
   const currentUrl = window.location.href;
 
   console.log('🔍 Telegram Detection:', {
@@ -253,7 +263,12 @@ const Welcome: React.FC = () => {
             <div className="font-bold mb-2">Detection Debug:</div>
             <div>isTgMiniApp: {isTgMiniApp ? 'true' : 'false'}</div>
             <div>isTelegramUA: {isTelegramUA ? 'true' : 'false'}</div>
+            <div>isPossibleInAppBrowser: {isPossibleInAppBrowser ? 'true' : 'false'}</div>
             <div>isTelegramBrowser: {isTelegramBrowser ? 'true' : 'false'}</div>
+            <div className="mt-2">Additional Info:</div>
+            <div>hasNoReferrer: {hasNoReferrer ? 'true' : 'false'}</div>
+            <div>isMobileSafari: {isMobileSafari ? 'true' : 'false'}</div>
+            <div>isStandaloneSafari: {isStandaloneSafari ? 'true' : 'false'}</div>
             <div className="mt-2">User Agent:</div>
             <div className="break-all">{navigator.userAgent}</div>
             <div className="mt-2">Referrer:</div>
