@@ -12,22 +12,17 @@ const Welcome: React.FC = () => {
   const { setAppData } = useApp();
   const [isCheckingAuth, setIsCheckingAuth] = React.useState(true);
   const [showCopySuccess, setShowCopySuccess] = React.useState(false);
+  const [showDebug, setShowDebug] = React.useState(false);
 
-  // Enhanced Telegram detection
-  const isTgMiniApp = !!(window as any).Telegram?.WebApp;
-  const isTelegramUA = /\bTelegram\b/i.test(navigator.userAgent) || document.referrer.includes('t.me');
-  
-  // Additional detection methods for iOS Safari View Controller
-  const hasNoReferrer = !document.referrer || document.referrer === '';
-  const isMobileSafari = /iPhone|iPad|iPod/i.test(navigator.userAgent) && /Safari/i.test(navigator.userAgent);
-  const isStandaloneSafari = window.navigator.standalone === false; // Not added to home screen
-  
-  // Heuristic: Mobile Safari with no referrer could be from in-app browser
-  // This is less reliable but catches cases where UA doesn't show "Telegram"
-  const isPossibleInAppBrowser = isMobileSafari && hasNoReferrer && isStandaloneSafari;
-  
-  const isTelegramBrowser = isTgMiniApp || isTelegramUA || isPossibleInAppBrowser;
-
+  // Detection variables
+  const isTgMiniApp = false;
+  const isTelegramUA = false;
+  const isPossibleInAppBrowser = false;
+  const isTelegramBrowser = false;
+  const hasNoReferrer = false;
+  const isMobileSafari = false;
+  const isStandaloneSafari = false;
+  const currentUrl = window.location.href;
 
   React.useEffect(() => {
     const checkAuthState = async () => {
@@ -271,6 +266,25 @@ const Welcome: React.FC = () => {
           // Telegram Browser - Show Instructions UI
           <div className="space-y-4">
             {/* Primary Method - Menu Option */}
+            <div>Telegram browser instructions</div>
+          </div>
+        ) : (
+          <Button
+            onClick={handleConnectGoogle}
+            disabled={isLoading}
+            className="w-full max-w-80 mx-auto"
+          >
+            {isLoading ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                Connecting...
+              </>
+            ) : (
+              'Connect Google Calendar'
+            )}
+          </Button>
+        )}
+      </div>
     </PageContainer>
   );
 };
