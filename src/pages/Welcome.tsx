@@ -19,6 +19,14 @@ const Welcome: React.FC = () => {
   const isTelegramBrowser = isTgMiniApp || isTelegramUA;
   const currentUrl = window.location.href;
 
+  console.log('🔍 Telegram Detection:', {
+    isTgMiniApp,
+    isTelegramUA,
+    isTelegramBrowser,
+    userAgent: navigator.userAgent,
+    referrer: document.referrer
+  });
+
   React.useEffect(() => {
     const checkAuthState = async () => {
       try {
