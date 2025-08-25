@@ -139,7 +139,8 @@ const Welcome: React.FC = () => {
   };
 
   return (
-    <PageContainer>
+    <>
+      <PageContainer>
       <div className="text-center space-y-8">
         <div className="space-y-4">
           <div className="flex justify-center items-center space-x-4">
@@ -309,17 +310,18 @@ const Welcome: React.FC = () => {
           </div>
         )}
       </div>
-    </PageContainer>
+      </PageContainer>
 
-    {/* Debug UI - Remove this after testing */}
-    <div className="fixed bottom-4 right-4 bg-black bg-opacity-75 text-white text-xs p-3 rounded-lg max-w-xs">
-      <div className="font-bold mb-2">Debug Info:</div>
-      <div>isTelegramBrowser: {isTelegramBrowser.toString()}</div>
-      <div>isTgMiniApp: {isTgMiniApp.toString()}</div>
-      <div>isTelegramUA: {isTelegramUA.toString()}</div>
-      <div>referrer: {document.referrer || 'none'}</div>
-      <div>userAgent: {navigator.userAgent.substring(0, 50)}...</div>
-    </div>
+      {/* Debug UI - Remove this after testing */}
+      <div className="fixed bottom-4 right-4 bg-black bg-opacity-75 text-white text-xs p-3 rounded-lg max-w-xs">
+        <div className="font-bold mb-2">Debug Info:</div>
+        <div>isTelegramBrowser: {isTelegramBrowser.toString()}</div>
+        <div>isTgMiniApp: {isTgMiniApp.toString()}</div>
+        <div>isTelegramUA: {isTelegramUA.toString()}</div>
+        <div>referrer: {document.referrer || 'none'}</div>
+        <div>userAgent: {navigator.userAgent.substring(0, 50)}...</div>
+      </div>
+    </>
   );
 };
 
