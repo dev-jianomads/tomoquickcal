@@ -281,57 +281,25 @@ const Welcome: React.FC = () => {
         {isTelegramBrowser ? (
           // Telegram Browser - Show Instructions UI
           <div className="space-y-4">
-            <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 text-left">
-              <div className="flex items-start space-x-3">
-                <AlertTriangle className="w-5 h-5 text-orange-600 mt-0.5 flex-shrink-0" />
-                <div className="space-y-2">
-                  <p className="text-orange-800 text-sm font-medium">
-                    Open in Browser Required
-                  </p>
-                  <p className="text-orange-700 text-sm">
-                    Telegram's browser doesn't support Google authentication. Please open this page in Chrome or Safari to continue.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-4">
-              <h3 className="font-semibold text-gray-900 text-center">How to open in your browser:</h3>
-              
-              <div className="space-y-3">
-                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center text-xs font-bold text-blue-600">1</div>
-                    <span className="text-sm text-gray-700">Copy this link</span>
-                  </div>
-                  <button
-                    onClick={handleCopyLink}
-                    className="flex items-center space-x-1 px-3 py-1 bg-blue-600 text-white text-xs rounded-md hover:bg-blue-700 transition-colors"
-                  >
-                    <Copy className="w-3 h-3" />
-                    <span>{showCopySuccess ? 'Copied!' : 'Copy'}</span>
-                  </button>
-                </div>
-                
-                <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-                  <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center text-xs font-bold text-blue-600">2</div>
-                  <span className="text-sm text-gray-700">Open Chrome or Safari</span>
-                </div>
-                
-                <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-                  <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center text-xs font-bold text-blue-600">3</div>
-                  <span className="text-sm text-gray-700">Paste the link and go</span>
-                </div>
-              </div>
-            </div>
-
+            {/* Primary Method - Menu Option */}
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-center">
               <div className="flex items-center justify-center space-x-2 mb-2">
                 <ExternalLink className="w-4 h-4 text-blue-600" />
-                <span className="text-blue-800 text-sm font-medium">Alternative</span>
+                <span className="text-blue-800 text-sm font-medium">Open in Browser</span>
               </div>
               <p className="text-blue-700 text-sm">
-                In Telegram, tap the <strong>⋯</strong> menu → <strong>"Open in Browser"</strong>
+                Tap the <strong>⋯</strong> menu → <strong>"Open in Browser"</strong>
+              </p>
+            </div>
+
+            {/* Explanation */}
+            <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 text-center">
+              <div className="flex items-center justify-center space-x-2 mb-1">
+                <AlertTriangle className="w-4 h-4 text-orange-600" />
+                <span className="text-orange-800 text-sm font-medium">Why?</span>
+              </div>
+              <p className="text-orange-700 text-sm">
+                Telegram's browser doesn't support Google authentication.
               </p>
             </div>
           </div>
