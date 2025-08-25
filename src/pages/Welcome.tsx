@@ -27,6 +27,9 @@ const Welcome: React.FC = () => {
     referrer: document.referrer
   });
 
+  // Visual debugging state
+  const [showDebug, setShowDebug] = React.useState(false);
+
   React.useEffect(() => {
     const checkAuthState = async () => {
       try {
@@ -232,6 +235,31 @@ const Welcome: React.FC = () => {
                 </p>
               </div>
             )}
+          </div>
+        )}
+
+        {/* Visual Debug Info - tap to toggle */}
+        <div className="fixed bottom-4 right-4">
+          <button
+            onClick={() => setShowDebug(!showDebug)}
+            className="bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-50 hover:opacity-100"
+          >
+            Debug
+          </button>
+        </div>
+
+        {showDebug && (
+          <div className="fixed top-4 left-4 right-4 bg-black text-white text-xs p-3 rounded z-50 max-h-48 overflow-auto">
+            <div className="font-bold mb-2">Detection Debug:</div>
+            <div>isTgMiniApp: {isTgMiniApp ? 'true' : 'false'}</div>
+            <div>isTelegramUA: {isTelegramUA ? 'true' : 'false'}</div>
+            <div>isTelegramBrowser: {isTelegramBrowser ? 'true' : 'false'}</div>
+            <div className="mt-2">User Agent:</div>
+            <div className="break-all">{navigator.userAgent}</div>
+            <div className="mt-2">Referrer:</div>
+            <div className="break-all">{document.referrer || 'none'}</div>
+            <div className="mt-2">URL:</div>
+            <div className="break-all">{window.location.href}</div>
           </div>
         )}
 
