@@ -34,25 +34,49 @@ const Welcome: React.FC = () => {
 
   // Enhanced Telegram detection
   const isTgMiniApp = !!(window as any).Telegram?.WebApp;
+  
+  // Check for Telegram-specific indicators
   const isTelegramUA = /\bTelegram\b/i.test(navigator.userAgent) || 
-                       document.referrer.includes('t.me') ||
                        /TelegramBot/i.test(navigator.userAgent) ||
                        navigator.userAgent.includes('TgWebView');
   
   const referrerIncludesTelegram = document.referrer.includes('t.me') || document.referrer.includes('telegram');
   const urlHasTgParam = window.location.search.includes('tgWebAppPlatform');
   
+  // Check for Telegram-specific window properties and APIs
+  const hasTelegramAPI = !!(window as any).Telegram || 
+                         !!(window as any).TelegramWebviewProxy ||
+                         !!(window as any).TelegramGameProxy;
+  
+  // Check if opened from Telegram (iOS Safari doesn't set referrer but has other indicators)
+  const isLikelyTelegramContext = window.name === 'telegram-web-app' ||
+                                  window.location.search.includes('tgWebAppStartParam') ||
+                                  window.location.search.includes('tgWebAppData') ||
+                                  window.location.hash.includes('tgWebAppData');
+  
+  // Check for iOS Safari opened from Telegram (common pattern)
+  const isIOSSafariFromTelegram = /iPhone|iPad|iPod/i.test(navigator.userAgent) &&
+                                  /Safari/i.test(navigator.userAgent) &&
+                                  !window.chrome && // Not Chrome
+                                  (hasTelegramAPI || isLikelyTelegramContext);
+  
   // Detect Telegram in-app browser (including iOS Safari opened from Telegram)
   const isTelegramBrowser = isTgMiniApp || 
                            isTelegramUA ||
-                           (document.referrer && document.referrer.includes('telegram')) ||
-                           window.location.search.includes('tgWebAppPlatform');
+                           referrerIncludesTelegram ||
+                           urlHasTgParam ||
+                           hasTelegramAPI ||
+                           isLikelyTelegramContext ||
+                           isIOSSafariFromTelegram;
 
   console.log('🔍 Telegram Detection Result:', {
     isTgMiniApp,
     isTelegramUA,
     referrerIncludesTelegram,
     urlHasTgParam,
+    hasTelegramAPI,
+    isLikelyTelegramContext,
+    isIOSSafariFromTelegram,
     isTelegramBrowser,
   });
 
@@ -318,7 +342,13 @@ const Welcome: React.FC = () => {
         <div>isTelegramBrowser: {isTelegramBrowser.toString()}</div>
         <div>isTgMiniApp: {isTgMiniApp.toString()}</div>
         <div>isTelegramUA: {isTelegramUA.toString()}</div>
+        <div>hasTelegramAPI: {hasTelegramAPI.toString()}</div>
+        <div>isLikelyTelegramContext: {isLikelyTelegramContext.toString()}</div>
+        <div>isIOSSafariFromTelegram: {isIOSSafariFromTelegram.toString()}</div>
         <div>referrer: {document.referrer || 'none'}</div>
+        <div>windowName: {window.name || 'none'}</div>
+        <div>search: {window.location.search || 'none'}</div>
+        <div>hash: {window.location.hash || 'none'}</div>
         <div>userAgent: {navigator.userAgent.substring(0, 50)}...</div>
       </div>
     </>
