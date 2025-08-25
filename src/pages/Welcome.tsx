@@ -39,6 +39,9 @@ const Welcome: React.FC = () => {
                        /TelegramBot/i.test(navigator.userAgent) ||
                        navigator.userAgent.includes('TgWebView');
   
+  const referrerIncludesTelegram = document.referrer.includes('t.me') || document.referrer.includes('telegram');
+  const urlHasTgParam = window.location.search.includes('tgWebAppPlatform');
+  
   // Detect Telegram in-app browser (including iOS Safari opened from Telegram)
   const isTelegramBrowser = isTgMiniApp || 
                            isTelegramUA ||
