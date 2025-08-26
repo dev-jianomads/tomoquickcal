@@ -197,6 +197,26 @@ const Welcome: React.FC = () => {
           </div>
         </div>
 
+        {/* Telegram Browser Detection - Show merged instruction box */}
+        {isTelegramBrowser && (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <div className="flex items-start space-x-3">
+              <ExternalLink className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+              <div className="space-y-2">
+                <p className="text-blue-800 text-sm font-medium">
+                  Tap the menu (⋯) then "Open in Browser"
+                </p>
+                <div className="flex items-start space-x-2">
+                  <AlertTriangle className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                  <p className="text-blue-700 text-sm">
+                    Why? Telegram's browser doesn't support Google authentication.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 text-left space-y-4">
           <h3 className="font-semibold text-gray-900">What Tomo'll access and be able to do for you:</h3>
           
@@ -272,56 +292,9 @@ const Welcome: React.FC = () => {
           </div>
         )}
 
-        {/* Telegram Browser Detection - Show merged instruction box */}
-        {isTelegramBrowser && (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <div className="flex items-start space-x-3">
-              <ExternalLink className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
-              <div className="space-y-2">
-                <p className="text-blue-800 text-sm font-medium">
-                  Tap the menu (⋯) then "Open in Browser"
-                </p>
-                <div className="flex items-start space-x-2">
-                  <AlertTriangle className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
-                  <p className="text-blue-700 text-sm">
-                    Why? Telegram's browser doesn't support Google authentication.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
         {isTelegramBrowser ? (
           // Telegram Browser - Show Instructions UI
-          <div className="space-y-4">
-            {/* Primary Method - Menu Option */}
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <div className="flex items-start space-x-3">
-                <ExternalLink className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
-                <div className="space-y-2">
-                  <p className="text-blue-800 text-sm font-medium">
-                    Tap the menu (⋯) then "Open in Browser"
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Why this is needed */}
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-              <div className="flex items-start space-x-3">
-                <AlertTriangle className="w-5 h-5 text-yellow-600 mt-0.5 flex-shrink-0" />
-                <div className="space-y-1">
-                  <p className="text-yellow-800 text-sm font-medium">
-                    Why do I need to switch browsers?
-                  </p>
-                  <p className="text-yellow-700 text-sm">
-                    Telegram's browser doesn't support Google authentication.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
+          <div className="space-y-4"></div>
         ) : (
           // Regular Browser - Show Connect Button
           <div className="space-y-4">
