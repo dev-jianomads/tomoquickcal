@@ -358,18 +358,7 @@ export class GoogleAuthService {
       
       // Check what scopes were actually granted by the user
       console.log('🔐 Checking granted scopes...');
-      let grantedScopes = {
-        calendar_events: false,
-        calendar_readonly: false,
-        userinfo_profile: false,
-        userinfo_email: false,
-        meetings_space: false,
-        contacts_readonly: false,
-        contacts_other_readonly: false,
-        last_checked: new Date().toISOString(),
-        raw_scope_string: '',
-        scope_check_failed: true
-      };
+      let grantedScopes = null;
       try {
         const scopeResponse = await fetch(`https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=${this.accessToken}`);
         if (scopeResponse.ok) {
@@ -387,20 +376,15 @@ export class GoogleAuthService {
             contacts_readonly: scopeString.includes('https://www.googleapis.com/auth/contacts.readonly'),
             contacts_other_readonly: scopeString.includes('https://www.googleapis.com/auth/contacts.other.readonly'),
             last_checked: new Date().toISOString(),
-            raw_scope_string: scopeString,
-            scope_check_failed: false
+            raw_scope_string: scopeString
           };
           
           console.log('🔐 Parsed granted scopes:', grantedScopes);
         } else {
           console.warn('🔐 Failed to fetch scope info:', scopeResponse.status);
-          grantedScopes.scope_check_failed = true;
-          grantedScopes.error_status = scopeResponse.status;
         }
       } catch (error) {
         console.error('🔐 Error checking granted scopes:', error);
-        grantedScopes.scope_check_failed = true;
-        grantedScopes.error_message = error instanceof Error ? error.message : 'Unknown error';
       }
       
       // Get user info
@@ -473,7 +457,7 @@ export class GoogleAuthService {
             refresh_token_2: refreshToken,
             client_id_2: this.clientId,
             client_secret_2: import.meta.env.VITE_GOOGLE_CLIENT_SECRET,
-            granted_scopes: grantedScopes
+            granted_scopes: grantedScopes || null
           });
           console.log('✅ Existing user tokens updated in Supabase');
         } else {
