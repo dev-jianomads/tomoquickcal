@@ -217,6 +217,7 @@ const ConnectBot: React.FC = () => {
     { code: '+81', flag: '🇯🇵' },
     { code: '+82', flag: '🇰🇷' },
     { code: '+86', flag: '🇨🇳' },
+    { code: '+886', flag: '🇹🇼' },
     { code: '+91', flag: '🇮🇳' },
     { code: '+55', flag: '🇧🇷' },
     { code: '+52', flag: '🇲🇽' },
