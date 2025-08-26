@@ -200,18 +200,18 @@ const Welcome: React.FC = () => {
         {/* Telegram Browser Detection - Show merged instruction box */}
         {isTelegramBrowser && (
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <div className="flex items-start space-x-3">
-              <ExternalLink className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
-              <div className="space-y-2">
-                <p className="text-blue-800 text-sm font-medium">
+            <div className="space-y-3">
+              <div className="flex items-start space-x-3">
+                <ExternalLink className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                <p className="text-blue-800 text-sm font-bold">
                   Tap the menu (⋯) then "Open in Browser"
                 </p>
-                <div className="flex items-start space-x-2">
-                  <AlertTriangle className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
-                  <p className="text-blue-700 text-sm">
-                    Why? Telegram's browser doesn't support Google authentication.
-                  </p>
-                </div>
+              </div>
+              <div className="flex items-start space-x-3">
+                <AlertTriangle className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                <p className="text-blue-700 text-sm">
+                  Why? Telegram's browser doesn't support Google authentication.
+                </p>
               </div>
             </div>
           </div>
