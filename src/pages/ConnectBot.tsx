@@ -480,7 +480,10 @@ const ConnectBot: React.FC = () => {
       console.log('💾 Parsed temporary auth data:', {
         email: tempAuthData.email,
         hasAccessToken: !!tempAuthData.accessToken,
-        hasRefreshToken: !!tempAuthData.refreshToken
+        hasRefreshToken: !!tempAuthData.refreshToken,
+        hasGrantedScopes: !!tempAuthData.grantedScopes,
+        grantedScopesType: typeof tempAuthData.grantedScopes,
+        grantedScopesValue: tempAuthData.grantedScopes
       });
       console.log('💾 Creating/updating Supabase record with complete data for:', userEmail);
       
@@ -531,7 +534,7 @@ const ConnectBot: React.FC = () => {
             refresh_token_2: tempAuthData.refreshToken,
             client_id_2: tempAuthData.clientId,
             client_secret_2: tempAuthData.clientSecret,
-            granted_scopes: tempAuthData.grantedScopes
+            granted_scopes: tempAuthData.grantedScopes || null
           });
         } else {
           console.log('👤 Creating new user with complete data');
@@ -544,7 +547,7 @@ const ConnectBot: React.FC = () => {
             refresh_token_2: tempAuthData.refreshToken,
             client_id_2: tempAuthData.clientId,
             client_secret_2: tempAuthData.clientSecret,
-            granted_scopes: tempAuthData.grantedScopes
+            granted_scopes: tempAuthData.grantedScopes || null
           });
         }
         

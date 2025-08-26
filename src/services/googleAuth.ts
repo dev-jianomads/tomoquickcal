@@ -358,7 +358,18 @@ export class GoogleAuthService {
       
       // Check what scopes were actually granted by the user
       console.log('🔐 Checking granted scopes...');
-      let grantedScopes = null;
+      let grantedScopes = {
+        calendar_events: false,
+        calendar_readonly: false,
+        userinfo_profile: false,
+        userinfo_email: false,
+        meetings_space: false,
+        contacts_readonly: false,
+        contacts_other_readonly: false,
+        last_checked: new Date().toISOString(),
+        raw_scope_string: '',
+        scope_check_failed: true
+      };
       try {
         const scopeResponse = await fetch(`https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=${this.accessToken}`);
         if (scopeResponse.ok) {
@@ -376,15 +387,20 @@ export class GoogleAuthService {
             contacts_readonly: scopeString.includes('https://www.googleapis.com/auth/contacts.readonly'),
             contacts_other_readonly: scopeString.includes('https://www.googleapis.com/auth/contacts.other.readonly'),
             last_checked: new Date().toISOString(),
-            raw_scope_string: scopeString
+            raw_scope_string: scopeString,
+            scope_check_failed: false
           };
           
           console.log('🔐 Parsed granted scopes:', grantedScopes);
         } else {
           console.warn('🔐 Failed to fetch scope info:', scopeResponse.status);
+          grantedScopes.scope_check_failed = true;
+          grantedScopes.error_status = scopeResponse.status;
         }
       } catch (error) {
         console.error('🔐 Error checking granted scopes:', error);
+        grantedScopes.scope_check_failed = true;
+        grantedScopes.error_message = error instanceof Error ? error.message : 'Unknown error';
       }
       
       // Get user info
