@@ -112,6 +112,23 @@ const Success: React.FC = () => {
     } catch (error) {
       console.error('❌ Failed to get Telegram link:', error);
       
+      // Log the failure to Supabase
+      try {
+        await loggingService.log('telegram_sms_sent', {
+          userId: appData.userId,
+          userEmail: appData.userEmail,
+          success: false,
+          errorMessage: error instanceof Error ? error.message : 'Unknown error',
+          eventData: {
+            failure_type: 'telegram_link_generation',
+            error_details: error instanceof Error ? error.message : 'Unknown error',
+            timestamp: new Date().toISOString()
+          }
+        });
+      } catch (logError) {
+        console.warn('Failed to log Telegram failure:', logError);
+      }
+      
       // Enhanced error handling with specific messages
       let errorMessage = 'Failed to connect to Telegram. Please try again.';
       
