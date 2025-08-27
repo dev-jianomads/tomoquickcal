@@ -6,7 +6,7 @@
   publish = "dist"
   
   # Functions directory (explicit path)
-  functions = "./netlify/functions"
+  functions = "netlify/functions"
 
 [build.environment]
   # Node version for build

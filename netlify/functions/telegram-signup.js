@@ -1,5 +1,3 @@
-const { createClient } = require('@supabase/supabase-js');
-
 exports.handler = async (event, context) => {
   console.log('🔧 Netlify Function: telegram-signup called');
   console.log('🔧 HTTP Method:', event.httpMethod);
@@ -69,7 +67,7 @@ exports.handler = async (event, context) => {
 
     console.log('🔧 Forwarding request to n8n:', { user_id, email });
 
-    // Forward request to n8n webhook using built-in fetch
+    // Forward request to n8n webhook using built-in fetch (Node.js 18+)
     const response = await fetch(n8nWebhookUrl, {
       method: 'POST',
       headers: {
