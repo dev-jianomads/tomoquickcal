@@ -140,6 +140,23 @@ const ConnectTelegram: React.FC = () => {
     } catch (error) {
       console.error('❌ Failed to connect to Telegram:', error);
       
+      // Enhanced error detection
+      let errorMessage = 'Failed to connect to Telegram. Please try again.';
+      let isNetworkError = false;
+      
+      if (error instanceof Error) {
+        const errorMsg = error.message.toLowerCase();
+        
+        if (errorMsg.includes('socket') || errorMsg.includes('network') || errorMsg.includes('fetch')) {
+          isNetworkError = true;
+          errorMessage = 'Network connection failed. This might be due to firewall or network restrictions.';
+        } else if (errorMsg.includes('404') || errorMsg.includes('not found')) {
+          errorMessage = 'Account not found. Please complete the account creation process.';
+        } else if (errorMsg.includes('500') || errorMsg.includes('503')) {
+          errorMessage = 'Telegram service temporarily unavailable. Please try again in a moment.';
+        }
+      }
+      
       // Log the failure
       try {
         await loggingService.log('telegram_connection_failure', {
@@ -150,6 +167,7 @@ const ConnectTelegram: React.FC = () => {
           eventData: {
             failure_type: 'telegram_link_generation',
             error_details: error instanceof Error ? error.message : 'Unknown error',
+            is_network_error: isNetworkError,
             retry_count: retryCount,
             timestamp: new Date().toISOString()
           }
@@ -158,18 +176,7 @@ const ConnectTelegram: React.FC = () => {
         console.warn('Failed to log Telegram failure:', logError);
       }
       
-      // Enhanced error handling with specific messages
-      let errorMessage = 'Failed to connect to Telegram. Please try again.';
-      
-      if (error instanceof Error) {
-        if (error.message.includes('404') || error.message.includes('not found')) {
-          errorMessage = 'Account not found. Please complete the account creation process.';
-        } else if (error.message.includes('500') || error.message.includes('503')) {
-          errorMessage = 'Telegram service temporarily unavailable. Please try again in a moment.';
-        } else if (error.message.includes('network') || error.message.includes('fetch')) {
-          errorMessage = 'Network error. Please check your connection and try again.';
-        }
-      }
+      // Show network-specific troubleshooting for socket errors
       
       setError(errorMessage);
       setConnectionMessage('');
@@ -290,6 +297,14 @@ const ConnectTelegram: React.FC = () => {
                     <li>• Check you're signed up with the same phone number</li>
                     <li>• Try refreshing the page if the link doesn't work</li>
                     {retryCount > 1 && <li>• If issues persist, try again in a few minutes</li>}
+                    {error.includes('Network') && (
+                      <>
+                        <li>• Try using a different network (mobile hotspot)</li>
+                        <li>• Check if your firewall is blocking the connection</li>
+                        <li>• If on corporate network, contact IT support</li>
+                        <li>• Try accessing from a different device/location</li>
+                      </>
+                    )}
                   </ul>
                 </div>
                 
