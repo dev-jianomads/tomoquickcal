@@ -521,10 +521,6 @@ export class GoogleAuthService {
     console.log('✅ Google sign-out complete');
   }
 
-  public async getAccessToken(): Promise<string | null> {
-    return this.accessToken;
-  }
-  
   public getAccessToken(): string | null {
     return this.accessToken;
   }

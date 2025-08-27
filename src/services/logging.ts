@@ -104,8 +104,6 @@ export class LoggingService {
     });
   }
 
-  async logGoogleOAuthSuccess(userEmail: string, userData: any): Promise<void> {
-  }
   async logGoogleOAuthSuccess(userId: string, userEmail: string, userData: any): Promise<void> {
     await this.log('google_oauth_success', {
       userId,
