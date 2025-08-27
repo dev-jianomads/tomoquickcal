@@ -26,6 +26,10 @@ exports.handler = async (event, context) => {
   try {
     console.log('🔧 Netlify Function: Proxying Telegram signup request...');
     
+    // Get N8N webhook URL from environment variable or use default
+    const n8nWebhookUrl = process.env.N8N_WEBHOOK_URL || 'https://n8n.srv845833.hstgr.cloud/webhook/tg-sign-up';
+    console.log('🔧 Using N8N webhook URL:', n8nWebhookUrl);
+    
     // Parse request body
     const { user_id, email } = JSON.parse(event.body);
 
@@ -43,7 +47,7 @@ exports.handler = async (event, context) => {
     console.log('🔧 Forwarding request to n8n:', { user_id, email });
 
     // Forward request to n8n webhook using built-in fetch
-    const response = await fetch('https://n8n.srv845833.hstgr.cloud/webhook/tg-sign-up', {
+    const response = await fetch(n8nWebhookUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
