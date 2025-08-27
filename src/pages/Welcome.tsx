@@ -53,8 +53,7 @@ const Welcome: React.FC = () => {
   const isLikelyTelegramContext = window.name === 'telegram-web-app' ||
                                   window.location.search.includes('tgWebAppStartParam') ||
                                   window.location.search.includes('tgWebAppData') ||
-                                  window.location.hash.includes('tgWebAppData') ||
-                                  document.title.includes('Telegram');
+                                  window.location.hash.includes('tgWebAppData');
   
   // Check for iOS Safari opened from Telegram (common pattern)
   const isIOSSafariFromTelegram = /iPhone|iPad|iPod/i.test(navigator.userAgent) &&
@@ -67,8 +66,7 @@ const Welcome: React.FC = () => {
                                    /AppleWebKit/i.test(navigator.userAgent) &&
                                    !navigator.userAgent.includes('Chrome') && // Not regular Chrome
                                    !navigator.userAgent.includes('Firefox') && // Not Firefox
-                                   (document.title.includes('Telegram') ||
-                                    window.location.hostname.includes('t.me') ||
+                                   (window.location.hostname.includes('t.me') ||
                                     referrerIncludesTelegram ||
                                     // Android Telegram often has minimal user agent
                                     (navigator.userAgent.includes('Linux') && 
