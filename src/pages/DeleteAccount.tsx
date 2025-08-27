@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Trash2, ArrowLeft, AlertTriangle, Shield, Calendar, MessageCircle } from 'lucide-react';
+import { Trash2, ArrowLeft, AlertTriangle, Shield, Calendar, MessageCircle, Mail, Loader2 } from 'lucide-react';
 import PageContainer from '../components/PageContainer';
 import Button from '../components/Button';
 import { useApp } from '../contexts/AppContext';
@@ -10,6 +10,10 @@ import { loggingService } from '../services/logging';
 const DeleteAccount: React.FC = () => {
   const navigate = useNavigate();
   const { appData } = useApp();
+  const [emailInput, setEmailInput] = useState('');
+  const [isLookingUpUser, setIsLookingUpUser] = useState(false);
+  const [userLookupError, setUserLookupError] = useState('');
+  const [foundUser, setFoundUser] = useState<any>(null);
   const [confirmText, setConfirmText] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState<string>('');
@@ -19,42 +23,112 @@ const DeleteAccount: React.FC = () => {
     errors: string[];
   } | null>(null);
 
-  // Get user email from app context or try to get from Google Auth safely
+  // Get user email from app context, Google Auth, or URL params
   const [userEmail, setUserEmail] = useState<string>('');
+  const [hasActiveSession, setHasActiveSession] = useState(false);
   
   React.useEffect(() => {
     const getUserEmail = async () => {
       try {
+        // Check URL parameters first
+        const urlParams = new URLSearchParams(window.location.search);
+        const emailFromUrl = urlParams.get('email');
+        
+        if (emailFromUrl) {
+          setEmailInput(emailFromUrl);
+          console.log('Delete Account: Email from URL:', emailFromUrl);
+        }
+        
         // Try to get from app context first
         if (appData.userEmail) {
           setUserEmail(appData.userEmail);
+          setHasActiveSession(true);
+          console.log('Delete Account: Email from app context:', appData.userEmail);
           return;
         }
         
         // Try to get from Google Auth if available
-        const { useGoogleAuth } = await import('../hooks/useGoogleAuth');
-        const { getCurrentUser } = useGoogleAuth();
-        const currentUser = getCurrentUser();
-        if (currentUser?.email) {
-          setUserEmail(currentUser.email);
+        try {
+          const { default: googleAuthService } = await import('../services/googleAuth');
+          await googleAuthService.initialize();
+          const currentUser = googleAuthService.getCurrentUser();
+          
+          if (currentUser?.email) {
+            setUserEmail(currentUser.email);
+            setHasActiveSession(true);
+            console.log('Delete Account: Email from Google Auth:', currentUser.email);
+            return;
+          }
+        } catch (error) {
+          console.warn('Could not get user from Google Auth:', error);
         }
-      } catch (error) {
-        console.warn('Could not get user email from Google Auth:', error);
+        
         // Fallback to stored user data
         const storedUser = localStorage.getItem('google_user');
         if (storedUser) {
           try {
             const userData = JSON.parse(storedUser);
-            setUserEmail(userData.email);
+            if (userData.email) {
+              setUserEmail(userData.email);
+              setHasActiveSession(true);
+              console.log('Delete Account: Email from localStorage:', userData.email);
+              return;
+            }
           } catch (e) {
             console.warn('Could not parse stored user data:', e);
           }
         }
+        
+        // No active session found
+        console.log('Delete Account: No active session found, user will need to enter email');
+        setHasActiveSession(false);
+      } catch (error) {
+        console.error('Error getting user email:', error);
+        setHasActiveSession(false);
       }
     };
     
     getUserEmail();
   }, [appData.userEmail]);
+
+  const handleEmailLookup = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!emailInput.trim()) {
+      setUserLookupError('Please enter your email address');
+      return;
+    }
+    
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(emailInput.trim())) {
+      setUserLookupError('Please enter a valid email address');
+      return;
+    }
+    
+    setIsLookingUpUser(true);
+    setUserLookupError('');
+    
+    try {
+      console.log('Delete Account: Looking up user by email:', emailInput);
+      const userData = await supabaseService.findUserByEmail(emailInput.trim());
+      
+      if (userData) {
+        console.log('Delete Account: User found:', userData.id);
+        setFoundUser(userData);
+        setUserEmail(emailInput.trim());
+        setUserLookupError('');
+      } else {
+        console.log('Delete Account: User not found');
+        setUserLookupError('No account found with this email address. Please check the email and try again.');
+      }
+    } catch (error) {
+      console.error('Delete Account: Error looking up user:', error);
+      setUserLookupError('Error looking up account. Please try again.');
+    } finally {
+      setIsLookingUpUser(false);
+    }
+  };
 
   const handleDelete = async () => {
     if (confirmText !== 'DELETE') {
@@ -62,7 +136,7 @@ const DeleteAccount: React.FC = () => {
       return;
     }
 
-    if (!userEmail) {
+    if (!userEmail && !foundUser) {
       setError('No user found to delete');
       return;
     }
@@ -78,10 +152,12 @@ const DeleteAccount: React.FC = () => {
 
     try {
       // Step 1: Get user data before deletion for logging
-      let userId = appData.userId;
+      let userId = appData.userId || foundUser?.id;
+      const emailToDelete = userEmail || foundUser?.email;
+      
       if (!userId) {
         try {
-          const userData = await supabaseService.findUserByEmail(userEmail);
+          const userData = await supabaseService.findUserByEmail(emailToDelete);
           userId = userData?.id || 'unknown';
         } catch (error) {
           console.warn('Could not find user ID for logging:', error);
@@ -98,7 +174,7 @@ const DeleteAccount: React.FC = () => {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            userEmail: userEmail
+            userEmail: emailToDelete
           })
         });
 
@@ -119,7 +195,7 @@ const DeleteAccount: React.FC = () => {
       // Step 3: Delete from Supabase
       try {
         console.log('🔄 Deleting user from Supabase...');
-        const userData = await supabaseService.findUserByEmail(userEmail);
+        const userData = await supabaseService.findUserByEmail(emailToDelete);
         
         if (userData) {
           // Log account deletion before deleting
@@ -137,7 +213,7 @@ const DeleteAccount: React.FC = () => {
           const { error: deleteError } = await supabaseService.supabase
             .from('users')
             .delete()
-            .eq('email', userEmail);
+            .eq('email', emailToDelete);
 
           if (deleteError) {
             throw deleteError;
@@ -182,6 +258,12 @@ const DeleteAccount: React.FC = () => {
 
   const handleBack = () => {
     navigate('/success');
+  };
+
+  const handleBackToEmailInput = () => {
+    setFoundUser(null);
+    setUserEmail('');
+    setConfirmText('');
   };
 
   // Show deletion results
@@ -269,16 +351,92 @@ const DeleteAccount: React.FC = () => {
     );
   }
 
+  // Show email input form if no active session and no user found yet
+  if (!hasActiveSession && !foundUser && !userEmail) {
+    return (
+      <PageContainer>
+        <div className="w-full space-y-6">
+          <div className="flex items-center justify-between">
+            <button
+              onClick={() => navigate('/welcome')}
+              className="flex items-center text-gray-600 hover:text-gray-900 transition-colors"
+            >
+              <ArrowLeft className="w-4 h-4 mr-1" />
+              Back
+            </button>
+          </div>
+
+          <div className="text-center space-y-6">
+            <div className="flex justify-center">
+              <div className="w-16 h-16 bg-red-100 rounded-2xl flex items-center justify-center">
+                <Mail className="w-8 h-8 text-red-600" />
+              </div>
+            </div>
+            
+            <div className="space-y-3">
+              <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
+                Delete Account
+              </h1>
+              <p className="text-gray-600 text-lg leading-relaxed">
+                Enter your email address to find and delete your Tomo QuickCal account.
+              </p>
+            </div>
+
+            <form onSubmit={handleEmailLookup} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Email Address
+                </label>
+                <input
+                  type="email"
+                  value={emailInput}
+                  onChange={(e) => setEmailInput(e.target.value)}
+                  placeholder="your.email@example.com"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                  disabled={isLookingUpUser}
+                  required
+                />
+              </div>
+
+              {userLookupError && (
+                <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+                  <p className="text-red-600 text-sm">{userLookupError}</p>
+                </div>
+              )}
+
+              <div className="pt-2">
+                <Button 
+                  type="submit"
+                  disabled={isLookingUpUser || !emailInput.trim()}
+                  className="bg-red-600 hover:bg-red-700 focus:ring-red-500"
+                >
+                  {isLookingUpUser ? (
+                    <div className="flex items-center justify-center">
+                      <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                      Looking up account...
+                    </div>
+                  ) : (
+                    'Find My Account'
+                  )}
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </PageContainer>
+    );
+  }
+
   return (
     <PageContainer>
       <div className="w-full space-y-6">
         <div className="flex items-center justify-between">
           <button
-            onClick={handleBack}
+            onClick={!hasActiveSession && foundUser ? handleBackToEmailInput : handleBack}
             className="flex items-center text-gray-600 hover:text-gray-900 transition-colors"
           >
             <ArrowLeft className="w-4 h-4 mr-1" />
-            Back
+            {!hasActiveSession && foundUser ? 'Change Email' : 'Back'}
           </button>
         </div>
 
@@ -293,6 +451,13 @@ const DeleteAccount: React.FC = () => {
             <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
               Delete Account
             </h1>
+            {!hasActiveSession && foundUser && (
+              <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                <p className="text-green-800 text-sm">
+                  ✅ Account found: <strong>{foundUser.email}</strong>
+                </p>
+              </div>
+            )}
             <p className="text-gray-600 text-lg leading-relaxed">
               Permanently delete your Tomo QuickCal account and revoke all permissions.
             </p>
@@ -385,7 +550,7 @@ const DeleteAccount: React.FC = () => {
 
           {userEmail && (
             <div className="text-sm text-gray-500">
-              Deleting account for: <strong>{userEmail}</strong>
+              Deleting account for: <strong>{userEmail || foundUser?.email}</strong>
             </div>
           )}
         </div>
