@@ -74,6 +74,11 @@ const ConnectTelegram: React.FC = () => {
     try {
       // Call the endpoint to get Telegram bot link
       console.log('🔗 Calling Telegram signup endpoint...');
+      console.log('🔗 Request payload:', {
+        user_id: appData.userId,
+        email: appData.userEmail
+      });
+      
       // 🎯 THIS IS THE ENDPOINT BEING CALLED:
       // URL: https://n8n.srv845833.hstgr.cloud/webhook/tg-sign-up
       // Method: POST
@@ -83,13 +88,19 @@ const ConnectTelegram: React.FC = () => {
         headers: {
           'Content-Type': 'application/json',
         },
+        mode: 'cors',
         body: JSON.stringify({
           user_id: appData.userId,
           email: appData.userEmail
         })
       });
       
+      console.log('🔗 Response status:', response.status);
+      console.log('🔗 Response headers:', Object.fromEntries(response.headers.entries()));
+      
       if (!response.ok) {
+        const errorText = await response.text();
+        console.error('🔗 Response error:', errorText);
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
       
