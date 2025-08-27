@@ -74,6 +74,10 @@ const ConnectTelegram: React.FC = () => {
     try {
       // Call the endpoint to get Telegram bot link
       console.log('🔗 Calling Telegram signup endpoint...');
+      // 🎯 THIS IS THE ENDPOINT BEING CALLED:
+      // URL: https://n8n.srv845833.hstgr.cloud/webhook/tg-sign-up
+      // Method: POST
+      // Body: { user_id: appData.userId, email: appData.userEmail }
       const response = await fetch('https://n8n.srv845833.hstgr.cloud/webhook/tg-sign-up', {
         method: 'POST',
         headers: {
