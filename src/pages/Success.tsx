@@ -114,7 +114,7 @@ const Success: React.FC = () => {
       
       // Log the failure to Supabase
       try {
-        await loggingService.log('telegram_sms_sent', {
+        await loggingService.log('telegram_addbot_failure', {
           userId: appData.userId,
           userEmail: appData.userEmail,
           success: false,
