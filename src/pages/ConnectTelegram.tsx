@@ -96,7 +96,7 @@ const ConnectTelegram: React.FC = () => {
       
       console.log('🔗 Making POST request to Telegram endpoint...');
       
-      const response = await fetch('https://n8n.srv845833.hstgr.cloud/webhook/tg-sign-up', {
+      const response = await fetch('/.netlify/functions/telegram-signup', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
