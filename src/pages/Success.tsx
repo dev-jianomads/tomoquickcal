@@ -234,64 +234,9 @@ const Success: React.FC = () => {
               <span className="text-gray-800 font-medium">Telegram bot connected</span>
             </div>
           </div>
-          
-          <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 mt-4">
-            <div className="flex items-center space-x-2 mb-1">
-              <Zap className="w-4 h-4 text-purple-600" />
-              <span className="text-purple-800 font-medium text-sm">Ready to Schedule</span>
-            </div>
-            {isRedirecting ? (
-              <div className="space-y-2">
-                <div className="flex items-center space-x-2">
-                  {!redirectMessage.includes('Failed') && !redirectMessage.includes('Error') && (
-                    <div className="w-4 h-4 border-2 border-purple-600 border-t-transparent rounded-full animate-spin"></div>
-                  )}
-                  <p className={`text-xs font-medium ${
-                    redirectMessage.includes('Failed') || redirectMessage.includes('Error') || redirectMessage.includes('unavailable')
-                      ? 'text-red-700' 
-                      : 'text-purple-700'
-                  }`}>
-                    {redirectMessage}
-                  </p>
-                </div>
-                
-                {/* Show helpful instructions for common issues */}
-                {redirectMessage.includes('Failed') && (
-                  <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded text-xs text-blue-800">
-                    <p className="font-medium mb-1">Common solutions:</p>
-                    <ul className="text-xs space-y-1">
-                      <li>• Make sure Telegram is installed on your device</li>
-                      <li>• Check you're signed up with the same phone number</li>
-                      <li>• Try refreshing the page and clicking again</li>
-                    </ul>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <p className="text-purple-700 text-xs">
-                Click the button below to add @AskTomoBot to your Telegram and start scheduling!
-              </p>
-            )}
-          </div>
         </div>
 
         <div className="pt-4 space-y-3">
-          {!isRedirecting ? (
-            <Button onClick={handleAddTomoBot}>
-              <div className="flex items-center space-x-2">
-                <ExternalLink className="w-4 h-4" />
-                <span>Add Tomo Bot to Telegram</span>
-              </div>
-            </Button>
-          ) : (
-            <Button disabled>
-              <div className="flex items-center space-x-2">
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                <span>Connecting to Telegram...</span>
-              </div>
-            </Button>
-          )}
-          
           <button
             onClick={handleFinish}
             className="text-gray-600 hover:text-gray-800 text-sm font-medium transition-colors"
