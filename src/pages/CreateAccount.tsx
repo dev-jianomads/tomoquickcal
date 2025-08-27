@@ -884,10 +884,6 @@ const CreateAccount: React.FC = () => {
                   />
                 </div>
                 
-                <p className="text-sm text-gray-500">
-                  We'll send an SMS with a Telegram link to this number
-                </p>
-                
                 {/* Preview of full number */}
                 {phoneNumber && (
                   <div className="bg-gray-50 rounded-lg p-3 border">
