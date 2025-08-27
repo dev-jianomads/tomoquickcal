@@ -33,7 +33,7 @@ exports.handler = async (event, context) => {
     console.log('🔧 Processing POST request...');
     
     // Get N8N webhook URL from environment variable or use default
-    const n8nWebhookUrl = process.env.N8N_WEBHOOK_URL || 'https://n8n.srv845833.hstgr.cloud/webhook-test/tg-sign-up';
+    const n8nWebhookUrl = process.env.N8N_WEBHOOK_URL || 'https://n8n.srv845833.hstgr.cloud/webhook/%20tg-sign-up';
     console.log('🔧 Using N8N webhook URL:', n8nWebhookUrl);
     
     // Parse request body
