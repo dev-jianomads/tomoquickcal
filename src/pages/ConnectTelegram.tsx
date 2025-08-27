@@ -92,6 +92,8 @@ const ConnectTelegram: React.FC = () => {
           email: appData.userEmail
         }),
         timestamp: new Date().toISOString()
+      });
+      
       console.log('🔗 Making POST request to Telegram endpoint...');
       
       const response = await fetch('https://n8n.srv845833.hstgr.cloud/webhook/tg-sign-up', {
