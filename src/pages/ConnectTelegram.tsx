@@ -221,11 +221,6 @@ const ConnectTelegram: React.FC = () => {
             <ArrowLeft className="w-4 h-4 mr-1" />
             Back
           </button>
-          
-          <div className="flex items-center space-x-2 text-sm text-gray-500">
-            <span className="w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs font-bold">2</span>
-            <span>of 3</span>
-          </div>
         </div>
 
         <div className="text-center space-y-6">

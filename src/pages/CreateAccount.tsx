@@ -825,11 +825,6 @@ const CreateAccount: React.FC = () => {
             <ArrowLeft className="w-4 h-4 mr-1" />
             Back
           </button>
-          
-          <div className="flex items-center space-x-2 text-sm text-gray-500">
-            <span className="w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs font-bold">1</span>
-            <span>of 3</span>
-          </div>
         </div>
 
         <div className="text-center space-y-6">
@@ -841,10 +836,10 @@ const CreateAccount: React.FC = () => {
           
           <div className="space-y-3">
             <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
-              Create Your Tomo Account
+              Create Your Account
             </h1>
             <p className="text-gray-600 text-lg leading-relaxed">
-              Enter your phone number to create your Tomo QuickCal account and enable Telegram integration.
+              Enter your number and enable Telegram connection
             </p>
           </div>
 
@@ -890,7 +885,7 @@ const CreateAccount: React.FC = () => {
                 </div>
                 
                 <p className="text-sm text-gray-500">
-                  This will be used for Telegram integration and account verification
+                  We'll send an SMS with a Telegram link to this number
                 </p>
                 
                 {/* Preview of full number */}
@@ -927,18 +922,6 @@ const CreateAccount: React.FC = () => {
               </Button>
             </div>
           </form>
-
-          <div className="bg-blue-50 rounded-2xl border border-blue-200 p-6 text-left space-y-4">
-            <div className="flex items-center space-x-2">
-              <Smartphone className="w-5 h-5 text-blue-600" />
-              <h3 className="font-semibold text-blue-900">What happens next:</h3>
-            </div>
-            <ol className="list-decimal list-inside space-y-2 text-blue-800">
-              <li>Your Tomo account will be created with Google Calendar access</li>
-              <li>You'll connect to Telegram to enable message-based scheduling</li>
-              <li>Start scheduling with simple Telegram messages!</li>
-            </ol>
-          </div>
         </div>
       </div>
     </PageContainer>

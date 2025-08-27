@@ -417,8 +417,7 @@ const Welcome: React.FC = () => {
                 Your privacy is protected
               </p>
               <p className="text-green-700 text-sm">
-                Tomo only reads your calendar to check availability and creates/edits events that you explicitly request through Telegram messages. 
-                We never use your personal information beyond what's needed for scheduling.
+                We never use your personal information beyond what's needed for Tomo to help with your scheduling.
               </p>
             </div>
           </div>
