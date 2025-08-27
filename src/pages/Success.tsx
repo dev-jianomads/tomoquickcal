@@ -224,14 +224,14 @@ const Success: React.FC = () => {
               <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
                 <Calendar className="w-4 h-4 text-green-600" />
               </div>
-              <span className="text-gray-800 font-medium text-left">Google Calendar and Contacts connected</span>
+              <span className="text-gray-800 font-medium text-left">Google Connected</span>
             </div>
             
             <div className="flex items-center space-x-3 p-3 bg-white/60 rounded-lg border border-white/40">
               <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
                 <Zap className="w-4 h-4 text-purple-600" />
               </div>
-              <span className="text-gray-800 font-medium">Telegram bot connected</span>
+              <span className="text-gray-800 font-medium">Telegram Connected</span>
             </div>
           </div>
         </div>
