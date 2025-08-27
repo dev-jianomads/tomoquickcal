@@ -25,7 +25,6 @@ function App() {
             <Route path="/delete-account" element={<DeleteAccount />} />
             {/* Legacy redirects */}
             <Route path="/landing" element={<Navigate to="/welcome" replace />} />
-            <Route path="/connect-bot" element={<Navigate to="/create-account" replace />} />
             {/* OAuth success page for handling redirects */}
             <Route path="/oauth-success" element={<OAuthSuccessHandler />} />
           </Routes>
