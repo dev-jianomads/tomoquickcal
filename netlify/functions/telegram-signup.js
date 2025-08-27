@@ -40,7 +40,7 @@ exports.handler = async (event, context) => {
     let requestBody;
     try {
       requestBody = JSON.parse(event.body || '{}');
-      console.log('🔧 Parsed request body:', requestBody);
+      console.log('🔧 Parsed request body:', JSON.stringify(requestBody, null, 2));
     } catch (parseError) {
       console.error('❌ Failed to parse request body:', parseError);
       return {
@@ -67,24 +67,35 @@ exports.handler = async (event, context) => {
 
     console.log('🔧 Forwarding request to n8n:', { user_id, email });
 
+    // Prepare the exact same payload structure as your Postman test
+    const payload = {
+      user_id,
+      email
+    };
+
+    console.log('🔧 Final payload being sent:', JSON.stringify(payload, null, 2));
+    console.log('🔧 Making fetch request to:', n8nWebhookUrl);
+
     // Forward request to n8n webhook using built-in fetch (Node.js 18+)
     const response = await fetch(n8nWebhookUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'User-Agent': 'Netlify-Function/1.0'
       },
-      body: JSON.stringify({
-        user_id,
-        email
-      })
+      body: JSON.stringify(payload)
     });
 
     console.log('🔧 N8N response status:', response.status);
     console.log('🔧 N8N response ok:', response.ok);
+    console.log('🔧 N8N response headers:', JSON.stringify([...response.headers.entries()], null, 2));
+
+    // Get response text first
+    const responseText = await response.text();
+    console.log('🔧 N8N raw response text:', responseText);
 
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error('❌ n8n webhook error:', response.status, errorText);
+      console.error('❌ n8n webhook error:', response.status, responseText);
       return {
         statusCode: response.status,
         headers: {
@@ -92,13 +103,23 @@ exports.handler = async (event, context) => {
         },
         body: JSON.stringify({ 
           error: `n8n webhook failed: ${response.status}`,
-          details: errorText
+          details: responseText,
+          url: n8nWebhookUrl,
+          payload: payload
         })
       };
     }
 
-    const data = await response.json();
-    console.log('✅ n8n webhook success:', data);
+    // Try to parse as JSON, fallback to text
+    let data;
+    try {
+      data = JSON.parse(responseText);
+    } catch (e) {
+      console.log('🔧 Response is not JSON, using as text');
+      data = { message: responseText };
+    }
+
+    console.log('✅ n8n webhook success:', JSON.stringify(data, null, 2));
 
     return {
       statusCode: 200,
@@ -113,6 +134,7 @@ exports.handler = async (event, context) => {
 
   } catch (error) {
     console.error('❌ Function error:', error);
+    console.error('❌ Error stack:', error.stack);
     return {
       statusCode: 500,
       headers: {
@@ -120,7 +142,8 @@ exports.handler = async (event, context) => {
       },
       body: JSON.stringify({ 
         error: 'Internal server error',
-        details: error.message
+        details: error.message,
+        stack: error.stack
       })
     };
   }
