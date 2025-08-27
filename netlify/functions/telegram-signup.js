@@ -1,5 +1,3 @@
-const fetch = require('node-fetch');
-
 exports.handler = async (event, context) => {
   // Handle CORS preflight requests
   if (event.httpMethod === 'OPTIONS') {
@@ -44,7 +42,7 @@ exports.handler = async (event, context) => {
 
     console.log('🔧 Forwarding request to n8n:', { user_id, email });
 
-    // Forward request to n8n webhook
+    // Forward request to n8n webhook using built-in fetch
     const response = await fetch('https://n8n.srv845833.hstgr.cloud/webhook/tg-sign-up', {
       method: 'POST',
       headers: {
