@@ -13,6 +13,7 @@ const ConnectTelegram: React.FC = () => {
   const [error, setError] = useState('');
   const [connectionMessage, setConnectionMessage] = useState('');
   const [retryCount, setRetryCount] = useState(0);
+  const [debugInfo, setDebugInfo] = useState<any>(null);
 
   // Check if user has account created
   useEffect(() => {
@@ -93,6 +94,13 @@ const ConnectTelegram: React.FC = () => {
         timestamp: new Date().toISOString()
       });
       
+      // Store debug info for display
+      setDebugInfo({
+        userId: appData.userId,
+        userEmail: appData.userEmail,
+        timestamp: new Date().toISOString()
+      });
+      
       // 🎯 THIS IS THE ENDPOINT BEING CALLED:
       // URL: https://n8n.srv845833.hstgr.cloud/webhook/tg-sign-up
       // Method: POST
@@ -101,10 +109,20 @@ const ConnectTelegram: React.FC = () => {
       let response;
       try {
         console.log('🔗 Starting fetch request...');
+        
+        // Try a simple test first
+        console.log('🔗 Testing basic connectivity...');
+        const testResponse = await fetch('https://n8n.srv845833.hstgr.cloud/', {
+          method: 'GET',
+          mode: 'no-cors'
+        });
+        console.log('🔗 Basic connectivity test completed');
+        
         response = await fetch('https://n8n.srv845833.hstgr.cloud/webhook/tg-sign-up', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
+            'Accept': 'application/json',
           },
           mode: 'cors',
           body: JSON.stringify({
@@ -330,6 +348,18 @@ const ConnectTelegram: React.FC = () => {
             {error && (
               <div className="bg-red-50 border border-red-200 rounded-lg p-4 space-y-3">
                 <p className="text-red-600 text-sm font-medium">{error}</p>
+                
+                {/* Debug Info */}
+                {debugInfo && (
+                  <div className="bg-gray-50 border border-gray-200 rounded p-3">
+                    <p className="text-gray-800 text-xs font-medium mb-2">Debug Info:</p>
+                    <div className="text-gray-700 text-xs space-y-1 font-mono">
+                      <div>User ID: {debugInfo.userId}</div>
+                      <div>Email: {debugInfo.userEmail}</div>
+                      <div>Time: {debugInfo.timestamp}</div>
+                    </div>
+                  </div>
+                )}
                 
                 {/* Troubleshooting Tips */}
                 <div className="bg-blue-50 border border-blue-200 rounded p-3">
