@@ -110,27 +110,18 @@ const ConnectTelegram: React.FC = () => {
       try {
         console.log('🔗 Starting fetch request...');
         
-        // Try a simple test first
-        console.log('🔗 Testing basic connectivity...');
-        const testResponse = await fetch('https://n8n.srv845833.hstgr.cloud/', {
-          method: 'GET',
-          mode: 'no-cors'
-        });
-        console.log('🔗 Basic connectivity test completed');
-        
+        // Simplified fetch request without extra headers/modes
         response = await fetch('https://n8n.srv845833.hstgr.cloud/webhook/tg-sign-up', {
           method: 'POST',
           headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
+            'Content-Type': 'application/json'
           },
-          mode: 'cors',
           body: JSON.stringify({
             user_id: appData.userId,
             email: appData.userEmail
           })
         });
-        console.log('🔗 Fetch completed, got response object');
+        console.log('🔗 Fetch completed, response status:', response.status);
       } catch (fetchError) {
         console.error('🔗 Fetch failed with error:', fetchError);
         console.error('🔗 Error details:', {
@@ -141,7 +132,7 @@ const ConnectTelegram: React.FC = () => {
         throw new Error(`Network request failed: ${fetchError.message}`);
       }
       
-      console.log('🔗 Response status:', response.status);
+      console.log('🔗 Response ok:', response.ok);
       console.log('🔗 Response headers:', Object.fromEntries(response.headers.entries()));
       
       if (!response.ok) {
