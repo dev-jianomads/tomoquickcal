@@ -347,22 +347,6 @@ const Welcome: React.FC = () => {
         )}
       </div>
       </PageContainer>
-
-      {/* Debug UI - Restored for Android testing */}
-      <div className="fixed bottom-4 right-4 bg-black bg-opacity-75 text-white text-xs p-3 rounded-lg max-w-xs">
-        <div className="font-bold mb-2">Debug Info:</div>
-        <div>isTelegramBrowser: {isTelegramBrowser.toString()}</div>
-        <div>isTgMiniApp: {isTgMiniApp.toString()}</div>
-        <div>isTelegramUA: {isTelegramUA.toString()}</div>
-        <div>hasTelegramAPI: {hasTelegramAPI.toString()}</div>
-        <div>isLikelyTelegramContext: {isLikelyTelegramContext.toString()}</div>
-        <div>isIOSSafariFromTelegram: {isIOSSafariFromTelegram.toString()}</div>
-        <div>referrer: {document.referrer || 'none'}</div>
-        <div>windowName: {window.name || 'none'}</div>
-        <div>search: {window.location.search || 'none'}</div>
-        <div>hash: {window.location.hash || 'none'}</div>
-        <div>userAgent: {navigator.userAgent.substring(0, 50)}...</div>
-      </div>
     </>
   );
 };
