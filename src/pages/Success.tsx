@@ -111,13 +111,27 @@ const Success: React.FC = () => {
       
     } catch (error) {
       console.error('❌ Failed to get Telegram link:', error);
-      setRedirectMessage('Failed to connect to Telegram. Please try again.');
+      
+      // Enhanced error handling with specific messages
+      let errorMessage = 'Failed to connect to Telegram. Please try again.';
+      
+      if (error instanceof Error) {
+        if (error.message.includes('404') || error.message.includes('not found')) {
+          errorMessage = 'User not found. Please complete the setup process again.';
+        } else if (error.message.includes('500') || error.message.includes('503')) {
+          errorMessage = 'Telegram service temporarily unavailable. Please try again in a moment.';
+        } else if (error.message.includes('network') || error.message.includes('fetch')) {
+          errorMessage = 'Network error. Please check your connection and try again.';
+        }
+      }
+      
+      setRedirectMessage(errorMessage);
       
       // Reset after 3 seconds
       setTimeout(() => {
         setIsRedirecting(false);
         setRedirectMessage('');
-      }, 3000);
+      }, 5000); // Longer timeout for error messages
     }
   };
 
@@ -210,11 +224,31 @@ const Success: React.FC = () => {
               <span className="text-purple-800 font-medium text-sm">Ready to Schedule</span>
             </div>
             {isRedirecting ? (
-              <div className="flex items-center space-x-2">
-                <div className="w-4 h-4 border-2 border-purple-600 border-t-transparent rounded-full animate-spin"></div>
-                <p className="text-purple-700 text-xs font-medium">
-                  {redirectMessage}
-                </p>
+              <div className="space-y-2">
+                <div className="flex items-center space-x-2">
+                  {!redirectMessage.includes('Failed') && !redirectMessage.includes('Error') && (
+                    <div className="w-4 h-4 border-2 border-purple-600 border-t-transparent rounded-full animate-spin"></div>
+                  )}
+                  <p className={`text-xs font-medium ${
+                    redirectMessage.includes('Failed') || redirectMessage.includes('Error') || redirectMessage.includes('unavailable')
+                      ? 'text-red-700' 
+                      : 'text-purple-700'
+                  }`}>
+                    {redirectMessage}
+                  </p>
+                </div>
+                
+                {/* Show helpful instructions for common issues */}
+                {redirectMessage.includes('Failed') && (
+                  <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded text-xs text-blue-800">
+                    <p className="font-medium mb-1">Common solutions:</p>
+                    <ul className="text-xs space-y-1">
+                      <li>• Make sure Telegram is installed on your device</li>
+                      <li>• Check you're signed up with the same phone number</li>
+                      <li>• Try refreshing the page and clicking again</li>
+                    </ul>
+                  </div>
+                )}
               </div>
             ) : (
               <p className="text-purple-700 text-xs">
