@@ -79,32 +79,74 @@ const ConnectTelegram: React.FC = () => {
         email: appData.userEmail
       });
       
-      // 🎯 THIS IS THE ENDPOINT BEING CALLED:
-      // URL: https://n8n.srv845833.hstgr.cloud/webhook/tg-sign-up
-      // Method: POST
-      // Body: { user_id: appData.userId, email: appData.userEmail }
-      const response = await fetch('https://n8n.srv845833.hstgr.cloud/webhook/tg-sign-up', {
+      // Add detailed debugging
+      console.log('🔗 Full request details:', {
+        url: 'https://n8n.srv845833.hstgr.cloud/webhook/tg-sign-up',
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        mode: 'cors',
         body: JSON.stringify({
           user_id: appData.userId,
           email: appData.userEmail
-        })
+        }),
+        timestamp: new Date().toISOString()
       });
+      
+      // 🎯 THIS IS THE ENDPOINT BEING CALLED:
+      // URL: https://n8n.srv845833.hstgr.cloud/webhook/tg-sign-up
+      // Method: POST
+      // Body: { user_id: appData.userId, email: appData.userEmail }
+      
+      let response;
+      try {
+        console.log('🔗 Starting fetch request...');
+        response = await fetch('https://n8n.srv845833.hstgr.cloud/webhook/tg-sign-up', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          mode: 'cors',
+          body: JSON.stringify({
+            user_id: appData.userId,
+            email: appData.userEmail
+          })
+        });
+        console.log('🔗 Fetch completed, got response object');
+      } catch (fetchError) {
+        console.error('🔗 Fetch failed with error:', fetchError);
+        console.error('🔗 Error details:', {
+          name: fetchError.name,
+          message: fetchError.message,
+          stack: fetchError.stack
+        });
+        throw new Error(`Network request failed: ${fetchError.message}`);
+      }
       
       console.log('🔗 Response status:', response.status);
       console.log('🔗 Response headers:', Object.fromEntries(response.headers.entries()));
       
       if (!response.ok) {
-        const errorText = await response.text();
+        let errorText;
+        try {
+          errorText = await response.text();
+        } catch (textError) {
+          errorText = `Could not read response text: ${textError.message}`;
+        }
         console.error('🔗 Response error:', errorText);
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
       
-      const data = await response.json();
+      let data;
+      try {
+        data = await response.json();
+      } catch (jsonError) {
+        console.error('🔗 JSON parsing failed:', jsonError);
+        const responseText = await response.text();
+        console.error('🔗 Raw response:', responseText);
+        throw new Error(`Invalid JSON response: ${jsonError.message}`);
+      }
+      
       console.log('✅ Telegram link received:', data);
       
       if (!data.link) {
