@@ -102,11 +102,61 @@ const Welcome: React.FC = () => {
   React.useEffect(() => {
     const checkAuthState = async () => {
       try {
-        // Don't auto-redirect on this page - let user manually proceed
-        console.log('Welcome: Auth state check (no auto-redirect):', {
+        // Check for returning users and auto-redirect based on completion status
+        console.log('Welcome: Auth state check with auto-redirect:', {
           isSignedIn,
           isInitialized
         });
+        
+        // If user is already signed in, check their completion status
+        if (isSignedIn) {
+          const { default: googleAuthService } = await import('../services/googleAuth');
+          await googleAuthService.initialize();
+          const currentUser = googleAuthService.getCurrentUser();
+          
+          if (currentUser?.email) {
+            try {
+              const { supabaseService } = await import('../services/supabase');
+              const existingUser = await supabaseService.findUserByEmail(currentUser.email);
+              
+              if (existingUser) {
+                console.log('Welcome: Existing user found, checking completion status:', {
+                  hasAccount: !!(existingUser.phone_number && existingUser.access_token_2),
+                  hasTelegram: !!existingUser.telegram_id
+                });
+                
+                const hasAccount = !!(existingUser.phone_number && existingUser.access_token_2);
+                const hasTelegram = !!existingUser.telegram_id;
+                
+                // Update app data
+                setAppData(prev => ({
+                  ...prev,
+                  gcalLinked: true,
+                  userEmail: existingUser.email,
+                  userId: existingUser.id
+                }));
+                
+                // Auto-redirect based on completion status
+                if (hasAccount && hasTelegram) {
+                  console.log('Welcome: User fully complete, redirecting to success');
+                  navigate('/success', { state: { existingUser: true } });
+                  return;
+                } else if (hasAccount && !hasTelegram) {
+                  console.log('Welcome: User has account but no Telegram, redirecting to connect-telegram');
+                  navigate('/connect-telegram');
+                  return;
+                } else {
+                  console.log('Welcome: User incomplete, redirecting to create-account');
+                  navigate('/create-account');
+                  return;
+                }
+              }
+            } catch (error) {
+              console.log('Welcome: Error checking user status:', error);
+              // Continue with normal flow
+            }
+          }
+        }
         
       } catch (error) {
         console.error('Welcome: Error during auth check:', error);
@@ -115,9 +165,12 @@ const Welcome: React.FC = () => {
       }
     };
     
-    // Always show the page, don't auto-redirect
-    setIsCheckingAuth(false);
-    checkAuthState();
+    // Check auth state if initialized
+    if (isInitialized) {
+      checkAuthState();
+    } else {
+      setIsCheckingAuth(false);
+    }
   }, [isSignedIn, isInitialized]);
 
   const handleConnectGoogle = async () => {
@@ -148,18 +201,18 @@ const Welcome: React.FC = () => {
           gcalLinked: true,
           userEmail: 'demo@example.com' 
         }));
-        navigate('/connect-bot');
+        navigate('/create-account');
         return;
       }
       
       // Show loading state immediately
       console.log('Welcome: Starting OAuth flow...');
       
-      // Start the OAuth flow - it will redirect to connect-bot on success
+      // Start the OAuth flow - it will redirect to create-account on success
       const success = await signIn();
       
       // If signIn returns true, it means auth completed successfully
-      // and we should navigate to connect-bot
+      // and we should navigate to create-account
       if (success) {
         console.log('Welcome: OAuth successful, checking user status...');
         
@@ -172,23 +225,30 @@ const Welcome: React.FC = () => {
             const { supabaseService } = await import('../services/supabase');
             const existingUser = await supabaseService.findUserByEmail(currentUser.email);
             
-            if (existingUser?.phone_number && existingUser.phone_number.trim() !== '' && existingUser.phone_number !== 'null') {
-              // User has account, check Telegram status
-              if (existingUser.telegram_id) {
+            if (existingUser) {
+              const hasAccount = !!(existingUser.phone_number && existingUser.access_token_2);
+              const hasTelegram = !!existingUser.telegram_id;
+              
+              // Update app data
+              setAppData(prev => ({
+                ...prev,
+                gcalLinked: true,
+                userEmail: existingUser.email,
+                userId: existingUser.id
+              }));
+              
+              if (hasAccount && hasTelegram) {
                 console.log('Welcome: Existing user fully complete, navigating to success');
                 navigate('/success', { state: { existingUser: true } });
-              } else {
+              } else if (hasAccount && !hasTelegram) {
                 console.log('Welcome: Existing user needs Telegram, navigating to connect-telegram');
-                setAppData(prev => ({
-                  ...prev,
-                  gcalLinked: true,
-                  userEmail: existingUser.email,
-                  userId: existingUser.id
-                }));
                 navigate('/connect-telegram');
+              } else {
+                console.log('Welcome: Existing user incomplete, navigating to create-account');
+                navigate('/create-account');
               }
             } else {
-              console.log('Welcome: New user or incomplete account, navigating to create-account');
+              console.log('Welcome: New user, navigating to create-account');
               navigate('/create-account');
             }
           } else {
@@ -223,23 +283,30 @@ const Welcome: React.FC = () => {
           const { supabaseService } = await import('../services/supabase');
           const existingUser = await supabaseService.findUserByEmail(currentUser.email);
           
-          if (existingUser?.phone_number && existingUser.phone_number.trim() !== '' && existingUser.phone_number !== 'null') {
-            // User has account, check Telegram status
-            if (existingUser.telegram_id) {
+          if (existingUser) {
+            const hasAccount = !!(existingUser.phone_number && existingUser.access_token_2);
+            const hasTelegram = !!existingUser.telegram_id;
+            
+            // Update app data
+            setAppData(prev => ({
+              ...prev,
+              gcalLinked: true,
+              userEmail: existingUser.email,
+              userId: existingUser.id
+            }));
+            
+            if (hasAccount && hasTelegram) {
               console.log('Welcome: Existing user fully complete, navigating to success');
               navigate('/success', { state: { existingUser: true } });
-            } else {
+            } else if (hasAccount && !hasTelegram) {
               console.log('Welcome: Existing user needs Telegram, navigating to connect-telegram');
-              setAppData(prev => ({
-                ...prev,
-                gcalLinked: true,
-                userEmail: existingUser.email,
-                userId: existingUser.id
-              }));
               navigate('/connect-telegram');
+            } else {
+              console.log('Welcome: Existing user incomplete, navigating to create-account');
+              navigate('/create-account');
             }
           } else {
-            console.log('Welcome: New user or incomplete account, navigating to create-account');
+            console.log('Welcome: New user, navigating to create-account');
             navigate('/create-account');
           }
         } else {

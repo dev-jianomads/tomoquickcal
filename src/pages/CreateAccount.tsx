@@ -82,6 +82,12 @@ const CreateAccount: React.FC = () => {
                 // Check if Telegram is connected
                 if (existingUser.telegram_id) {
                   console.log('✅ User fully complete, redirecting to success');
+                  setAppData(prev => ({
+                    ...prev,
+                    gcalLinked: true,
+                    userEmail: existingUser.email,
+                    userId: existingUser.id
+                  }));
                   navigate('/success', { 
                     state: { 
                       existingUser: true

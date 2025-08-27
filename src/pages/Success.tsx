@@ -14,8 +14,8 @@ const Success: React.FC = () => {
   const [redirectMessage, setRedirectMessage] = React.useState('');
 
   useEffect(() => {
-    // Set Telegram as linked when page loads
-    console.log('✅ Success page: Telegram integration complete');
+    // Set signalLinked as linked when page loads (keeping legacy field name)
+    console.log('✅ Success page: Full setup complete');
     console.log('✅ Success page: Component mounted successfully');
     console.log('✅ Success page: Current URL:', window.location.href);
     console.log('✅ Success page: Current pathname:', window.location.pathname);
@@ -32,7 +32,7 @@ const Success: React.FC = () => {
       proactiveScheduling: false
     }));
     
-    console.log('✅ Success page: Telegram integration ready');
+    console.log('✅ Success page: Full setup complete');
     
     // Log setup completion
     if (appData.userId && appData.userEmail && !isExistingUser && !isReconnected) {
