@@ -234,9 +234,6 @@ const ConnectTelegram: React.FC = () => {
             <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
               Connect to Telegram
             </h1>
-            <p className="text-gray-600 text-lg leading-relaxed">
-              Add @AskTomoBot to your Telegram to start scheduling meetings with simple messages.
-            </p>
           </div>
 
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-4">
@@ -349,7 +346,7 @@ const ConnectTelegram: React.FC = () => {
               <Button onClick={handleConnectTelegram}>
                 <div className="flex items-center space-x-2">
                   <ExternalLink className="w-4 h-4" />
-                  <span>Add Tomo Bot to Telegram</span>
+                  <span>Add Tomo to Telegram</span>
                 </div>
               </Button>
             </div>
