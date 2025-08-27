@@ -4,6 +4,9 @@
   
   # Directory to publish (Vite builds to 'dist')
   publish = "dist"
+  
+  # Functions directory
+  functions = "netlify/functions"
 
 [build.environment]
   # Node version for build
