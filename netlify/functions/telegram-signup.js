@@ -1,6 +1,13 @@
+const { createClient } = require('@supabase/supabase-js');
+
 exports.handler = async (event, context) => {
+  console.log('🔧 Netlify Function: telegram-signup called');
+  console.log('🔧 HTTP Method:', event.httpMethod);
+  console.log('🔧 Headers:', JSON.stringify(event.headers, null, 2));
+  
   // Handle CORS preflight requests
   if (event.httpMethod === 'OPTIONS') {
+    console.log('🔧 Handling CORS preflight request');
     return {
       statusCode: 200,
       headers: {
@@ -14,6 +21,7 @@ exports.handler = async (event, context) => {
 
   // Only allow POST requests
   if (event.httpMethod !== 'POST') {
+    console.log('❌ Method not allowed:', event.httpMethod);
     return {
       statusCode: 405,
       headers: {
@@ -24,14 +32,29 @@ exports.handler = async (event, context) => {
   }
 
   try {
-    console.log('🔧 Netlify Function: Proxying Telegram signup request...');
+    console.log('🔧 Processing POST request...');
     
     // Get N8N webhook URL from environment variable or use default
     const n8nWebhookUrl = process.env.N8N_WEBHOOK_URL || 'https://n8n.srv845833.hstgr.cloud/webhook/tg-sign-up';
     console.log('🔧 Using N8N webhook URL:', n8nWebhookUrl);
     
     // Parse request body
-    const { user_id, email } = JSON.parse(event.body);
+    let requestBody;
+    try {
+      requestBody = JSON.parse(event.body || '{}');
+      console.log('🔧 Parsed request body:', requestBody);
+    } catch (parseError) {
+      console.error('❌ Failed to parse request body:', parseError);
+      return {
+        statusCode: 400,
+        headers: {
+          'Access-Control-Allow-Origin': '*'
+        },
+        body: JSON.stringify({ error: 'Invalid JSON in request body' })
+      };
+    }
+    
+    const { user_id, email } = requestBody;
 
     if (!user_id || !email) {
       console.error('❌ Missing user_id or email');
@@ -57,6 +80,9 @@ exports.handler = async (event, context) => {
         email
       })
     });
+
+    console.log('🔧 N8N response status:', response.status);
+    console.log('🔧 N8N response ok:', response.ok);
 
     if (!response.ok) {
       const errorText = await response.text();
