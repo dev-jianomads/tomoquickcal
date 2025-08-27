@@ -161,8 +161,44 @@ const Welcome: React.FC = () => {
       // If signIn returns true, it means auth completed successfully
       // and we should navigate to connect-bot
       if (success) {
-        console.log('Welcome: OAuth successful, navigating to connect-bot');
-        navigate('/connect-bot');
+        console.log('Welcome: OAuth successful, checking user status...');
+        
+        // Check if user already has an account
+        try {
+          const { default: googleAuthService } = await import('../services/googleAuth');
+          const currentUser = googleAuthService.getCurrentUser();
+          
+          if (currentUser?.email) {
+            const { supabaseService } = await import('../services/supabase');
+            const existingUser = await supabaseService.findUserByEmail(currentUser.email);
+            
+            if (existingUser?.phone_number && existingUser.phone_number.trim() !== '' && existingUser.phone_number !== 'null') {
+              // User has account, check Telegram status
+              if (existingUser.telegram_id) {
+                console.log('Welcome: Existing user fully complete, navigating to success');
+                navigate('/success', { state: { existingUser: true } });
+              } else {
+                console.log('Welcome: Existing user needs Telegram, navigating to connect-telegram');
+                setAppData(prev => ({
+                  ...prev,
+                  gcalLinked: true,
+                  userEmail: existingUser.email,
+                  userId: existingUser.id
+                }));
+                navigate('/connect-telegram');
+              }
+            } else {
+              console.log('Welcome: New user or incomplete account, navigating to create-account');
+              navigate('/create-account');
+            }
+          } else {
+            console.log('Welcome: No user data, navigating to create-account');
+            navigate('/create-account');
+          }
+        } catch (error) {
+          console.error('Error checking user status:', error);
+          navigate('/create-account');
+        }
       } else {
         console.log('Welcome: OAuth failed or timed out');
         // Error will be shown by the useGoogleAuth hook
@@ -176,8 +212,44 @@ const Welcome: React.FC = () => {
     console.log('Welcome: Check Again button clicked');
     const success = await checkAgain();
     if (success) {
-      console.log('Welcome: Check again successful, navigating to connect-bot');
-      navigate('/connect-bot');
+      console.log('Welcome: Check again successful, checking user status...');
+      
+      // Same logic as handleConnectGoogle success
+      try {
+        const { default: googleAuthService } = await import('../services/googleAuth');
+        const currentUser = googleAuthService.getCurrentUser();
+        
+        if (currentUser?.email) {
+          const { supabaseService } = await import('../services/supabase');
+          const existingUser = await supabaseService.findUserByEmail(currentUser.email);
+          
+          if (existingUser?.phone_number && existingUser.phone_number.trim() !== '' && existingUser.phone_number !== 'null') {
+            // User has account, check Telegram status
+            if (existingUser.telegram_id) {
+              console.log('Welcome: Existing user fully complete, navigating to success');
+              navigate('/success', { state: { existingUser: true } });
+            } else {
+              console.log('Welcome: Existing user needs Telegram, navigating to connect-telegram');
+              setAppData(prev => ({
+                ...prev,
+                gcalLinked: true,
+                userEmail: existingUser.email,
+                userId: existingUser.id
+              }));
+              navigate('/connect-telegram');
+            }
+          } else {
+            console.log('Welcome: New user or incomplete account, navigating to create-account');
+            navigate('/create-account');
+          }
+        } else {
+          console.log('Welcome: No user data, navigating to create-account');
+          navigate('/create-account');
+        }
+      } catch (error) {
+        console.error('Error checking user status:', error);
+        navigate('/create-account');
+      }
     }
   };
 
