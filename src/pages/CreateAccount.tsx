@@ -9,7 +9,7 @@ import googleAuthService from '../services/googleAuth';
 import { useGoogleAuth } from '../hooks/useGoogleAuth';
 import { loggingService } from '../services/logging';
 
-const CreateAccount: React.FC = () => {
+export default function CreateAccount() {
   const navigate = useNavigate();
   const { appData, setAppData } = useApp();
   const { isSignedIn, isInitialized, user } = useGoogleAuth();
@@ -995,6 +995,3 @@ const CreateAccount: React.FC = () => {
       </div>
     </PageContainer>
   );
-};
-
-export default CreateAccount;
