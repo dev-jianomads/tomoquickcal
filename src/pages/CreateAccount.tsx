@@ -995,3 +995,4 @@ export default function CreateAccount() {
       </div>
     </PageContainer>
   );
+}
