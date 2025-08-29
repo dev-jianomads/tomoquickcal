@@ -210,8 +210,8 @@ export class GoogleAuthService {
     
     try {
       // For mobile Safari, ALWAYS use direct navigation (popups don't work)
-      if (isMobileSafari) {
-        console.log('🔐 Mobile Safari detected, using direct navigation (popups blocked)');
+      if (isMobileSafari || isSafari) {
+        console.log('🔐 Safari detected, using direct navigation (popups unreliable)');
         window.location.href = authUrl;
         return new Promise(() => {}); // Never resolves, page will navigate away
       }

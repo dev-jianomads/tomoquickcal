@@ -426,10 +426,11 @@ const Welcome: React.FC = () => {
         {error && (
           <div className="w-full max-w-80 mx-auto p-3 bg-red-50 border border-red-200 rounded-lg">
             <p className="text-red-600 text-sm text-center">{error}</p>
-            {/iPhone|iPad|iPod/i.test(navigator.userAgent) && (
+            {(/iPhone|iPad|iPod/i.test(navigator.userAgent) || /^((?!chrome|android).)*safari/i.test(navigator.userAgent)) && (
               <div className="mt-2 text-xs text-red-500 text-center">
                 <p className="font-medium">Safari users:</p>
                 <p>Settings → Safari → Privacy & Security → Turn OFF "Prevent Cross-Site Tracking"</p>
+                <p className="mt-1">Or try using Chrome/Firefox for setup</p>
               </div>
             )}
             {showCheckAgain && (
