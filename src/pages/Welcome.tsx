@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Calendar, MessageCircle, Shield, Clock, Users, Loader2, ExternalLink, AlertTriangle } from 'lucide-react';
 import PageContainer from '../components/PageContainer';
 import Button from '../components/Button';
+import SEOHead from '../components/SEOHead';
 import { useGoogleAuth } from '../hooks/useGoogleAuth';
 import { useApp } from '../contexts/AppContext';
 
@@ -322,6 +323,12 @@ const Welcome: React.FC = () => {
 
   return (
     <>
+      <SEOHead 
+        title="Tomo QuickCal - Schedule meetings through Telegram"
+        description="Connect your Google Calendar to Tomo QuickCal and schedule meetings effortlessly through Telegram messages. Create events, find contacts, and manage your calendar directly from Telegram."
+        keywords="telegram calendar bot, google calendar telegram, schedule meetings telegram, calendar automation, telegram scheduling assistant"
+        canonical="https://cal.hellotomo.ai/welcome"
+      />
       <PageContainer>
       <div className="text-center space-y-8">
         <div className="space-y-4">

@@ -1,0 +1,14 @@
+User-agent: *
+Allow: /
+
+# Important pages
+Allow: /welcome
+Allow: /create-account
+Allow: /connect-telegram
+Allow: /success
+
+# Sitemap location
+Sitemap: https://cal.hellotomo.ai/sitemap.xml
+
+# Crawl delay (optional - helps with server load)
+Crawl-delay: 1
