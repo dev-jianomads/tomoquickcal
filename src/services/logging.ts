@@ -34,6 +34,11 @@ export type EventType =
   | 'phone_number_saved'
   | 'telegram_sms_sent'
   | 'account_deleted'
+  | 'account_deletion_started'
+  | 'google_permissions_revoked'
+  | 'user_data_deleted'
+  | 'telegram_connection_failure'
+  | 'telegram_addbot_failure'
   | 'setup_completed';
 
 export class LoggingService {
@@ -200,6 +205,65 @@ export class LoggingService {
         google_calendar_connected: setupData.gcalLinked,
         telegram_connected: setupData.telegramLinked,
         phone_number: setupData.phoneNumber
+      }
+    });
+  }
+
+  async logAccountDeletionStarted(userEmail: string, deletionMethod: 'self_service' | 'admin'): Promise<void> {
+    await this.log('account_deletion_started', {
+      userEmail,
+      eventData: {
+        deletion_method: deletionMethod,
+        timestamp: new Date().toISOString(),
+        user_agent: navigator.userAgent
+      }
+    });
+  }
+
+  async logGooglePermissionsRevoked(userId: string, userEmail: string, success: boolean, error?: string): Promise<void> {
+    await this.log('google_permissions_revoked', {
+      userId,
+      userEmail,
+      success,
+      errorMessage: error,
+      eventData: {
+        revocation_successful: success,
+        timestamp: new Date().toISOString()
+      }
+    });
+  }
+
+  async logUserDataDeleted(userId: string, userEmail: string, success: boolean, error?: string): Promise<void> {
+    await this.log('user_data_deleted', {
+      userId,
+      userEmail,
+      success,
+      errorMessage: error,
+      eventData: {
+        deletion_successful: success,
+        timestamp: new Date().toISOString()
+      }
+    });
+  }
+
+  async logAccountDeleted(userId: string, userEmail: string, deletionResults: {
+    supabaseSuccess: boolean;
+    googleSuccess: boolean;
+    errors: string[];
+  }): Promise<void> {
+    await this.log('account_deleted', {
+      userId,
+      userEmail,
+      success: deletionResults.supabaseSuccess && deletionResults.googleSuccess,
+      errorMessage: deletionResults.errors.length > 0 ? deletionResults.errors.join('; ') : undefined,
+      eventData: {
+        deleted_user_id: userId,
+        google_revocation_success: deletionResults.googleSuccess,
+        supabase_deletion_success: deletionResults.supabaseSuccess,
+        total_errors: deletionResults.errors.length,
+        error_details: deletionResults.errors,
+        fully_successful: deletionResults.supabaseSuccess && deletionResults.googleSuccess,
+        timestamp: new Date().toISOString()
       }
     });
   }

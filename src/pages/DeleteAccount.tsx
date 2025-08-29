@@ -144,6 +144,13 @@ const DeleteAccount: React.FC = () => {
     setIsDeleting(true);
     setError('');
 
+    // Log deletion process start
+    try {
+      await loggingService.logAccountDeletionStarted(emailToDelete, 'self_service');
+    } catch (logError) {
+      console.warn('Failed to log deletion start:', logError);
+    }
+
     const results = {
       supabaseSuccess: false,
       googleSuccess: false,
@@ -183,13 +190,34 @@ const DeleteAccount: React.FC = () => {
         if (response.ok && responseData.success) {
           console.log('✅ Google permissions revoked successfully');
           results.googleSuccess = true;
+          
+          // Log successful Google revocation
+          try {
+            await loggingService.logGooglePermissionsRevoked(userId, emailToDelete, true);
+          } catch (logError) {
+            console.warn('Failed to log Google revocation success:', logError);
+          }
         } else {
           console.warn('⚠️ Failed to revoke Google permissions:', responseData);
           results.errors.push(`Google revocation: ${responseData.error || 'Unknown error'}`);
+          
+          // Log failed Google revocation
+          try {
+            await loggingService.logGooglePermissionsRevoked(userId, emailToDelete, false, responseData.error || 'Unknown error');
+          } catch (logError) {
+            console.warn('Failed to log Google revocation failure:', logError);
+          }
         }
       } catch (error) {
         console.error('❌ Error revoking Google permissions:', error);
         results.errors.push(`Google revocation: ${error instanceof Error ? error.message : 'Network error'}`);
+        
+        // Log Google revocation error
+        try {
+          await loggingService.logGooglePermissionsRevoked(userId, emailToDelete, false, error instanceof Error ? error.message : 'Network error');
+        } catch (logError) {
+          console.warn('Failed to log Google revocation error:', logError);
+        }
       }
 
       // Step 3: Delete from Supabase
@@ -198,17 +226,6 @@ const DeleteAccount: React.FC = () => {
         const userData = await supabaseService.findUserByEmail(emailToDelete);
         
         if (userData) {
-          // Log account deletion before deleting
-          await loggingService.log('account_deleted', {
-            userId: userData.id,
-            userEmail: userData.email,
-            eventData: {
-              deleted_user_id: userData.id,
-              google_revocation_success: results.googleSuccess,
-              timestamp: new Date().toISOString()
-            }
-          });
-
           // Delete user (cascades to related tables)
           const { error: deleteError } = await supabaseService.supabase
             .from('users')
@@ -221,6 +238,13 @@ const DeleteAccount: React.FC = () => {
 
           console.log('✅ User deleted from Supabase successfully');
           results.supabaseSuccess = true;
+          
+          // Log successful user data deletion
+          try {
+            await loggingService.logUserDataDeleted(userData.id, userData.email, true);
+          } catch (logError) {
+            console.warn('Failed to log user data deletion success:', logError);
+          }
         } else {
           console.log('⚠️ User not found in Supabase');
           results.errors.push('User not found in database');
@@ -228,6 +252,13 @@ const DeleteAccount: React.FC = () => {
       } catch (error) {
         console.error('❌ Error deleting from Supabase:', error);
         results.errors.push(`Database deletion: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        
+        // Log failed user data deletion
+        try {
+          await loggingService.logUserDataDeleted(userId, emailToDelete, false, error instanceof Error ? error.message : 'Unknown error');
+        } catch (logError) {
+          console.warn('Failed to log user data deletion failure:', logError);
+        }
       }
 
       // Step 4: Clear local storage
@@ -242,6 +273,13 @@ const DeleteAccount: React.FC = () => {
       }
 
       setDeletionResults(results);
+      
+      // Log final account deletion result
+      try {
+        await loggingService.logAccountDeleted(userId, emailToDelete, results);
+      } catch (logError) {
+        console.warn('Failed to log final account deletion result:', logError);
+      }
 
       // Redirect after showing results
       setTimeout(() => {
