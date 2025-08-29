@@ -120,6 +120,14 @@ export class SupabaseService {
     try {
       const userId = this.generateFirebaseUID();
       console.log('👤 Creating new user with ID:', userId);
+      console.log('👤 Input userData for createUser:', JSON.stringify(userData, null, 2));
+      console.log('👤 granted_scopes in input:', {
+        hasGrantedScopes: 'granted_scopes' in userData,
+        grantedScopesValue: userData.granted_scopes,
+        grantedScopesType: typeof userData.granted_scopes,
+        grantedScopesIsNull: userData.granted_scopes === null,
+        grantedScopesIsUndefined: userData.granted_scopes === undefined
+      });
 
       // If not real Supabase, return mock user data
       if (!this.isRealSupabase) {
@@ -150,7 +158,16 @@ export class SupabaseService {
         refresh_token_2: userData.refresh_token_2 || null,
         client_id_2: userData.client_id_2 || null,
         client_secret_2: userData.client_secret_2 || null,
+        granted_scopes: userData.granted_scopes || null,
       };
+
+      console.log('👤 Final newUser object for Supabase:', JSON.stringify(newUser, null, 2));
+      console.log('👤 granted_scopes in newUser:', {
+        hasGrantedScopes: 'granted_scopes' in newUser,
+        grantedScopesValue: newUser.granted_scopes,
+        grantedScopesType: typeof newUser.granted_scopes,
+        grantedScopesIsNull: newUser.granted_scopes === null
+      });
 
       const { data, error } = await supabase
         .from('users')
@@ -158,7 +175,22 @@ export class SupabaseService {
         .select()
         .single();
 
+      console.log('👤 Supabase insert result:', {
+        hasData: !!data,
+        hasError: !!error,
+        dataGrantedScopes: data?.granted_scopes,
+        dataGrantedScopesType: typeof data?.granted_scopes,
+        errorMessage: error?.message,
+        errorCode: error?.code
+      });
+
       if (error) {
+        console.error('👤 Supabase insert error details:', {
+          message: error.message,
+          code: error.code,
+          details: error.details,
+          hint: error.hint
+        });
         throw error;
       }
 
@@ -178,6 +210,13 @@ export class SupabaseService {
   async updateUser(userId: string, updates: Partial<Omit<UserData, 'id' | 'created_at'>>): Promise<UserData> {
     try {
       console.log('🔄 Updating user:', userId, 'with updates:', JSON.stringify(updates, null, 2));
+      console.log('🔄 granted_scopes in updates:', {
+        hasGrantedScopes: 'granted_scopes' in updates,
+        grantedScopesValue: updates.granted_scopes,
+        grantedScopesType: typeof updates.granted_scopes,
+        grantedScopesIsNull: updates.granted_scopes === null,
+        grantedScopesIsUndefined: updates.granted_scopes === undefined
+      });
 
       // If not real Supabase, return mock updated user
       if (!this.isRealSupabase) {
@@ -205,8 +244,23 @@ export class SupabaseService {
         .select()
         .single();
 
+      console.log('🔄 Supabase update result:', {
+        hasData: !!data,
+        hasError: !!error,
+        dataGrantedScopes: data?.granted_scopes,
+        dataGrantedScopesType: typeof data?.granted_scopes,
+        errorMessage: error?.message,
+        errorCode: error?.code
+      });
+
       if (error) {
         console.error('❌ Supabase update error:', error);
+        console.error('🔄 Supabase update error details:', {
+          message: error.message,
+          code: error.code,
+          details: error.details,
+          hint: error.hint
+        });
         throw error;
       }
 
