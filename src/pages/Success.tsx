@@ -252,6 +252,20 @@ const Success: React.FC = () => {
           </div>
         </div>
 
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-left">
+          <div className="flex items-start space-x-3">
+            <MessageCircle className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+            <div className="space-y-1">
+              <p className="text-blue-800 text-sm font-medium">
+                Check Telegram for Tomo's welcome message
+              </p>
+              <p className="text-blue-700 text-sm">
+                If you don't see a welcome message from Tomo in Telegram please check your email and click that smart link
+              </p>
+            </div>
+          </div>
+        </div>
+
         <div className="pt-4 space-y-3">
           <button
             onClick={handleFinish}
