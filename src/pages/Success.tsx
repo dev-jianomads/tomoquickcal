@@ -96,12 +96,16 @@ const Success: React.FC = () => {
       const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent) || 
                        /iPhone|iPad|iPod/i.test(navigator.userAgent);
       
-      if (isSafari) {
-        console.log('🍎 Safari detected, using direct navigation for Telegram link');
+      // Mobile detection
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      
+      if (isSafari || isMobile) {
+        console.log('🍎 Safari or mobile detected, using direct navigation for Telegram link');
         // Safari works better with direct navigation for custom URL schemes
+        // Mobile browsers also work better with direct navigation for app links
         window.location.href = data.link;
       } else {
-        console.log('🌐 Non-Safari browser, using window.open');
+        console.log('🌐 Desktop browser, using window.open');
         window.open(data.link, '_blank');
       }
       
