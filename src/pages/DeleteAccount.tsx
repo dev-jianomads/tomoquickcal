@@ -136,7 +136,10 @@ const DeleteAccount: React.FC = () => {
       return;
     }
 
-    if (!userEmail && !foundUser) {
+    // Get the email to delete
+    const emailToDelete = userEmail || foundUser?.email;
+    
+    if (!emailToDelete) {
       setError('No user found to delete');
       return;
     }
@@ -147,6 +150,7 @@ const DeleteAccount: React.FC = () => {
     // Log deletion process start
     try {
       await loggingService.logAccountDeletionStarted(emailToDelete, 'self_service');
+      console.log('✅ Logged account deletion start');
     } catch (logError) {
       console.warn('Failed to log deletion start:', logError);
     }
@@ -160,18 +164,24 @@ const DeleteAccount: React.FC = () => {
     try {
       // Step 1: Get user data before deletion for logging
       let userId = appData.userId || foundUser?.id;
-      const emailToDelete = userEmail || foundUser?.email;
       
       if (!userId) {
         try {
           const userData = await supabaseService.findUserByEmail(emailToDelete);
           userId = userData?.id || 'unknown';
+          console.log('🔍 Found user ID for deletion logging:', userId);
         } catch (error) {
           console.warn('Could not find user ID for logging:', error);
           userId = 'unknown';
         }
       }
 
+      console.log('🗑️ Starting deletion process for:', {
+        userId,
+        emailToDelete,
+        hasFoundUser: !!foundUser,
+        hasAppDataUserId: !!appData.userId
+      });
       // Step 2: Revoke Google permissions server-side
       try {
         console.log('🔄 Revoking Google permissions...');
@@ -194,6 +204,7 @@ const DeleteAccount: React.FC = () => {
           // Log successful Google revocation
           try {
             await loggingService.logGooglePermissionsRevoked(userId, emailToDelete, true);
+            console.log('✅ Logged Google permissions revocation success');
           } catch (logError) {
             console.warn('Failed to log Google revocation success:', logError);
           }
@@ -204,6 +215,7 @@ const DeleteAccount: React.FC = () => {
           // Log failed Google revocation
           try {
             await loggingService.logGooglePermissionsRevoked(userId, emailToDelete, false, responseData.error || 'Unknown error');
+            console.log('✅ Logged Google permissions revocation failure');
           } catch (logError) {
             console.warn('Failed to log Google revocation failure:', logError);
           }
@@ -215,6 +227,7 @@ const DeleteAccount: React.FC = () => {
         // Log Google revocation error
         try {
           await loggingService.logGooglePermissionsRevoked(userId, emailToDelete, false, error instanceof Error ? error.message : 'Network error');
+          console.log('✅ Logged Google permissions revocation error');
         } catch (logError) {
           console.warn('Failed to log Google revocation error:', logError);
         }
@@ -226,6 +239,14 @@ const DeleteAccount: React.FC = () => {
         const userData = await supabaseService.findUserByEmail(emailToDelete);
         
         if (userData) {
+          // Log user data deletion BEFORE actually deleting
+          try {
+            await loggingService.logUserDataDeleted(userData.id, userData.email, true);
+            console.log('✅ Logged user data deletion (before actual deletion)');
+          } catch (logError) {
+            console.warn('Failed to log user data deletion:', logError);
+          }
+          
           // Delete user (cascades to related tables)
           const { error: deleteError } = await supabaseService.supabase
             .from('users')
@@ -238,16 +259,17 @@ const DeleteAccount: React.FC = () => {
 
           console.log('✅ User deleted from Supabase successfully');
           results.supabaseSuccess = true;
-          
-          // Log successful user data deletion
-          try {
-            await loggingService.logUserDataDeleted(userData.id, userData.email, true);
-          } catch (logError) {
-            console.warn('Failed to log user data deletion success:', logError);
-          }
         } else {
           console.log('⚠️ User not found in Supabase');
           results.errors.push('User not found in database');
+          
+          // Log that user was not found
+          try {
+            await loggingService.logUserDataDeleted(userId, emailToDelete, false, 'User not found in database');
+            console.log('✅ Logged user not found for deletion');
+          } catch (logError) {
+            console.warn('Failed to log user not found:', logError);
+          }
         }
       } catch (error) {
         console.error('❌ Error deleting from Supabase:', error);
@@ -256,6 +278,7 @@ const DeleteAccount: React.FC = () => {
         // Log failed user data deletion
         try {
           await loggingService.logUserDataDeleted(userId, emailToDelete, false, error instanceof Error ? error.message : 'Unknown error');
+          console.log('✅ Logged user data deletion failure');
         } catch (logError) {
           console.warn('Failed to log user data deletion failure:', logError);
         }
@@ -272,14 +295,14 @@ const DeleteAccount: React.FC = () => {
         console.warn('⚠️ Error clearing local storage:', error);
       }
 
-      setDeletionResults(results);
-      
-      // Log final account deletion result
+      // Step 5: Log final account deletion result BEFORE setting results
       try {
         await loggingService.logAccountDeleted(userId, emailToDelete, results);
+        console.log('✅ Logged final account deletion result');
       } catch (logError) {
-        console.warn('Failed to log final account deletion result:', logError);
+        console.error('❌ Failed to log final account deletion result:', logError);
       }
+      setDeletionResults(results);
 
       // Redirect after showing results
       setTimeout(() => {
@@ -289,6 +312,23 @@ const DeleteAccount: React.FC = () => {
     } catch (error) {
       console.error('❌ Unexpected error during deletion:', error);
       setError(`Unexpected error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      
+      // Log unexpected deletion error
+      try {
+        await loggingService.log('account_deleted', {
+          userEmail: emailToDelete,
+          success: false,
+          errorMessage: error instanceof Error ? error.message : 'Unexpected deletion error',
+          eventData: {
+            unexpected_error: true,
+            error_type: error instanceof Error ? error.constructor.name : 'Unknown',
+            timestamp: new Date().toISOString()
+          }
+        });
+        console.log('✅ Logged unexpected deletion error');
+      } catch (logError) {
+        console.warn('Failed to log unexpected deletion error:', logError);
+      }
     } finally {
       setIsDeleting(false);
     }
