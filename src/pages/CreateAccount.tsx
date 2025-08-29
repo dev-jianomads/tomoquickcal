@@ -493,6 +493,27 @@ const CreateAccount: React.FC = () => {
         grantedScopesType: typeof tempAuthData.grantedScopes,
         grantedScopesValue: tempAuthData.grantedScopes
       });
+      
+      // Log detailed temp auth data analysis
+      try {
+        await loggingService.log('create_account_temp_auth_analysis', {
+          userEmail,
+          eventData: {
+            temp_auth_data_keys: Object.keys(tempAuthData),
+            has_granted_scopes: 'grantedScopes' in tempAuthData,
+            granted_scopes_is_null: tempAuthData.grantedScopes === null,
+            granted_scopes_is_undefined: tempAuthData.grantedScopes === undefined,
+            granted_scopes_type: typeof tempAuthData.grantedScopes,
+            granted_scopes_value: tempAuthData.grantedScopes,
+            granted_scopes_stringified: JSON.stringify(tempAuthData.grantedScopes),
+            will_save_to_supabase: true,
+            timestamp: new Date().toISOString()
+          }
+        });
+      } catch (logError) {
+        console.warn('Failed to log temp auth analysis:', logError);
+      }
+      
       console.log('💾 Creating/updating Supabase record with complete data for:', userEmail);
       
       // Log parsed auth data
@@ -544,6 +565,23 @@ const CreateAccount: React.FC = () => {
             client_secret_2: tempAuthData.clientSecret,
             granted_scopes: tempAuthData.grantedScopes || null
           });
+          
+          // Log what was actually sent to Supabase for update
+          try {
+            await loggingService.log('supabase_user_update_data', {
+              userEmail,
+              eventData: {
+                update_operation: 'existing_user',
+                granted_scopes_sent: tempAuthData.grantedScopes,
+                granted_scopes_sent_type: typeof tempAuthData.grantedScopes,
+                granted_scopes_sent_is_null: tempAuthData.grantedScopes === null,
+                update_fields: ['display_name', 'phone_number', 'access_token_2', 'refresh_token_2', 'client_id_2', 'client_secret_2', 'granted_scopes'],
+                timestamp: new Date().toISOString()
+              }
+            });
+          } catch (logError) {
+            console.warn('Failed to log Supabase update data:', logError);
+          }
         } else {
           console.log('👤 Creating new user with complete data');
           // Create new user with all data at once
@@ -557,12 +595,47 @@ const CreateAccount: React.FC = () => {
             client_secret_2: tempAuthData.clientSecret,
             granted_scopes: tempAuthData.grantedScopes || null
           });
+          
+          // Log what was actually sent to Supabase for creation
+          try {
+            await loggingService.log('supabase_user_create_data', {
+              userEmail,
+              eventData: {
+                create_operation: 'new_user',
+                granted_scopes_sent: tempAuthData.grantedScopes,
+                granted_scopes_sent_type: typeof tempAuthData.grantedScopes,
+                granted_scopes_sent_is_null: tempAuthData.grantedScopes === null,
+                create_fields: ['email', 'display_name', 'phone_number', 'access_token_2', 'refresh_token_2', 'client_id_2', 'client_secret_2', 'granted_scopes'],
+                timestamp: new Date().toISOString()
+              }
+            });
+          } catch (logError) {
+            console.warn('Failed to log Supabase create data:', logError);
+          }
         }
         
         console.log('✅ User operation completed successfully:', {
           userId: userData.id,
           email: userData.email
         });
+        
+        // Log final user data that was returned from Supabase
+        try {
+          await loggingService.log('supabase_user_operation_result', {
+            userEmail,
+            eventData: {
+              returned_user_id: userData.id,
+              returned_user_email: userData.email,
+              returned_granted_scopes: userData.granted_scopes,
+              returned_granted_scopes_type: typeof userData.granted_scopes,
+              returned_granted_scopes_is_null: userData.granted_scopes === null,
+              operation_successful: true,
+              timestamp: new Date().toISOString()
+            }
+          });
+        } catch (logError) {
+          console.warn('Failed to log Supabase operation result:', logError);
+        }
       } catch (error) {
         console.error('❌ Failed to create/update user in Supabase:', error);
         

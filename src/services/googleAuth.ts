@@ -358,13 +358,75 @@ export class GoogleAuthService {
       
       // Check what scopes were actually granted by the user
       console.log('🔐 Checking granted scopes...');
+      
+      // Log scope collection start
+      try {
+        await loggingService.log('google_oauth_scope_check_start', {
+          userEmail: this.currentUser?.email,
+          eventData: {
+            access_token_available: !!this.accessToken,
+            access_token_length: this.accessToken?.length || 0,
+            timestamp: new Date().toISOString()
+          }
+        });
+      } catch (logError) {
+        console.warn('Failed to log scope check start:', logError);
+      }
+      
       let grantedScopes = null;
       try {
+        console.log('🔐 Making tokeninfo API call...');
         const scopeResponse = await fetch(`https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=${this.accessToken}`);
+        
+        console.log('🔐 Tokeninfo API response:', {
+          ok: scopeResponse.ok,
+          status: scopeResponse.status,
+          statusText: scopeResponse.statusText
+        });
+        
+        // Log API response status
+        try {
+          await loggingService.log('google_oauth_scope_api_response', {
+            userEmail: this.currentUser?.email,
+            eventData: {
+              api_response_ok: scopeResponse.ok,
+              api_response_status: scopeResponse.status,
+              api_response_status_text: scopeResponse.statusText,
+              timestamp: new Date().toISOString()
+            }
+          });
+        } catch (logError) {
+          console.warn('Failed to log scope API response:', logError);
+        }
+        
         if (scopeResponse.ok) {
           const scopeInfo = await scopeResponse.json();
+          
+          console.log('🔐 Tokeninfo API response data:', {
+            hasScopeProperty: 'scope' in scopeInfo,
+            scopeType: typeof scopeInfo.scope,
+            scopeLength: scopeInfo.scope?.length || 0,
+            fullResponse: scopeInfo
+          });
+          
           const scopeString = scopeInfo.scope || '';
           console.log('🔐 Raw granted scopes:', scopeString);
+          
+          // Log raw scope string
+          try {
+            await loggingService.log('google_oauth_scope_raw_data', {
+              userEmail: this.currentUser?.email,
+              eventData: {
+                raw_scope_string: scopeString,
+                scope_string_length: scopeString.length,
+                scope_string_empty: scopeString === '',
+                full_tokeninfo_response: scopeInfo,
+                timestamp: new Date().toISOString()
+              }
+            });
+          } catch (logError) {
+            console.warn('Failed to log raw scope data:', logError);
+          }
           
           // Parse and normalize scopes into structured object
           grantedScopes = {
@@ -380,11 +442,76 @@ export class GoogleAuthService {
           };
           
           console.log('🔐 Parsed granted scopes:', grantedScopes);
+          
+          // Log parsed scope object
+          try {
+            await loggingService.log('google_oauth_scope_parsed', {
+              userEmail: this.currentUser?.email,
+              eventData: {
+                parsed_scopes: grantedScopes,
+                scope_count: Object.keys(grantedScopes).filter(key => key !== 'last_checked' && key !== 'raw_scope_string' && grantedScopes[key] === true).length,
+                has_calendar_events: grantedScopes.calendar_events,
+                has_contacts_readonly: grantedScopes.contacts_readonly,
+                timestamp: new Date().toISOString()
+              }
+            });
+          } catch (logError) {
+            console.warn('Failed to log parsed scope data:', logError);
+          }
         } else {
           console.warn('🔐 Failed to fetch scope info:', scopeResponse.status);
+          
+          // Log scope API failure
+          try {
+            await loggingService.log('google_oauth_scope_api_failure', {
+              userEmail: this.currentUser?.email,
+              success: false,
+              errorMessage: `Scope API failed with status ${scopeResponse.status}`,
+              eventData: {
+                api_status: scopeResponse.status,
+                api_status_text: scopeResponse.statusText,
+                timestamp: new Date().toISOString()
+              }
+            });
+          } catch (logError) {
+            console.warn('Failed to log scope API failure:', logError);
+          }
         }
       } catch (error) {
         console.error('🔐 Error checking granted scopes:', error);
+        
+        // Log scope collection error
+        try {
+          await loggingService.log('google_oauth_scope_collection_error', {
+            userEmail: this.currentUser?.email,
+            success: false,
+            errorMessage: error instanceof Error ? error.message : 'Unknown scope collection error',
+            eventData: {
+              error_type: error instanceof Error ? error.constructor.name : 'Unknown',
+              error_message: error instanceof Error ? error.message : 'Unknown error',
+              has_access_token: !!this.accessToken,
+              timestamp: new Date().toISOString()
+            }
+          });
+        } catch (logError) {
+          console.warn('Failed to log scope collection error:', logError);
+        }
+      }
+      
+      // Log final scope collection result
+      try {
+        await loggingService.log('google_oauth_scope_collection_complete', {
+          userEmail: this.currentUser?.email,
+          eventData: {
+            granted_scopes_is_null: grantedScopes === null,
+            granted_scopes_type: typeof grantedScopes,
+            granted_scopes_object: grantedScopes,
+            will_be_stored_in_temp_auth: true,
+            timestamp: new Date().toISOString()
+          }
+        });
+      } catch (logError) {
+        console.warn('Failed to log scope collection complete:', logError);
       }
       
       // Get user info
@@ -443,6 +570,24 @@ export class GoogleAuthService {
       
       localStorage.setItem('temp_google_auth', JSON.stringify(tempAuthData));
       console.log('✅ Google auth data stored temporarily for Supabase creation');
+      
+      // Log what was actually stored in temp_google_auth
+      try {
+        await loggingService.log('google_oauth_temp_storage', {
+          userEmail: this.currentUser?.email,
+          eventData: {
+            temp_auth_data_keys: Object.keys(tempAuthData),
+            has_granted_scopes_in_temp: 'grantedScopes' in tempAuthData,
+            granted_scopes_in_temp_is_null: tempAuthData.grantedScopes === null,
+            granted_scopes_in_temp_type: typeof tempAuthData.grantedScopes,
+            granted_scopes_in_temp_value: tempAuthData.grantedScopes,
+            temp_auth_data_size: JSON.stringify(tempAuthData).length,
+            timestamp: new Date().toISOString()
+          }
+        });
+      } catch (logError) {
+        console.warn('Failed to log temp storage data:', logError);
+      }
       
       // For existing users: Update their tokens in Supabase immediately
       try {
