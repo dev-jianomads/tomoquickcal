@@ -91,7 +91,19 @@ const Success: React.FC = () => {
       
       // Open Telegram with the bot link
       console.log('🚀 Opening Telegram app with link:', data.link);
-      window.open(data.link, '_blank');
+      
+      // Safari-specific handling for Telegram links
+      const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent) || 
+                       /iPhone|iPad|iPod/i.test(navigator.userAgent);
+      
+      if (isSafari) {
+        console.log('🍎 Safari detected, using direct navigation for Telegram link');
+        // Safari works better with direct navigation for custom URL schemes
+        window.location.href = data.link;
+      } else {
+        console.log('🌐 Non-Safari browser, using window.open');
+        window.open(data.link, '_blank');
+      }
       
       // Log successful Telegram SMS sent (keeping same event name for consistency)
       try {
