@@ -324,9 +324,9 @@ const Welcome: React.FC = () => {
   return (
     <>
       <SEOHead 
-        title="Free Telegram Calendar Bot - Tomo QuickCal"
-        description="Free Telegram calendar bot for Google Calendar. Schedule meetings, create events, and manage your calendar directly through Telegram messages. Connect in 2 minutes."
-        keywords="free telegram calendar bot, telegram calendar, google calendar telegram bot, schedule meetings telegram, calendar automation, telegram scheduling assistant, free calendar bot"
+        title="Free Smart Telegram Calendar Bot - Tomo QuickCal"
+        description="Free smart Telegram calendar bot for Google Calendar. Schedule meetings, create events, and manage your calendar directly through Telegram messages. Connect in 2 minutes."
+        keywords="free smart telegram calendar bot, smart telegram calendar, google calendar telegram bot, schedule meetings telegram, smart calendar automation, telegram scheduling assistant, free calendar bot"
         canonical="https://cal.hellotomo.ai/welcome"
       />
       <PageContainer>

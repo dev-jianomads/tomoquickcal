@@ -12,9 +12,9 @@ interface SEOHeadProps {
 }
 
 const SEOHead: React.FC<SEOHeadProps> = ({
-  title = "Free Telegram Calendar Bot - Tomo QuickCal",
-  description = "Free Telegram calendar bot for Google Calendar. Schedule meetings, create events, and manage your calendar directly through Telegram messages. Connect in 2 minutes.",
-  keywords = "telegram calendar, google calendar telegram bot, schedule meetings telegram, calendar bot, meeting scheduler, telegram automation, google calendar integration",
+  title = "Free Smart Telegram Calendar Bot - Tomo QuickCal",
+  description = "Free smart Telegram calendar bot for Google Calendar. Schedule meetings, create events, and manage your calendar directly through Telegram messages. Connect in 2 minutes.",
+  keywords = "smart telegram calendar, google calendar telegram bot, schedule meetings telegram, smart calendar bot, meeting scheduler, telegram automation, google calendar integration, free calendar bot, telegram scheduling assistant",
   canonical = "https://cal.hellotomo.ai",
   ogTitle,
   ogDescription,
