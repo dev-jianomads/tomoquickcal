@@ -78,6 +78,31 @@ const Welcome: React.FC = () => {
                                      !navigator.userAgent.includes('OPR/') && // Not Opera
                                      !navigator.userAgent.includes('Edge/'))); // Not Edge
   
+  // LinkedIn in-app browser detection
+  const isLinkedInUA = /LinkedInApp/i.test(navigator.userAgent) ||
+                       /LinkedIn/i.test(navigator.userAgent);
+  
+  const referrerIncludesLinkedIn = document.referrer.includes('linkedin.com');
+  
+  // Check for LinkedIn WebView characteristics
+  const isLinkedInWebView = /Android/i.test(navigator.userAgent) &&
+                            /AppleWebKit/i.test(navigator.userAgent) &&
+                            referrerIncludesLinkedIn &&
+                            !navigator.userAgent.includes('Chrome/') && // Not regular Chrome
+                            !navigator.userAgent.includes('Firefox');
+  
+  // iOS LinkedIn app detection
+  const isIOSLinkedInApp = /iPhone|iPad|iPod/i.test(navigator.userAgent) &&
+                           /Safari/i.test(navigator.userAgent) &&
+                           !window.chrome &&
+                           referrerIncludesLinkedIn;
+  
+  // Detect LinkedIn in-app browser
+  const isLinkedInBrowser = isLinkedInUA ||
+                           referrerIncludesLinkedIn ||
+                           isLinkedInWebView ||
+                           isIOSLinkedInApp;
+  
   // Detect Telegram in-app browser (including iOS Safari opened from Telegram)
   const isTelegramBrowser = isTgMiniApp || 
                            isTelegramUA ||
@@ -87,6 +112,9 @@ const Welcome: React.FC = () => {
                            isLikelyTelegramContext ||
                            isIOSSafariFromTelegram ||
                            isAndroidTelegramBrowser;
+  
+  // Combined detection for embedded browsers that block OAuth
+  const isEmbeddedBrowser = isTelegramBrowser || isLinkedInBrowser;
 
   console.log('🔍 Telegram Detection Result:', {
     isTgMiniApp,
@@ -98,6 +126,12 @@ const Welcome: React.FC = () => {
     isIOSSafariFromTelegram,
     isAndroidTelegramBrowser,
     isTelegramBrowser,
+    isLinkedInUA,
+    referrerIncludesLinkedIn,
+    isLinkedInWebView,
+    isIOSLinkedInApp,
+    isLinkedInBrowser,
+    isEmbeddedBrowser,
   });
 
   React.useEffect(() => {
@@ -179,8 +213,8 @@ const Welcome: React.FC = () => {
       console.log('Welcome: Connect Google button clicked');
       
       // Enhanced Telegram detection - block OAuth in Telegram browser
-      if (isTelegramBrowser) {
-        console.log('Welcome: Telegram browser detected, OAuth blocked');
+      if (isEmbeddedBrowser) {
+        console.log('Welcome: Embedded browser detected, OAuth blocked');
         return; // Don't start OAuth, UI will show instructions instead
       }
       
@@ -363,7 +397,7 @@ const Welcome: React.FC = () => {
         </div>
 
         {/* Telegram Browser Detection - Show merged instruction box */}
-        {isTelegramBrowser && (
+        {isEmbeddedBrowser && (
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
             <div className="space-y-3">
               <div className="flex items-start space-x-3">
@@ -375,7 +409,7 @@ const Welcome: React.FC = () => {
               <div className="flex items-start space-x-3">
                 <AlertTriangle className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
                 <p className="text-blue-700 text-sm">
-                  Why? Telegram's browser doesn't support Google authentication.
+                  Why? {isTelegramBrowser ? "Telegram's" : isLinkedInBrowser ? "LinkedIn's" : "This"} browser doesn't support Google authentication.
                 </p>
               </div>
             </div>
@@ -458,7 +492,8 @@ const Welcome: React.FC = () => {
         )}
 
         {isTelegramBrowser ? (
-          // Telegram Browser - Show Instructions UI
+        {isEmbeddedBrowser ? (
+          // Embedded Browser - Show Instructions UI
           <div className="space-y-4"></div>
         ) : (
           // Regular Browser - Show Connect Button
