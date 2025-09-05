@@ -227,11 +227,11 @@ const Welcome: React.FC = () => {
     
     // Get current user and redirect based on completion status
     try {
-      const { default: googleAuthService } = await import('./googleAuth');
+      const { default: googleAuthService } = await import('../services/googleAuth');
       const currentUser = googleAuthService.getCurrentUser();
       
       if (currentUser?.email) {
-        const { supabaseService } = await import('./supabase');
+        const { supabaseService } = await import('../services/supabase');
         const existingUser = await supabaseService.findUserByEmail(currentUser.email);
         
         if (existingUser) {
