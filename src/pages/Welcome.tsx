@@ -491,7 +491,6 @@ const Welcome: React.FC = () => {
           </div>
         )}
 
-        {isTelegramBrowser ? (
         {isEmbeddedBrowser ? (
           // Embedded Browser - Show Instructions UI
           <div className="space-y-4"></div>
