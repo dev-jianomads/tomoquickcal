@@ -599,7 +599,6 @@ const Welcome: React.FC = () => {
               You'll be redirected to Google to securely connect your calendar
             </p>
           </div>
-          </div>
         )}
       </div>
       </PageContainer>
