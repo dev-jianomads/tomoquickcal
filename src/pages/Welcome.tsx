@@ -12,6 +12,7 @@ const Welcome: React.FC = () => {
   const { signIn, isLoading, error, isSignedIn, isInitialized, checkAgain, showCheckAgain } = useGoogleAuth();
   const { setAppData } = useApp();
   const [isCheckingAuth, setIsCheckingAuth] = React.useState(true);
+  const [showStartFresh, setShowStartFresh] = React.useState(false);
 
   // Debug: Log all detection variables
   console.log('🔍 Telegram Detection Debug:', {
@@ -171,20 +172,9 @@ const Welcome: React.FC = () => {
                   userId: existingUser.id
                 }));
                 
-                // Auto-redirect based on completion status
-                if (hasAccount && hasTelegram) {
-                  console.log('Welcome: User fully complete, redirecting to success');
-                  navigate('/success', { state: { existingUser: true } });
-                  return;
-                } else if (hasAccount && !hasTelegram) {
-                  console.log('Welcome: User has account but no Telegram, redirecting to connect-telegram');
-                  navigate('/connect-telegram');
-                  return;
-                } else {
-                  console.log('Welcome: User incomplete, redirecting to create-account');
-                  navigate('/create-account');
-                  return;
-                }
+                // Show "Start Fresh" option for existing users instead of auto-redirect
+                console.log('Welcome: Existing user found, showing Start Fresh option');
+                setShowStartFresh(true);
               }
             } catch (error) {
               console.log('Welcome: Error checking user status:', error);
@@ -208,6 +198,60 @@ const Welcome: React.FC = () => {
     }
   }, [isSignedIn, isInitialized]);
 
+  const handleStartFresh = () => {
+    console.log('Welcome: Start Fresh clicked - clearing stored auth');
+    
+    // Clear all stored authentication data
+    localStorage.removeItem('google_access_token');
+    localStorage.removeItem('google_user');
+    localStorage.removeItem('google_refresh_token');
+    localStorage.removeItem('temp_google_auth');
+    localStorage.removeItem('oauth_state');
+    
+    // Reset app state
+    setAppData({
+      telegramLinked: false,
+      gcalLinked: false,
+      proactiveScheduling: false,
+    });
+    
+    // Hide start fresh button and reset auth state
+    setShowStartFresh(false);
+    
+    // Force page reload to reset all auth state
+    window.location.reload();
+  };
+
+  const handleContinueExisting = async () => {
+    console.log('Welcome: Continue with existing account');
+    
+    // Get current user and redirect based on completion status
+    try {
+      const { default: googleAuthService } = await import('./googleAuth');
+      const currentUser = googleAuthService.getCurrentUser();
+      
+      if (currentUser?.email) {
+        const { supabaseService } = await import('./supabase');
+        const existingUser = await supabaseService.findUserByEmail(currentUser.email);
+        
+        if (existingUser) {
+          const hasAccount = !!(existingUser.phone_number && existingUser.access_token_2);
+          const hasTelegram = !!existingUser.telegram_id;
+          
+          if (hasAccount && hasTelegram) {
+            navigate('/success', { state: { existingUser: true } });
+          } else if (hasAccount && !hasTelegram) {
+            navigate('/connect-telegram');
+          } else {
+            navigate('/create-account');
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error continuing with existing account:', error);
+      navigate('/create-account');
+    }
+  };
   const handleConnectGoogle = async () => {
     try {
       console.log('Welcome: Connect Google button clicked');
@@ -416,6 +460,38 @@ const Welcome: React.FC = () => {
           </div>
         )}
 
+        {/* Start Fresh Option for Existing Users */}
+        {showStartFresh && (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 space-y-4">
+            <div className="text-center space-y-3">
+              <h3 className="font-semibold text-blue-900">Welcome back!</h3>
+              <p className="text-blue-800 text-sm">
+                We found your existing Tomo QuickCal account. You can continue where you left off, 
+                or start fresh to ensure the best connection.
+              </p>
+            </div>
+            
+            <div className="space-y-3">
+              <Button onClick={handleContinueExisting} className="w-full">
+                Continue with Existing Account
+              </Button>
+              
+              <button
+                onClick={handleStartFresh}
+                className="w-full px-6 py-3 text-blue-700 bg-blue-100 border border-blue-300 rounded-lg font-medium hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+              >
+                Start Fresh (Recommended for Best Connection)
+              </button>
+            </div>
+            
+            <div className="bg-blue-100 border border-blue-300 rounded p-3">
+              <p className="text-blue-800 text-xs">
+                💡 <strong>Start Fresh</strong> ensures your Google Calendar connection works perfectly. 
+                Your account data is safe - this just refreshes the connection.
+              </p>
+            </div>
+          </div>
+        )}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 text-left space-y-4">
           <h3 className="font-semibold text-gray-900">What Tomo'll access and be able to do for you:</h3>
           
@@ -495,7 +571,7 @@ const Welcome: React.FC = () => {
           <div className="space-y-4"></div>
         ) : (
           // Regular Browser - Show Connect Button
-          <div className="space-y-4">
+          !showStartFresh && <div className="space-y-4">
             <Button
               onClick={handleConnectGoogle}
               disabled={isLoading || isCheckingAuth}
@@ -522,6 +598,7 @@ const Welcome: React.FC = () => {
             <p className="text-gray-500 text-sm max-w-80 mx-auto">
               You'll be redirected to Google to securely connect your calendar
             </p>
+          </div>
           </div>
         )}
       </div>
