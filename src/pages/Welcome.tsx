@@ -490,7 +490,6 @@ const Welcome: React.FC = () => {
             )}
           </div>
         )}
-
         {isEmbeddedBrowser ? (
           // Embedded Browser - Show Instructions UI
           <div className="space-y-4"></div>
