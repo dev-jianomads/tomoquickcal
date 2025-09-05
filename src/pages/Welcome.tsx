@@ -13,6 +13,7 @@ const Welcome: React.FC = () => {
   const { setAppData } = useApp();
   const [isCheckingAuth, setIsCheckingAuth] = React.useState(true);
   const [showStartFresh, setShowStartFresh] = React.useState(false);
+  const [debugInfo, setDebugInfo] = React.useState<any>(null);
 
   // Debug: Log all detection variables
   console.log('🔍 Telegram Detection Debug:', {
@@ -138,6 +139,29 @@ const Welcome: React.FC = () => {
   React.useEffect(() => {
     const checkAuthState = async () => {
       try {
+        // Collect debug info
+        const storedToken = localStorage.getItem('google_access_token');
+        const storedUser = localStorage.getItem('google_user');
+        const storedRefresh = localStorage.getItem('google_refresh_token');
+        const tempAuth = localStorage.getItem('temp_google_auth');
+        
+        const debugData = {
+          timestamp: new Date().toISOString(),
+          isSignedIn,
+          isInitialized,
+          showStartFresh,
+          localStorage: {
+            hasAccessToken: !!storedToken,
+            hasUser: !!storedUser,
+            hasRefreshToken: !!storedRefresh,
+            hasTempAuth: !!tempAuth,
+            accessTokenLength: storedToken?.length || 0,
+            userEmail: storedUser ? JSON.parse(storedUser).email : null
+          },
+          userAgent: navigator.userAgent,
+          url: window.location.href
+        };
+        
         // Check for returning users and auto-redirect based on completion status
         console.log('Welcome: Auth state check with auto-redirect:', {
           isSignedIn,
@@ -153,6 +177,8 @@ const Welcome: React.FC = () => {
           if (currentUser?.email) {
             try {
               const { supabaseService } = await import('../services/supabase');
+              debugData.supabaseLookup = { started: true };
+              
               const existingUser = await supabaseService.findUserByEmail(currentUser.email);
               
               if (existingUser) {
@@ -161,6 +187,12 @@ const Welcome: React.FC = () => {
                   hasTelegram: !!existingUser.telegram_id
                 });
                 
+                debugData.supabaseLookup = {
+                  completed: true,
+                  userFound: true,
+                  hasPhoneNumber: !!existingUser.phone_number,
+                  hasTelegramId: !!existingUser.telegram_id
+                };
                 const hasAccount = !!(existingUser.phone_number && existingUser.access_token_2);
                 const hasTelegram = !!existingUser.telegram_id;
                 
@@ -175,16 +207,26 @@ const Welcome: React.FC = () => {
                 // Show "Start Fresh" option for existing users instead of auto-redirect
                 console.log('Welcome: Existing user found, showing Start Fresh option');
                 setShowStartFresh(true);
+              } else {
+                debugData.supabaseLookup = {
+                  completed: true,
+                  userFound: false
+                };
               }
             } catch (error) {
               console.log('Welcome: Error checking user status:', error);
+              debugData.supabaseLookup = {
+                error: error instanceof Error ? error.message : 'Unknown error'
+              };
               // Continue with normal flow
             }
           }
         }
         
+        setDebugInfo(debugData);
       } catch (error) {
         console.error('Welcome: Error during auth check:', error);
+        setDebugInfo(prev => ({ ...prev, error: error instanceof Error ? error.message : 'Unknown error' }));
       } finally {
         setIsCheckingAuth(false);
       }
@@ -600,6 +642,48 @@ const Welcome: React.FC = () => {
             </p>
           </div>
         )}
+      </div>
+      
+      {/* Temporary Debug UI */}
+      <div className="mt-8 p-4 bg-gray-100 border border-gray-300 rounded-lg text-xs font-mono">
+        <h4 className="font-bold text-gray-800 mb-2">🐛 Debug Info (Temporary)</h4>
+        <div className="space-y-1 text-gray-700">
+          <div><strong>isSignedIn:</strong> {String(isSignedIn)}</div>
+          <div><strong>isInitialized:</strong> {String(isInitialized)}</div>
+          <div><strong>showStartFresh:</strong> {String(showStartFresh)}</div>
+          <div><strong>isCheckingAuth:</strong> {String(isCheckingAuth)}</div>
+          
+          {debugInfo && (
+            <>
+              <div className="mt-2 pt-2 border-t border-gray-300">
+                <strong>localStorage:</strong>
+                <div className="ml-2">
+                  <div>hasAccessToken: {String(debugInfo.localStorage?.hasAccessToken)}</div>
+                  <div>hasUser: {String(debugInfo.localStorage?.hasUser)}</div>
+                  <div>userEmail: {debugInfo.localStorage?.userEmail || 'null'}</div>
+                  <div>tokenLength: {debugInfo.localStorage?.accessTokenLength || 0}</div>
+                </div>
+              </div>
+              
+              {debugInfo.supabaseLookup && (
+                <div className="mt-2 pt-2 border-t border-gray-300">
+                  <strong>Supabase Lookup:</strong>
+                  <div className="ml-2">
+                    <div>completed: {String(debugInfo.supabaseLookup.completed)}</div>
+                    <div>userFound: {String(debugInfo.supabaseLookup.userFound)}</div>
+                    {debugInfo.supabaseLookup.error && (
+                      <div className="text-red-600">error: {debugInfo.supabaseLookup.error}</div>
+                    )}
+                  </div>
+                </div>
+              )}
+              
+              <div className="mt-2 pt-2 border-t border-gray-300 text-xs">
+                <div>Updated: {debugInfo.timestamp}</div>
+              </div>
+            </>
+          )}
+        </div>
       </div>
       </PageContainer>
     </>
