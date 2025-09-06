@@ -33,6 +33,7 @@ export default function CreateAccount() {
       });
       
       try {
+        // First check if user is authenticated
         // Simple check - just verify we have Google auth
         const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
         if (!clientId) {
@@ -66,6 +67,68 @@ export default function CreateAccount() {
         }
         
         console.log('✅ User authenticated, proceeding with CreateAccount');
+        
+        // Check if user already exists and is complete
+        try {
+          const { supabaseService } = await import('../services/supabase');
+          const existingUser = await supabaseService.findUserByEmail(currentUser.email);
+          
+          if (existingUser) {
+            console.log('🔍 CreateAccount: Existing user found, checking completion status...');
+            
+            // Check if user has phone number and tokens
+            const hasPhoneNumber = !!(existingUser.phone_number && 
+                                    existingUser.phone_number.trim() !== '' && 
+                                    existingUser.phone_number !== 'null');
+            const hasTokens = !!(existingUser.access_token_2);
+            const hasTelegram = !!(existingUser.telegram_id);
+            
+            console.log('🔍 CreateAccount: User completion status:', {
+              userId: existingUser.id,
+              email: existingUser.email,
+              phone_number: existingUser.phone_number,
+              phone_number_type: typeof existingUser.phone_number,
+              phone_number_length: existingUser.phone_number?.length,
+              phone_number_trimmed: existingUser.phone_number?.trim(),
+              phone_number_is_null_string: existingUser.phone_number === 'null',
+              phone_number_is_empty_string: existingUser.phone_number === '',
+              access_token_2: existingUser.access_token_2 ? 'present' : 'missing',
+              telegram_id: existingUser.telegram_id ? 'present' : 'missing',
+              hasPhoneNumber,
+              hasTokens,
+              hasTelegram,
+              navigationDecision: hasPhoneNumber && hasTokens && hasTelegram ? 'success' : 
+                                hasPhoneNumber && hasTokens && !hasTelegram ? 'connect-telegram' : 'stay-here'
+            });
+            
+            // Update app data with user info
+            setAppData(prev => ({
+              ...prev,
+              gcalLinked: true,
+              userEmail: existingUser.email,
+              userId: existingUser.id
+            }));
+            
+            // Navigate based on completion status
+            if (hasPhoneNumber && hasTokens && hasTelegram) {
+              console.log('✅ CreateAccount: User fully complete, redirecting to success');
+              navigate('/success', { state: { existingUser: true } });
+              return;
+            } else if (hasPhoneNumber && hasTokens && !hasTelegram) {
+              console.log('✅ CreateAccount: User has account but no Telegram, redirecting to connect-telegram');
+              navigate('/connect-telegram');
+              return;
+            } else {
+              console.log('📝 CreateAccount: User needs to complete account creation, staying on page');
+              // Stay on create-account page - user needs to enter/update phone number
+            }
+          } else {
+            console.log('👤 CreateAccount: New user, staying on create-account page');
+          }
+        } catch (error) {
+          console.error('CreateAccount: Error checking existing user:', error);
+          // Continue with normal flow on error
+        }
         
         // Update app data with current user info
         if (currentUser && !appData.userEmail) {
