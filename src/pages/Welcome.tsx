@@ -168,12 +168,70 @@ const Welcome: React.FC = () => {
       // Show loading state immediately
       console.log('Welcome: Starting OAuth flow...');
       
-      // Start the OAuth flow - always go to create-account on success
+      // Start the OAuth flow
       const success = await signIn();
       
       if (success) {
-        console.log('Welcome: OAuth successful, navigating to create-account');
-        navigate('/create-account');
+        console.log('Welcome: OAuth successful, checking user status...');
+        
+        // Get current user info
+        const { default: googleAuthService } = await import('../services/googleAuth');
+        await googleAuthService.initialize();
+        const currentUser = googleAuthService.getCurrentUser();
+        
+        if (currentUser?.email) {
+          try {
+            const { supabaseService } = await import('../services/supabase');
+            const existingUser = await supabaseService.findUserByEmail(currentUser.email);
+            
+            if (existingUser) {
+              console.log('Welcome: Existing user found, checking completion status...');
+              
+              // Check if user has phone number and tokens
+              const hasPhoneNumber = !!(existingUser.phone_number && 
+                                      existingUser.phone_number.trim() !== '' && 
+                                      existingUser.phone_number !== 'null');
+              const hasTokens = !!(existingUser.access_token_2);
+              const hasTelegram = !!(existingUser.telegram_id);
+              
+              console.log('Welcome: User completion status:', {
+                hasPhoneNumber,
+                hasTokens,
+                hasTelegram
+              });
+              
+              // Update app data with user info
+              setAppData(prev => ({
+                ...prev,
+                gcalLinked: true,
+                userEmail: existingUser.email,
+                userId: existingUser.id
+              }));
+              
+              // Navigate based on completion status
+              if (hasPhoneNumber && hasTokens && hasTelegram) {
+                console.log('Welcome: User fully complete, going to success');
+                navigate('/success', { state: { existingUser: true } });
+              } else if (hasPhoneNumber && hasTokens && !hasTelegram) {
+                console.log('Welcome: User has account but no Telegram, going to connect-telegram');
+                navigate('/connect-telegram');
+              } else {
+                console.log('Welcome: User needs to complete account creation');
+                navigate('/create-account');
+              }
+            } else {
+              console.log('Welcome: New user, going to create-account');
+              navigate('/create-account');
+            }
+          } catch (error) {
+            console.error('Welcome: Error checking user status:', error);
+            // Fallback to create-account on error
+            navigate('/create-account');
+          }
+        } else {
+          console.log('Welcome: No current user found, going to create-account');
+          navigate('/create-account');
+        }
       } else {
         console.log('Welcome: OAuth failed or timed out');
         // Error will be shown by the useGoogleAuth hook
