@@ -208,6 +208,24 @@ const Welcome: React.FC = () => {
                 userId: existingUser.id
               }));
               
+              console.log('🔍 Welcome: Detailed user analysis:', {
+                userId: existingUser.id,
+                email: existingUser.email,
+                phone_number: existingUser.phone_number,
+                phone_number_type: typeof existingUser.phone_number,
+                phone_number_length: existingUser.phone_number?.length,
+                phone_number_trimmed: existingUser.phone_number?.trim(),
+                phone_number_is_null_string: existingUser.phone_number === 'null',
+                phone_number_is_empty_string: existingUser.phone_number === '',
+                access_token_2: existingUser.access_token_2 ? 'present' : 'missing',
+                telegram_id: existingUser.telegram_id ? 'present' : 'missing',
+                hasPhoneNumber,
+                hasTokens,
+                hasTelegram,
+                navigationDecision: hasPhoneNumber && hasTokens && hasTelegram ? 'success' : 
+                                  hasPhoneNumber && hasTokens && !hasTelegram ? 'connect-telegram' : 'create-account'
+              });
+              
               // Navigate based on completion status
               if (hasPhoneNumber && hasTokens && hasTelegram) {
                 console.log('Welcome: User fully complete, going to success');
@@ -216,7 +234,11 @@ const Welcome: React.FC = () => {
                 console.log('Welcome: User has account but no Telegram, going to connect-telegram');
                 navigate('/connect-telegram');
               } else {
-                console.log('Welcome: User needs to complete account creation');
+                console.log('Welcome: User needs to complete account creation, reasons:', {
+                  missingPhone: !hasPhoneNumber,
+                  missingTokens: !hasTokens,
+                  missingTelegram: !hasTelegram
+                });
                 navigate('/create-account');
               }
             } else {
