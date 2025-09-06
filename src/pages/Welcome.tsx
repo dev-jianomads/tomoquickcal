@@ -11,9 +11,6 @@ const Welcome: React.FC = () => {
   const navigate = useNavigate();
   const { signIn, isLoading, error, isSignedIn, isInitialized, checkAgain, showCheckAgain } = useGoogleAuth();
   const { setAppData } = useApp();
-  const [isCheckingAuth, setIsCheckingAuth] = React.useState(true);
-  const [showStartFresh, setShowStartFresh] = React.useState(false);
-  const [debugInfo, setDebugInfo] = React.useState<any>(null);
 
   // Debug: Log all detection variables
   console.log('🔍 Telegram Detection Debug:', {
@@ -136,164 +133,6 @@ const Welcome: React.FC = () => {
     isEmbeddedBrowser,
   });
 
-  React.useEffect(() => {
-    const checkAuthState = async () => {
-      try {
-        // Collect debug info
-        const storedToken = localStorage.getItem('google_access_token');
-        const storedUser = localStorage.getItem('google_user');
-        const storedRefresh = localStorage.getItem('google_refresh_token');
-        const tempAuth = localStorage.getItem('temp_google_auth');
-        
-        const debugData = {
-          timestamp: new Date().toISOString(),
-          isSignedIn,
-          isInitialized,
-          showStartFresh,
-          localStorage: {
-            hasAccessToken: !!storedToken,
-            hasUser: !!storedUser,
-            hasRefreshToken: !!storedRefresh,
-            hasTempAuth: !!tempAuth,
-            accessTokenLength: storedToken?.length || 0,
-            userEmail: storedUser ? JSON.parse(storedUser).email : null
-          },
-          userAgent: navigator.userAgent,
-          url: window.location.href
-        };
-        
-        // Check for returning users and auto-redirect based on completion status
-        console.log('Welcome: Auth state check with auto-redirect:', {
-          isSignedIn,
-          isInitialized
-        });
-        
-        // If user is already signed in, check their completion status
-        if (isSignedIn) {
-          const { default: googleAuthService } = await import('../services/googleAuth');
-          await googleAuthService.initialize();
-          const currentUser = googleAuthService.getCurrentUser();
-          
-          if (currentUser?.email) {
-            try {
-              const { supabaseService } = await import('../services/supabase');
-              debugData.supabaseLookup = { started: true };
-              
-              const existingUser = await supabaseService.findUserByEmail(currentUser.email);
-              
-              if (existingUser) {
-                console.log('Welcome: Existing user found, checking completion status:', {
-                  hasAccount: !!(existingUser.phone_number && existingUser.access_token_2),
-                  hasTelegram: !!existingUser.telegram_id
-                });
-                
-                debugData.supabaseLookup = {
-                  completed: true,
-                  userFound: true,
-                  hasPhoneNumber: !!existingUser.phone_number,
-                  hasTelegramId: !!existingUser.telegram_id
-                };
-                const hasAccount = !!(existingUser.phone_number && existingUser.access_token_2);
-                const hasTelegram = !!existingUser.telegram_id;
-                
-                // Update app data
-                setAppData(prev => ({
-                  ...prev,
-                  gcalLinked: true,
-                  userEmail: existingUser.email,
-                  userId: existingUser.id
-                }));
-                
-                // Show "Start Fresh" option for existing users instead of auto-redirect
-                console.log('Welcome: Existing user found, showing Start Fresh option');
-                setShowStartFresh(true);
-              } else {
-                debugData.supabaseLookup = {
-                  completed: true,
-                  userFound: false
-                };
-              }
-            } catch (error) {
-              console.log('Welcome: Error checking user status:', error);
-              debugData.supabaseLookup = {
-                error: error instanceof Error ? error.message : 'Unknown error'
-              };
-              // Continue with normal flow
-            }
-          }
-        }
-        
-        setDebugInfo(debugData);
-      } catch (error) {
-        console.error('Welcome: Error during auth check:', error);
-        setDebugInfo(prev => ({ ...prev, error: error instanceof Error ? error.message : 'Unknown error' }));
-      } finally {
-        setIsCheckingAuth(false);
-      }
-    };
-    
-    // Check auth state if initialized
-    if (isInitialized) {
-      checkAuthState();
-    } else {
-      setIsCheckingAuth(false);
-    }
-  }, [isSignedIn, isInitialized]);
-
-  const handleStartFresh = () => {
-    console.log('Welcome: Start Fresh clicked - clearing stored auth');
-    
-    // Clear all stored authentication data
-    localStorage.removeItem('google_access_token');
-    localStorage.removeItem('google_user');
-    localStorage.removeItem('google_refresh_token');
-    localStorage.removeItem('temp_google_auth');
-    localStorage.removeItem('oauth_state');
-    
-    // Reset app state
-    setAppData({
-      telegramLinked: false,
-      gcalLinked: false,
-      proactiveScheduling: false,
-    });
-    
-    // Hide start fresh button and reset auth state
-    setShowStartFresh(false);
-    
-    // Force page reload to reset all auth state
-    window.location.reload();
-  };
-
-  const handleContinueExisting = async () => {
-    console.log('Welcome: Continue with existing account');
-    
-    // Get current user and redirect based on completion status
-    try {
-      const { default: googleAuthService } = await import('../services/googleAuth');
-      const currentUser = googleAuthService.getCurrentUser();
-      
-      if (currentUser?.email) {
-        const { supabaseService } = await import('../services/supabase');
-        const existingUser = await supabaseService.findUserByEmail(currentUser.email);
-        
-        if (existingUser) {
-          const hasAccount = !!(existingUser.phone_number && existingUser.access_token_2);
-          const hasTelegram = !!existingUser.telegram_id;
-          
-          if (hasAccount && hasTelegram) {
-            navigate('/success', { state: { existingUser: true } });
-          } else if (hasAccount && !hasTelegram) {
-            navigate('/connect-telegram');
-          } else {
-            navigate('/create-account');
-          }
-        }
-      }
-    } catch (error) {
-      console.error('Error continuing with existing account:', error);
-      navigate('/create-account');
-    }
-  };
   const handleConnectGoogle = async () => {
     try {
       console.log('Welcome: Connect Google button clicked');
@@ -329,57 +168,12 @@ const Welcome: React.FC = () => {
       // Show loading state immediately
       console.log('Welcome: Starting OAuth flow...');
       
-      // Start the OAuth flow - it will redirect to create-account on success
+      // Start the OAuth flow - always go to create-account on success
       const success = await signIn();
       
-      // If signIn returns true, it means auth completed successfully
-      // and we should navigate to create-account
       if (success) {
-        console.log('Welcome: OAuth successful, checking user status...');
-        
-        // Check if user already has an account
-        try {
-          const { default: googleAuthService } = await import('../services/googleAuth');
-          const currentUser = googleAuthService.getCurrentUser();
-          
-          if (currentUser?.email) {
-            const { supabaseService } = await import('../services/supabase');
-            const existingUser = await supabaseService.findUserByEmail(currentUser.email);
-            
-            if (existingUser) {
-              const hasAccount = !!(existingUser.phone_number && existingUser.access_token_2);
-              const hasTelegram = !!existingUser.telegram_id;
-              
-              // Update app data
-              setAppData(prev => ({
-                ...prev,
-                gcalLinked: true,
-                userEmail: existingUser.email,
-                userId: existingUser.id
-              }));
-              
-              if (hasAccount && hasTelegram) {
-                console.log('Welcome: Existing user fully complete, navigating to success');
-                navigate('/success', { state: { existingUser: true } });
-              } else if (hasAccount && !hasTelegram) {
-                console.log('Welcome: Existing user needs Telegram, navigating to connect-telegram');
-                navigate('/connect-telegram');
-              } else {
-                console.log('Welcome: Existing user incomplete, navigating to create-account');
-                navigate('/create-account');
-              }
-            } else {
-              console.log('Welcome: New user, navigating to create-account');
-              navigate('/create-account');
-            }
-          } else {
-            console.log('Welcome: No user data, navigating to create-account');
-            navigate('/create-account');
-          }
-        } catch (error) {
-          console.error('Error checking user status:', error);
-          navigate('/create-account');
-        }
+        console.log('Welcome: OAuth successful, navigating to create-account');
+        navigate('/create-account');
       } else {
         console.log('Welcome: OAuth failed or timed out');
         // Error will be shown by the useGoogleAuth hook
@@ -393,51 +187,8 @@ const Welcome: React.FC = () => {
     console.log('Welcome: Check Again button clicked');
     const success = await checkAgain();
     if (success) {
-      console.log('Welcome: Check again successful, checking user status...');
-      
-      // Same logic as handleConnectGoogle success
-      try {
-        const { default: googleAuthService } = await import('../services/googleAuth');
-        const currentUser = googleAuthService.getCurrentUser();
-        
-        if (currentUser?.email) {
-          const { supabaseService } = await import('../services/supabase');
-          const existingUser = await supabaseService.findUserByEmail(currentUser.email);
-          
-          if (existingUser) {
-            const hasAccount = !!(existingUser.phone_number && existingUser.access_token_2);
-            const hasTelegram = !!existingUser.telegram_id;
-            
-            // Update app data
-            setAppData(prev => ({
-              ...prev,
-              gcalLinked: true,
-              userEmail: existingUser.email,
-              userId: existingUser.id
-            }));
-            
-            if (hasAccount && hasTelegram) {
-              console.log('Welcome: Existing user fully complete, navigating to success');
-              navigate('/success', { state: { existingUser: true } });
-            } else if (hasAccount && !hasTelegram) {
-              console.log('Welcome: Existing user needs Telegram, navigating to connect-telegram');
-              navigate('/connect-telegram');
-            } else {
-              console.log('Welcome: Existing user incomplete, navigating to create-account');
-              navigate('/create-account');
-            }
-          } else {
-            console.log('Welcome: New user, navigating to create-account');
-            navigate('/create-account');
-          }
-        } else {
-          console.log('Welcome: No user data, navigating to create-account');
-          navigate('/create-account');
-        }
-      } catch (error) {
-        console.error('Error checking user status:', error);
-        navigate('/create-account');
-      }
+      console.log('Welcome: Check again successful, navigating to create-account');
+      navigate('/create-account');
     }
   };
 
@@ -502,38 +253,6 @@ const Welcome: React.FC = () => {
           </div>
         )}
 
-        {/* Start Fresh Option for Existing Users */}
-        {showStartFresh && (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 space-y-4">
-            <div className="text-center space-y-3">
-              <h3 className="font-semibold text-blue-900">Welcome back!</h3>
-              <p className="text-blue-800 text-sm">
-                We found your existing Tomo QuickCal account. You can continue where you left off, 
-                or start fresh to ensure the best connection.
-              </p>
-            </div>
-            
-            <div className="space-y-3">
-              <Button onClick={handleContinueExisting} className="w-full">
-                Continue with Existing Account
-              </Button>
-              
-              <button
-                onClick={handleStartFresh}
-                className="w-full px-6 py-3 text-blue-700 bg-blue-100 border border-blue-300 rounded-lg font-medium hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
-              >
-                Start Fresh (Recommended for Best Connection)
-              </button>
-            </div>
-            
-            <div className="bg-blue-100 border border-blue-300 rounded p-3">
-              <p className="text-blue-800 text-xs">
-                💡 <strong>Start Fresh</strong> ensures your Google Calendar connection works perfectly. 
-                Your account data is safe - this just refreshes the connection.
-              </p>
-            </div>
-          </div>
-        )}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 text-left space-y-4">
           <h3 className="font-semibold text-gray-900">What Tomo'll access and be able to do for you:</h3>
           
@@ -613,10 +332,10 @@ const Welcome: React.FC = () => {
           <div className="space-y-4"></div>
         ) : (
           // Regular Browser - Show Connect Button
-          !showStartFresh && <div className="space-y-4">
+          <div className="space-y-4">
             <Button
               onClick={handleConnectGoogle}
-              disabled={isLoading || isCheckingAuth}
+              disabled={isLoading}
               className="w-full max-w-80 mx-auto"
             >
               {isLoading ? (
@@ -642,47 +361,12 @@ const Welcome: React.FC = () => {
             </p>
           </div>
         )}
-      </div>
-      
-      {/* Temporary Debug UI */}
-      <div className="mt-8 p-4 bg-gray-100 border border-gray-300 rounded-lg text-xs font-mono">
-        <h4 className="font-bold text-gray-800 mb-2">🐛 Debug Info (Temporary)</h4>
-        <div className="space-y-1 text-gray-700">
-          <div><strong>isSignedIn:</strong> {String(isSignedIn)}</div>
-          <div><strong>isInitialized:</strong> {String(isInitialized)}</div>
-          <div><strong>showStartFresh:</strong> {String(showStartFresh)}</div>
-          <div><strong>isCheckingAuth:</strong> {String(isCheckingAuth)}</div>
-          
-          {debugInfo && (
-            <>
-              <div className="mt-2 pt-2 border-t border-gray-300">
-                <strong>localStorage:</strong>
-                <div className="ml-2">
-                  <div>hasAccessToken: {String(debugInfo.localStorage?.hasAccessToken)}</div>
-                  <div>hasUser: {String(debugInfo.localStorage?.hasUser)}</div>
-                  <div>userEmail: {debugInfo.localStorage?.userEmail || 'null'}</div>
-                  <div>tokenLength: {debugInfo.localStorage?.accessTokenLength || 0}</div>
-                </div>
-              </div>
-              
-              {debugInfo.supabaseLookup && (
-                <div className="mt-2 pt-2 border-t border-gray-300">
-                  <strong>Supabase Lookup:</strong>
-                  <div className="ml-2">
-                    <div>completed: {String(debugInfo.supabaseLookup.completed)}</div>
-                    <div>userFound: {String(debugInfo.supabaseLookup.userFound)}</div>
-                    {debugInfo.supabaseLookup.error && (
-                      <div className="text-red-600">error: {debugInfo.supabaseLookup.error}</div>
-                    )}
-                  </div>
-                </div>
-              )}
-              
-              <div className="mt-2 pt-2 border-t border-gray-300 text-xs">
-                <div>Updated: {debugInfo.timestamp}</div>
-              </div>
-            </>
-          )}
+
+        {/* Troubleshooting tip for users having issues */}
+        <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 text-center">
+          <p className="text-gray-700 text-sm">
+            💡 <strong>Having connection issues?</strong> Try using Private/Incognito mode for the best experience.
+          </p>
         </div>
       </div>
       </PageContainer>

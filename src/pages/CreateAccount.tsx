@@ -33,33 +33,28 @@ export default function CreateAccount() {
       });
       
       try {
-        // Check if we're in a valid state to proceed
+        // Simple check - just verify we have Google auth
         const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
         if (!clientId) {
           console.log('CreateAccount: No client ID found, using demo mode');
-          // In demo mode, proceed without auth check
           setIsCheckingAuth(false);
           return;
         }
         
-        // Give more time for auth state to propagate
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        // Re-check auth state after delay
+        // Initialize Google auth service
         const { default: googleAuthService } = await import('../services/googleAuth');
         await googleAuthService.initialize();
         const currentUser = googleAuthService.getCurrentUser();
         const isCurrentlySignedIn = googleAuthService.isSignedIn();
         
-        console.log('CreateAccount: Updated auth check:', {
+        console.log('CreateAccount: Auth check result:', {
           isCurrentlySignedIn,
           hasCurrentUser: !!currentUser,
           currentUserEmail: currentUser?.email,
-          appDataGcalLinked: appData.gcalLinked
         });
         
-        // Check if user is authenticated (more comprehensive check)
-        const hasValidAuth = isCurrentlySignedIn || appData.gcalLinked || (currentUser?.email);
+        // Simple check - do we have a current user?
+        const hasValidAuth = isCurrentlySignedIn && currentUser?.email;
         
         if (!hasValidAuth) {
           console.log('❌ User not authenticated, redirecting to welcome');
@@ -67,62 +62,19 @@ export default function CreateAccount() {
           setTimeout(() => {
             navigate('/welcome');
           }, 2000);
-        } else {
-          console.log('✅ User authenticated, proceeding with CreateAccount');
-          
-          // Check if user already has account created
-          if (currentUser?.email) {
-            try {
-              const { supabaseService } = await import('../services/supabase');
-              const existingUser = await supabaseService.findUserByEmail(currentUser.email);
-              
-              if (existingUser?.phone_number && existingUser.phone_number.trim() !== '' && existingUser.phone_number !== 'null') {
-                console.log('✅ User already has account, checking Telegram status');
-                
-                // Check if Telegram is connected
-                if (existingUser.telegram_id) {
-                  console.log('✅ User fully complete, redirecting to success');
-                  setAppData(prev => ({
-                    ...prev,
-                    gcalLinked: true,
-                    userEmail: existingUser.email,
-                    userId: existingUser.id
-                  }));
-                  navigate('/success', { 
-                    state: { 
-                      existingUser: true
-                    } 
-                  });
-                } else {
-                  console.log('📱 User has account but no Telegram, redirecting to connect-telegram');
-                  setAppData(prev => ({
-                    ...prev,
-                    gcalLinked: true,
-                    userEmail: existingUser.email,
-                    userId: existingUser.id
-                  }));
-                  navigate('/connect-telegram');
-                }
-                return;
-              } else {
-                console.log('📱 User exists but no valid phone number, staying on CreateAccount page');
-                console.log('📱 Current phone_number value:', existingUser?.phone_number);
-              }
-            } catch (error) {
-              console.log('Could not check existing account:', error);
-              // Continue with normal flow
-            }
-          }
-          
-          // Update app data if we have user info but app data doesn't
-          if (currentUser && !appData.userEmail) {
-            setAppData(prev => ({
-              ...prev,
-              gcalLinked: true,
-              userEmail: currentUser.email,
-              userId: currentUser.id || 'unknown'
-            }));
-          }
+          return;
+        }
+        
+        console.log('✅ User authenticated, proceeding with CreateAccount');
+        
+        // Update app data with current user info
+        if (currentUser && !appData.userEmail) {
+          setAppData(prev => ({
+            ...prev,
+            gcalLinked: true,
+            userEmail: currentUser.email,
+            userId: currentUser.id || 'unknown'
+          }));
         }
       } catch (error) {
         console.error('CreateAccount: Error during auth check:', error);
@@ -138,7 +90,7 @@ export default function CreateAccount() {
     } else {
       setIsCheckingAuth(false);
     }
-  }, [isSignedIn, isInitialized, user, appData.gcalLinked, appData.userEmail, navigate, setAppData]);
+  }, [isSignedIn, isInitialized, user, navigate, setAppData]);
 
   // Show loading state while checking authentication
   if (isCheckingAuth) {
