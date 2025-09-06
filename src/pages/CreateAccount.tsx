@@ -23,6 +23,15 @@ export default function CreateAccount() {
   // Check authentication state on component mount
   React.useEffect(() => {
     const checkAuthState = async () => {
+      console.log('🔍 CreateAccount: Starting auth state check...', {
+        isSignedIn,
+        isInitialized,
+        hasUser: !!user,
+        userEmail: user?.email,
+        appDataGcalLinked: appData.gcalLinked,
+        appDataUserEmail: appData.userEmail
+      });
+      
       console.log('CreateAccount: Auth state check:', {
         isSignedIn,
         isInitialized,
@@ -68,10 +77,20 @@ export default function CreateAccount() {
         
         console.log('✅ User authenticated, proceeding with CreateAccount');
         
-        // Check if user already exists and is complete
+        console.log('🔍 CreateAccount: Starting existing user check for:', currentUser.email);
+        
+        // Check if user already exists and is complete  
         try {
           const { supabaseService } = await import('../services/supabase');
+          console.log('🔍 CreateAccount: Supabase service imported, looking up user...');
+          
           const existingUser = await supabaseService.findUserByEmail(currentUser.email);
+          
+          console.log('🔍 CreateAccount: User lookup result:', {
+            userFound: !!existingUser,
+            userId: existingUser?.id,
+            email: existingUser?.email
+          });
           
           if (existingUser) {
             console.log('🔍 CreateAccount: Existing user found, checking completion status...');
@@ -86,14 +105,18 @@ export default function CreateAccount() {
             console.log('🔍 CreateAccount: User completion status:', {
               userId: existingUser.id,
               email: existingUser.email,
-              phone_number: existingUser.phone_number,
+              phone_number_raw: existingUser.phone_number,
               phone_number_type: typeof existingUser.phone_number,
-              phone_number_length: existingUser.phone_number?.length,
+              phone_number_length: existingUser.phone_number?.length || 0,
               phone_number_trimmed: existingUser.phone_number?.trim(),
               phone_number_is_null_string: existingUser.phone_number === 'null',
               phone_number_is_empty_string: existingUser.phone_number === '',
-              access_token_2: existingUser.access_token_2 ? 'present' : 'missing',
-              telegram_id: existingUser.telegram_id ? 'present' : 'missing',
+              phone_number_is_null: existingUser.phone_number === null,
+              phone_number_is_undefined: existingUser.phone_number === undefined,
+              access_token_2_present: !!existingUser.access_token_2,
+              access_token_2_length: existingUser.access_token_2?.length || 0,
+              telegram_id_present: !!existingUser.telegram_id,
+              telegram_id_value: existingUser.telegram_id,
               hasPhoneNumber,
               hasTokens,
               hasTelegram,
@@ -112,21 +135,29 @@ export default function CreateAccount() {
             // Navigate based on completion status
             if (hasPhoneNumber && hasTokens && hasTelegram) {
               console.log('✅ CreateAccount: User fully complete, redirecting to success');
+              setIsCheckingAuth(false);
               navigate('/success', { state: { existingUser: true } });
               return;
             } else if (hasPhoneNumber && hasTokens && !hasTelegram) {
               console.log('✅ CreateAccount: User has account but no Telegram, redirecting to connect-telegram');
+              setIsCheckingAuth(false);
               navigate('/connect-telegram');
               return;
             } else {
-              console.log('📝 CreateAccount: User needs to complete account creation, staying on page');
+              console.log('📝 CreateAccount: User needs to complete account creation, staying on page. Reasons:', {
+                missingPhone: !hasPhoneNumber,
+                missingTokens: !hasTokens,
+                missingTelegram: !hasTelegram,
+                phoneValue: existingUser.phone_number,
+                tokenValue: existingUser.access_token_2 ? 'present' : 'missing'
+              });
               // Stay on create-account page - user needs to enter/update phone number
             }
           } else {
             console.log('👤 CreateAccount: New user, staying on create-account page');
           }
         } catch (error) {
-          console.error('CreateAccount: Error checking existing user:', error);
+          console.error('❌ CreateAccount: Error checking existing user:', error);
           // Continue with normal flow on error
         }
         
@@ -153,7 +184,7 @@ export default function CreateAccount() {
     } else {
       setIsCheckingAuth(false);
     }
-  }, [isSignedIn, isInitialized, user, navigate, setAppData]);
+  }, [isSignedIn, isInitialized, user, navigate, setAppData, appData.userEmail]);
 
   // Show loading state while checking authentication
   if (isCheckingAuth) {
