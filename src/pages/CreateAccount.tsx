@@ -602,6 +602,36 @@ export default function CreateAccount() {
         if (existingUser) {
           console.log('📝 Updating existing user with Google auth and phone number');
           // Update existing user with fresh Google auth data and phone number
+          // ALWAYS update tokens for existing users who just completed OAuth
+          // This ensures they get fresh refresh tokens even if they're otherwise complete
+          const tempAuthDataStr = localStorage.getItem('temp_google_auth');
+          if (tempAuthDataStr) {
+            console.log('🔄 CreateAccount: Updating existing user tokens from fresh OAuth...');
+            try {
+              const tempAuthData = JSON.parse(tempAuthDataStr);
+              
+              // Update existing user with fresh tokens
+              const updatedUser = await supabaseService.updateUser(existingUser.id, {
+                access_token_2: tempAuthData.accessToken,
+                refresh_token_2: tempAuthData.refreshToken,
+                client_id_2: tempAuthData.clientId,
+                client_secret_2: tempAuthData.clientSecret,
+                granted_scopes: tempAuthData.grantedScopes || null
+              });
+              
+              console.log('✅ CreateAccount: Existing user tokens updated successfully');
+              
+              // Clear temp auth data
+              localStorage.removeItem('temp_google_auth');
+              
+              // Use updated user data for completion check
+              existingUser = updatedUser;
+            } catch (error) {
+              console.error('❌ CreateAccount: Failed to update existing user tokens:', error);
+              // Continue with existing logic - don't fail the whole flow
+            }
+          }
+          
           userData = await supabaseService.updateUser(existingUser.id, {
             display_name: tempAuthData.name,
             phone_number: fullPhoneNumber,
