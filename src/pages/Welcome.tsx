@@ -12,24 +12,28 @@ const Welcome: React.FC = () => {
   const { signIn, isLoading, error, isSignedIn, isInitialized, checkAgain, showCheckAgain } = useGoogleAuth();
   const { setAppData } = useApp();
 
+  // Shared user agent and referrer for consistent detection
+  const ua = navigator.userAgent || '';
+  const referrer = document.referrer || '';
+
   // 🔍 IN-APP BROWSER DETECTION CODE STARTS HERE
   // Debug: Log all detection variables
-  console.log('🔍 Telegram Detection Debug:', {
-    userAgent: navigator.userAgent,
-    referrer: document.referrer,
+  console.log('🔍 In-App Detection Debug:', {
+    userAgent: ua,
+    referrer: referrer,
     windowTelegram: !!(window as any).Telegram,
     windowTelegramWebApp: !!(window as any).Telegram?.WebApp,
     locationSearch: window.location.search,
     locationHref: window.location.href,
     isTgMiniApp: !!(window as any).Telegram?.WebApp,
-    isTelegramUA: /\bTelegram\b/i.test(navigator.userAgent) || /TgWebView/i.test(navigator.userAgent),
-    referrerIncludesTelegram: document.referrer.includes('t.me') || document.referrer.includes('telegram'),
+    isTelegramUA: /\bTelegram\b/i.test(ua) || /TgWebView/i.test(ua),
+    referrerIncludesTelegram: referrer.includes('t.me') || referrer.includes('telegram'),
     urlHasTgParam: window.location.search.includes('tgWebAppPlatform'),
     finalResult: !!(window as any).Telegram?.WebApp || 
-                 /\bTelegram\b/i.test(navigator.userAgent) || 
-                 /TgWebView/i.test(navigator.userAgent) ||
-                 document.referrer.includes('t.me') ||
-                 document.referrer.includes('telegram') ||
+                 /\bTelegram\b/i.test(ua) || 
+                 /TgWebView/i.test(ua) ||
+                 referrer.includes('t.me') ||
+                 referrer.includes('telegram') ||
                  window.location.search.includes('tgWebAppPlatform')
   });
 
@@ -38,12 +42,12 @@ const Welcome: React.FC = () => {
   const isTgMiniApp = !!(window as any).Telegram?.WebApp;
   
   // Check for Telegram-specific indicators
-  const isTelegramUA = /\bTelegram\b/i.test(navigator.userAgent) || 
-                       /TelegramBot/i.test(navigator.userAgent) ||
-                       navigator.userAgent.includes('TgWebView') ||
-                       /TelegramAndroid/i.test(navigator.userAgent);
+  const isTelegramUA = /\bTelegram\b/i.test(ua) || 
+                       /TelegramBot/i.test(ua) ||
+                       ua.includes('TgWebView') ||
+                       /TelegramAndroid/i.test(ua);
   
-  const referrerIncludesTelegram = document.referrer.includes('t.me') || document.referrer.includes('telegram');
+  const referrerIncludesTelegram = referrer.includes('t.me') || referrer.includes('telegram');
   const urlHasTgParam = window.location.search.includes('tgWebAppPlatform');
   
   // Check for Telegram-specific window properties and APIs
@@ -58,44 +62,44 @@ const Welcome: React.FC = () => {
                                   window.location.hash.includes('tgWebAppData');
   
   // Check for iOS Safari opened from Telegram (common pattern)
-  const isIOSSafariFromTelegram = /iPhone|iPad|iPod/i.test(navigator.userAgent) &&
-                                  /Safari/i.test(navigator.userAgent) &&
+  const isIOSSafariFromTelegram = /iPhone|iPad|iPod/i.test(ua) &&
+                                  /Safari/i.test(ua) &&
                                   !window.chrome && // Not Chrome
                                   (hasTelegramAPI || isLikelyTelegramContext);
   
   // Check for Android Telegram in-app browser
-  const isAndroidTelegramBrowser = /Android/i.test(navigator.userAgent) &&
-                                   /AppleWebKit/i.test(navigator.userAgent) &&
-                                   !navigator.userAgent.includes('Chrome') && // Not regular Chrome
-                                   !navigator.userAgent.includes('Firefox') && // Not Firefox
+  const isAndroidTelegramBrowser = /Android/i.test(ua) &&
+                                   /AppleWebKit/i.test(ua) &&
+                                   !ua.includes('Chrome') && // Not regular Chrome
+                                   !ua.includes('Firefox') && // Not Firefox
                                    (window.location.hostname.includes('t.me') ||
                                     referrerIncludesTelegram ||
                                     // Android Telegram often has minimal user agent
-                                    (navigator.userAgent.includes('Linux') && 
-                                     navigator.userAgent.includes('Android') &&
-                                     navigator.userAgent.match(/AppleWebKit\/\d+/) &&
-                                     !navigator.userAgent.includes('Version/') && // Not Samsung Internet
-                                     !navigator.userAgent.includes('SamsungBrowser') &&
-                                     !navigator.userAgent.includes('OPR/') && // Not Opera
-                                     !navigator.userAgent.includes('Edge/'))); // Not Edge
+                                    (ua.includes('Linux') && 
+                                     ua.includes('Android') &&
+                                     ua.match(/AppleWebKit\/\d+/) &&
+                                     !ua.includes('Version/') && // Not Samsung Internet
+                                     !ua.includes('SamsungBrowser') &&
+                                     !ua.includes('OPR/') && // Not Opera
+                                     !ua.includes('Edge/'))); // Not Edge
   
   // 🔍 LINKEDIN DETECTION
   // LinkedIn in-app browser detection
-  const isLinkedInUA = /LinkedInApp/i.test(navigator.userAgent) ||
-                       /LinkedIn/i.test(navigator.userAgent);
+  const isLinkedInUA = /LinkedInApp/i.test(ua) ||
+                       /LinkedIn/i.test(ua);
   
-  const referrerIncludesLinkedIn = document.referrer.includes('linkedin.com');
+  const referrerIncludesLinkedIn = referrer.includes('linkedin.com');
   
   // Check for LinkedIn WebView characteristics
-  const isLinkedInWebView = /Android/i.test(navigator.userAgent) &&
-                            /AppleWebKit/i.test(navigator.userAgent) &&
+  const isLinkedInWebView = /Android/i.test(ua) &&
+                            /AppleWebKit/i.test(ua) &&
                             referrerIncludesLinkedIn &&
-                            !navigator.userAgent.includes('Chrome/') && // Not regular Chrome
-                            !navigator.userAgent.includes('Firefox');
+                            !ua.includes('Chrome/') && // Not regular Chrome
+                            !ua.includes('Firefox');
   
   // iOS LinkedIn app detection
-  const isIOSLinkedInApp = /iPhone|iPad|iPod/i.test(navigator.userAgent) &&
-                           /Safari/i.test(navigator.userAgent) &&
+  const isIOSLinkedInApp = /iPhone|iPad|iPod/i.test(ua) &&
+                           /Safari/i.test(ua) &&
                            !window.chrome &&
                            referrerIncludesLinkedIn;
   
@@ -105,6 +109,30 @@ const Welcome: React.FC = () => {
                            isLinkedInWebView ||
                            isIOSLinkedInApp;
   
+  // 🔍 REDDIT DETECTION
+  // Known tokens: "Reddit" (Android), "RDT" (iOS). Referrers cover shortlinks and app deep-link domains.
+  const isRedditUA = /\b(Reddit|RDT)\b/i.test(ua);
+
+  const referrerIncludesReddit = /(?:^|\/\/)(?:www\.)?(reddit\.com|redd\.it|out\.redd\.it|amp\.reddit\.com|reddit\.app\.link)/i
+    .test(referrer);
+
+  // Android Reddit in-app webview: AppleWebKit present, but not branded Chrome/Firefox/Edge
+  const isAndroidRedditWebView =
+    /Android/i.test(ua) &&
+    /AppleWebKit/i.test(ua) &&
+    !/Chrome\/|Firefox|OPR\/|Edg\//i.test(ua) &&
+    (isRedditUA || referrerIncludesReddit);
+
+  // iOS Reddit app: Safari-based view, UA may include "RDT"
+  const isIOSRedditApp =
+    /iPhone|iPad|iPod/i.test(ua) &&
+    /Safari/i.test(ua) &&
+    // @ts-ignore
+    !(window as any).chrome &&
+    (isRedditUA || referrerIncludesReddit);
+
+  const isRedditBrowser = isRedditUA || referrerIncludesReddit || isAndroidRedditWebView || isIOSRedditApp;
+
   // 🔍 COMBINED DETECTION
   // Detect Telegram in-app browser (including iOS Safari opened from Telegram)
   const isTelegramBrowser = isTgMiniApp || 
@@ -117,10 +145,20 @@ const Welcome: React.FC = () => {
                            isAndroidTelegramBrowser;
   
   // Combined detection for embedded browsers that block OAuth
-  const isEmbeddedBrowser = isTelegramBrowser || isLinkedInBrowser;
+  const isEmbeddedBrowser = isTelegramBrowser || isLinkedInBrowser || isRedditBrowser;
+
+  // Name used in the banner
+  const embeddedName = isTelegramBrowser
+    ? 'Telegram'
+    : isLinkedInBrowser
+    ? 'LinkedIn'
+    : isRedditBrowser
+    ? 'Reddit'
+    : 'This';
 
   // 🔍 DEBUG LOGGING
-  console.log('🔍 Telegram Detection Result:', {
+  console.log('🔍 In-App Detection Result:', {
+    // Telegram
     isTgMiniApp,
     isTelegramUA,
     referrerIncludesTelegram,
@@ -130,11 +168,22 @@ const Welcome: React.FC = () => {
     isIOSSafariFromTelegram,
     isAndroidTelegramBrowser,
     isTelegramBrowser,
+    
+    // LinkedIn
     isLinkedInUA,
     referrerIncludesLinkedIn,
     isLinkedInWebView,
     isIOSLinkedInApp,
     isLinkedInBrowser,
+    
+    // Reddit
+    isRedditUA,
+    referrerIncludesReddit,
+    isAndroidRedditWebView,
+    isIOSRedditApp,
+    isRedditBrowser,
+    
+    // Combined
     isEmbeddedBrowser,
   });
 
@@ -333,7 +382,7 @@ const Welcome: React.FC = () => {
               <div className="flex items-start space-x-3">
                 <AlertTriangle className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
                 <p className="text-blue-700 text-sm">
-                  Why? {isTelegramBrowser ? "Telegram's" : isLinkedInBrowser ? "LinkedIn's" : "This"} browser doesn't support Google authentication.
+                  Why? {embeddedName}'s in-app browser doesn't support Google authentication.
                 </p>
               </div>
             </div>
