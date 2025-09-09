@@ -12,6 +12,7 @@ const Welcome: React.FC = () => {
   const { signIn, isLoading, error, isSignedIn, isInitialized, checkAgain, showCheckAgain } = useGoogleAuth();
   const { setAppData } = useApp();
 
+  // 🔍 IN-APP BROWSER DETECTION CODE STARTS HERE
   // Debug: Log all detection variables
   console.log('🔍 Telegram Detection Debug:', {
     userAgent: navigator.userAgent,
@@ -32,6 +33,7 @@ const Welcome: React.FC = () => {
                  window.location.search.includes('tgWebAppPlatform')
   });
 
+  // 🔍 TELEGRAM DETECTION
   // Enhanced Telegram detection
   const isTgMiniApp = !!(window as any).Telegram?.WebApp;
   
@@ -77,6 +79,7 @@ const Welcome: React.FC = () => {
                                      !navigator.userAgent.includes('OPR/') && // Not Opera
                                      !navigator.userAgent.includes('Edge/'))); // Not Edge
   
+  // 🔍 LINKEDIN DETECTION
   // LinkedIn in-app browser detection
   const isLinkedInUA = /LinkedInApp/i.test(navigator.userAgent) ||
                        /LinkedIn/i.test(navigator.userAgent);
@@ -102,6 +105,7 @@ const Welcome: React.FC = () => {
                            isLinkedInWebView ||
                            isIOSLinkedInApp;
   
+  // 🔍 COMBINED DETECTION
   // Detect Telegram in-app browser (including iOS Safari opened from Telegram)
   const isTelegramBrowser = isTgMiniApp || 
                            isTelegramUA ||
@@ -115,6 +119,7 @@ const Welcome: React.FC = () => {
   // Combined detection for embedded browsers that block OAuth
   const isEmbeddedBrowser = isTelegramBrowser || isLinkedInBrowser;
 
+  // 🔍 DEBUG LOGGING
   console.log('🔍 Telegram Detection Result:', {
     isTgMiniApp,
     isTelegramUA,
@@ -133,10 +138,12 @@ const Welcome: React.FC = () => {
     isEmbeddedBrowser,
   });
 
+  // 🔍 UI CONDITIONAL RENDERING
   const handleConnectGoogle = async () => {
     try {
       console.log('Welcome: Connect Google button clicked');
       
+      // 🚫 BLOCK OAUTH IN EMBEDDED BROWSERS
       // Enhanced Telegram detection - block OAuth in Telegram browser
       if (isEmbeddedBrowser) {
         console.log('Welcome: Embedded browser detected, OAuth blocked');
