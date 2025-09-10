@@ -498,6 +498,41 @@ const Welcome: React.FC = () => {
           </div>
         )}
 
+        {/* Debug Window - Shows all detection flags */}
+        <div className="bg-gray-900 text-green-400 rounded-lg p-4 text-xs font-mono max-w-md mx-auto overflow-auto max-h-64">
+          <div className="text-green-300 font-bold mb-2">🔍 Browser Detection Debug</div>
+          <div className="space-y-1">
+            <div>UA: {ua.substring(0, 80)}...</div>
+            <div>Referrer: {referrer || 'none'}</div>
+            <div className="border-t border-gray-700 pt-2 mt-2">
+              <div className="text-blue-300 font-bold">Telegram:</div>
+              <div>isTgMiniApp: {isTgMiniApp.toString()}</div>
+              <div>isTelegramUA: {isTelegramUA.toString()}</div>
+              <div>referrerIncludesTelegram: {referrerIncludesTelegram.toString()}</div>
+              <div>isTelegramBrowser: {isTelegramBrowser.toString()}</div>
+            </div>
+            <div className="border-t border-gray-700 pt-2 mt-2">
+              <div className="text-purple-300 font-bold">LinkedIn:</div>
+              <div>isLinkedInUA: {isLinkedInUA.toString()}</div>
+              <div>referrerIncludesLinkedIn: {referrerIncludesLinkedIn.toString()}</div>
+              <div>isLinkedInBrowser: {isLinkedInBrowser.toString()}</div>
+            </div>
+            <div className="border-t border-gray-700 pt-2 mt-2">
+              <div className="text-orange-300 font-bold">Reddit:</div>
+              <div>isRedditUA: {isRedditUA.toString()}</div>
+              <div>referrerIncludesReddit: {referrerIncludesReddit.toString()}</div>
+              <div>isAndroidRedditWebView: {isAndroidRedditWebView.toString()}</div>
+              <div>isIOSRedditApp: {isIOSRedditApp.toString()}</div>
+              <div>isRedditBrowser: {isRedditBrowser.toString()}</div>
+            </div>
+            <div className="border-t border-gray-700 pt-2 mt-2">
+              <div className="text-yellow-300 font-bold">Combined:</div>
+              <div>isEmbeddedBrowser: {isEmbeddedBrowser.toString()}</div>
+              <div>embeddedName: {embeddedName}</div>
+            </div>
+          </div>
+        </div>
+
         {/* Troubleshooting tip for users having issues */}
         <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 text-center">
           <p className="text-gray-700 text-sm">
