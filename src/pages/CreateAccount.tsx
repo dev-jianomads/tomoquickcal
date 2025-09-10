@@ -581,7 +581,7 @@ export default function CreateAccount() {
       let userData;
       try {
         // Check if user already exists
-        const existingUser = await supabaseService.findUserByEmail(userEmail);
+        let existingUser = await supabaseService.findUserByEmail(userEmail);
         console.log('🔍 Existing user check result:', !!existingUser);
         
         // Log user lookup result
