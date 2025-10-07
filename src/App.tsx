@@ -7,6 +7,7 @@ import ConnectTelegram from './pages/ConnectTelegram';
 import Success from './pages/Success';
 import TestCalendar from './pages/TestCalendar';
 import ReconnectCalendar from './pages/ReconnectCalendar';
+import ReauthCalendar from './pages/ReauthCalendar';
 import DeleteAccount from './pages/DeleteAccount';
 
 function App() {
@@ -22,11 +23,14 @@ function App() {
             <Route path="/success" element={<Success />} />
             <Route path="/test-calendar" element={<TestCalendar />} />
             <Route path="/reconnect-calendar" element={<ReconnectCalendar />} />
+            <Route path="/reauth-calendar" element={<ReauthCalendar />} />
             <Route path="/delete-account" element={<DeleteAccount />} />
             {/* Legacy redirects */}
             <Route path="/landing" element={<Navigate to="/welcome" replace />} />
             {/* OAuth success page for handling redirects */}
             <Route path="/oauth-success" element={<OAuthSuccessHandler />} />
+            {/* Reauth redirect handler */}
+            <Route path="/" element={<ReauthRedirectHandler />} />
           </Routes>
         </div>
       </Router>
@@ -34,6 +38,32 @@ function App() {
   );
 }
 
+// Handle reauth URL parameters and redirect appropriately
+const ReauthRedirectHandler: React.FC = () => {
+  const [searchParams] = useSearchParams();
+  
+  React.useEffect(() => {
+    const isReauth = searchParams.get('reauth') === 'true';
+    const userId = searchParams.get('user_id');
+    
+    if (isReauth && userId) {
+      console.log('🔄 Reauth detected, redirecting to reauth-calendar with user_id:', userId);
+      window.location.href = `/reauth-calendar?user_id=${userId}`;
+    } else {
+      console.log('🔄 No reauth params, redirecting to welcome');
+      window.location.href = '/welcome';
+    }
+  }, [searchParams]);
+  
+  return (
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto"></div>
+        <p className="mt-2 text-gray-600">Redirecting...</p>
+      </div>
+    </div>
+  );
+};
 // Simple component to handle OAuth success and redirect
 const OAuthSuccessHandler: React.FC = () => {
   const [isProcessing, setIsProcessing] = React.useState(true);
