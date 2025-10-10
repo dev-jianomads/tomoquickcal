@@ -600,6 +600,8 @@ export class GoogleAuthService {
           await supabaseService.updateUser(existingUser.id, {
             access_token_2: this.accessToken,
             refresh_token_2: refreshToken,
+            // Clear the expired flag on successful OAuth
+            refresh_expired_2: false,
             client_id_2: this.clientId,
             client_secret_2: import.meta.env.VITE_GOOGLE_CLIENT_SECRET,
             granted_scopes: grantedScopes || null
