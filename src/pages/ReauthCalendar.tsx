@@ -156,17 +156,51 @@ const ReauthCalendar: React.FC = () => {
             const tempAuthDataStr = localStorage.getItem('temp_google_auth');
             let refreshToken = null;
             
+            console.log('🔍 ReauthCalendar: Temp auth data check:', {
+              hasTempData: !!tempAuthDataStr,
+              tempDataLength: tempAuthDataStr?.length || 0
+            });
+            
             if (tempAuthDataStr) {
               try {
                 const tempAuthData = JSON.parse(tempAuthDataStr);
                 refreshToken = tempAuthData.refreshToken;
+                console.log('🔍 ReauthCalendar: Parsed refresh token:', {
+                  hasRefreshToken: !!refreshToken,
+                  refreshTokenLength: refreshToken?.length || 0
+                });
               } catch (e) {
                 console.warn('Could not parse temp auth data for refresh token');
               }
             }
 
+            // Also try to get refresh token from localStorage directly as fallback
+            if (!refreshToken) {
+              refreshToken = localStorage.getItem('google_refresh_token');
+              console.log('🔍 ReauthCalendar: Fallback refresh token:', {
+                hasRefreshToken: !!refreshToken,
+                refreshTokenLength: refreshToken?.length || 0
+              });
+            }
+
             // Update user tokens and clear refresh_expired_2 flag
             console.log('🔄 ReauthCalendar: Updating user tokens in database...');
+            
+            const updateData = {
+              access_token_2: accessToken,
+              refresh_token_2: refreshToken,
+              refresh_expired_2: false,
+              granted_scopes: grantedScopes
+            };
+            
+            console.log('🔍 ReauthCalendar: Update data being sent:', {
+              hasAccessToken: !!updateData.access_token_2,
+              hasRefreshToken: !!updateData.refresh_token_2,
+              refreshExpired2: updateData.refresh_expired_2,
+              hasGrantedScopes: !!updateData.granted_scopes,
+              updateDataKeys: Object.keys(updateData)
+            });
+            
             await supabaseService.updateUser(userId, {
               access_token_2: accessToken,
               refresh_token_2: refreshToken,

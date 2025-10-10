@@ -217,6 +217,11 @@ export class SupabaseService {
         grantedScopesIsNull: updates.granted_scopes === null,
         grantedScopesIsUndefined: updates.granted_scopes === undefined
       });
+      console.log('🔄 refresh_expired_2 in updates:', {
+        hasRefreshExpired2: 'refresh_expired_2' in updates,
+        refreshExpired2Value: updates.refresh_expired_2,
+        refreshExpired2Type: typeof updates.refresh_expired_2
+      });
 
       // If not real Supabase, return mock updated user
       if (!this.isRealSupabase) {
