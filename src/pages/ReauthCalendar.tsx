@@ -272,7 +272,23 @@ const ReauthCalendar: React.FC = () => {
         if (missingRefresh) {
           localStorage.removeItem('reauth_missing_refresh_token');
           // Show helpful guidance to user
-          alert('Reconnection almost complete, but Google did not return a new refresh token. Please open Google Account → Security → Third‑party access, remove access for Tomo QuickCal, then try reconnecting again.');
+          alert(
+            'To finish reconnecting, remove the old app access in Google, then retry.\n\n' +
+            'iPhone/iPad (Safari)\n' +
+            '1) Open https://myaccount.google.com/permissions\n' +
+            '2) Sign in to the same Google account used with Tomo QuickCal (check the avatar).\n' +
+            '3) Under “Third-party apps with account access,” tap “Manage third-party access.”\n' +
+            '4) Find “Hello Tomo” and tap it.\n' +
+            '5) Tap “Remove access,” then confirm.\n' +
+            '6) Return to the Tomo QuickCal page and tap “Reconnect Google Calendar.”\n\n' +
+            'Android (Chrome)\n' +
+            '1) Open https://myaccount.google.com/permissions\n' +
+            '2) Sign in with the same Google account (verify the avatar).\n' +
+            '3) Tap “Manage third-party access.”\n' +
+            '4) Find “Hello Tomo” and tap it.\n' +
+            '5) Tap “Remove access,” then confirm.\n' +
+            '6) Return to the Tomo QuickCal page and tap “Reconnect Google Calendar.”'
+          );
         }
         
         // Log reauth failure

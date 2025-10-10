@@ -25,7 +25,7 @@ export class GoogleAuthService {
   private redirectUri: string;
 
   private constructor() {
-    this.clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+    this.clientId = (import.meta as any).env.VITE_GOOGLE_CLIENT_ID || '';
     // Use the current origin for redirect URI, but ensure it works for both dev and prod
     this.redirectUri = `${window.location.origin}/oauth-success`;
     
@@ -155,7 +155,7 @@ export class GoogleAuthService {
     console.log('🔐 Starting Google OAuth flow...');
     
     // Validate client secret as well
-    const clientSecret = import.meta.env.VITE_GOOGLE_CLIENT_SECRET;
+    const clientSecret = (import.meta as any).env.VITE_GOOGLE_CLIENT_SECRET as string | undefined;
     if (!clientSecret) {
       console.log('🔐 GoogleAuth: No client secret, falling back to demo mode');
       // Create a mock user
@@ -321,18 +321,19 @@ export class GoogleAuthService {
       
       // Exchange code for tokens
       console.log('🔐 Exchanging code for tokens...');
+      const tokenParams = new URLSearchParams();
+      tokenParams.set('client_id', this.clientId);
+      tokenParams.set('client_secret', String((import.meta as any).env.VITE_GOOGLE_CLIENT_SECRET || ''));
+      tokenParams.set('code', code);
+      tokenParams.set('grant_type', 'authorization_code');
+      tokenParams.set('redirect_uri', this.redirectUri);
+
       const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
         },
-        body: new URLSearchParams({
-          client_id: this.clientId,
-          client_secret: import.meta.env.VITE_GOOGLE_CLIENT_SECRET,
-          code: code,
-          grant_type: 'authorization_code',
-          redirect_uri: this.redirectUri,
-        }),
+        body: tokenParams,
       });
       
       if (!tokenResponse.ok) {
@@ -394,7 +395,17 @@ export class GoogleAuthService {
         console.warn('Failed to log scope check start:', logError);
       }
       
-      let grantedScopes = null;
+      let grantedScopes: {
+        calendar_events: boolean;
+        calendar_readonly: boolean;
+        userinfo_profile: boolean;
+        userinfo_email: boolean;
+        meetings_space: boolean;
+        contacts_readonly: boolean;
+        contacts_other_readonly: boolean;
+        last_checked: string;
+        raw_scope_string: string;
+      } | null = null;
       try {
         console.log('🔐 Making tokeninfo API call...');
         const scopeResponse = await fetch(`https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=${this.accessToken}`);
@@ -466,11 +477,18 @@ export class GoogleAuthService {
           
           // Log parsed scope object
           try {
-            await loggingService.log('google_oauth_scope_parsed', {
+          await loggingService.log('google_oauth_scope_parsed', {
               userEmail: this.currentUser?.email,
               eventData: {
                 parsed_scopes: grantedScopes,
-                scope_count: Object.keys(grantedScopes).filter(key => key !== 'last_checked' && key !== 'raw_scope_string' && grantedScopes[key] === true).length,
+              scope_count:
+                (grantedScopes.calendar_events ? 1 : 0) +
+                (grantedScopes.calendar_readonly ? 1 : 0) +
+                (grantedScopes.userinfo_profile ? 1 : 0) +
+                (grantedScopes.userinfo_email ? 1 : 0) +
+                (grantedScopes.meetings_space ? 1 : 0) +
+                (grantedScopes.contacts_readonly ? 1 : 0) +
+                (grantedScopes.contacts_other_readonly ? 1 : 0),
                 has_calendar_events: grantedScopes.calendar_events,
                 has_contacts_readonly: grantedScopes.contacts_readonly,
                 timestamp: new Date().toISOString()
@@ -570,22 +588,32 @@ export class GoogleAuthService {
       
       // Store auth data
       console.log('🔐 Storing auth data in localStorage...');
-      localStorage.setItem('google_access_token', this.accessToken);
+      if (this.accessToken != null) {
+        localStorage.setItem('google_access_token', this.accessToken);
+      }
       localStorage.setItem('google_user', JSON.stringify(this.currentUser));
-      if (refreshToken) {
+      if (refreshToken != null) {
         localStorage.setItem('google_refresh_token', refreshToken);
       }
       localStorage.removeItem('oauth_state');
       console.log('🔐 Auth data stored successfully');
       
       // Store auth data temporarily in sessionStorage for later Supabase creation
-      const tempAuthData = {
+      const tempAuthData: {
+        email: string;
+        name: string;
+        accessToken: string | null;
+        refreshToken: string | null | undefined;
+        clientId: string;
+        clientSecret: string | undefined;
+        grantedScopes: typeof grantedScopes;
+      } = {
         email: this.currentUser.email,
         name: this.currentUser.name,
         accessToken: this.accessToken,
         refreshToken: refreshToken,
         clientId: this.clientId,
-        clientSecret: import.meta.env.VITE_GOOGLE_CLIENT_SECRET,
+        clientSecret: (import.meta as any).env.VITE_GOOGLE_CLIENT_SECRET as string | undefined,
         grantedScopes: grantedScopes
       };
       
@@ -619,12 +647,12 @@ export class GoogleAuthService {
         if (existingUser) {
           console.log('👤 Existing user found, updating tokens in Supabase...');
           await supabaseService.updateUser(existingUser.id, {
-            access_token_2: this.accessToken,
-            refresh_token_2: refreshToken,
+            access_token_2: this.accessToken || '',
+            refresh_token_2: refreshToken || '',
             // Clear the expired flag on successful OAuth
             refresh_expired_2: false,
             client_id_2: this.clientId,
-            client_secret_2: import.meta.env.VITE_GOOGLE_CLIENT_SECRET,
+            client_secret_2: (import.meta as any).env.VITE_GOOGLE_CLIENT_SECRET || '',
             granted_scopes: grantedScopes || null
           });
           console.log('✅ Existing user tokens updated in Supabase');
@@ -639,7 +667,7 @@ export class GoogleAuthService {
       // Log successful OAuth (but not full record creation yet)
       console.log('🔐 Logging OAuth success...');
       try {
-        await loggingService.logGoogleOAuthSuccess('temp_user', this.currentUser.email, {
+        await loggingService.logGoogleOAuthSuccess('temp_user', this.currentUser!.email, {
           email: this.currentUser.email,
           name: this.currentUser.name,
           refreshToken: !!refreshToken
