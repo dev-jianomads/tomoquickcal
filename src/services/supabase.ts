@@ -47,6 +47,7 @@ export interface UserData {
   client_secret_2?: string;
   granted_scopes?: any;
   refresh_expired_2?: boolean;
+  refresh_expired_2?: boolean;
   created_at?: string;
 }
 
@@ -221,7 +222,8 @@ export class SupabaseService {
       console.log('🔄 refresh_expired_2 in updates:', {
         hasRefreshExpired2: 'refresh_expired_2' in updates,
         refreshExpired2Value: updates.refresh_expired_2,
-        refreshExpired2Type: typeof updates.refresh_expired_2
+        refreshExpired2Type: typeof updates.refresh_expired_2,
+        updateKeys: Object.keys(updates)
       });
       
       // CRITICAL DEBUG: Log the exact object being sent to Supabase
@@ -239,6 +241,7 @@ export class SupabaseService {
           access_token_2: updates.access_token_2 || 'demo_token',
           refresh_token_2: updates.refresh_token_2 || 'demo_refresh',
           client_id_2: updates.client_id_2 || null,
+          refresh_expired_2: updates.refresh_expired_2 || false,
           created_at: new Date().toISOString()
         };
         
@@ -264,6 +267,7 @@ export class SupabaseService {
         dataGrantedScopesType: typeof data?.granted_scopes,
         dataRefreshExpired2: data?.refresh_expired_2,
         dataRefreshExpired2Type: typeof data?.refresh_expired_2,
+        returnedKeys: data ? Object.keys(data) : [],
         errorMessage: error?.message,
         errorCode: error?.code
       });
