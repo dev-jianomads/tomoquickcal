@@ -46,6 +46,7 @@ export interface UserData {
   client_id_2?: string;
   client_secret_2?: string;
   granted_scopes?: any;
+  refresh_expired_2?: boolean;
   created_at?: string;
 }
 
@@ -222,6 +223,10 @@ export class SupabaseService {
         refreshExpired2Value: updates.refresh_expired_2,
         refreshExpired2Type: typeof updates.refresh_expired_2
       });
+      
+      // CRITICAL DEBUG: Log the exact object being sent to Supabase
+      console.log('🔄 EXACT UPDATE OBJECT KEYS:', Object.keys(updates));
+      console.log('🔄 EXACT UPDATE OBJECT:', updates);
 
       // If not real Supabase, return mock updated user
       if (!this.isRealSupabase) {
@@ -242,6 +247,9 @@ export class SupabaseService {
         return mockUser;
       }
 
+      // CRITICAL: Log what we're about to send to Supabase
+      console.log('🔄 SENDING TO SUPABASE:', JSON.stringify(updates, null, 2));
+      
       const { data, error } = await supabase
         .from('users')
         .update(updates)
@@ -254,6 +262,8 @@ export class SupabaseService {
         hasError: !!error,
         dataGrantedScopes: data?.granted_scopes,
         dataGrantedScopesType: typeof data?.granted_scopes,
+        dataRefreshExpired2: data?.refresh_expired_2,
+        dataRefreshExpired2Type: typeof data?.refresh_expired_2,
         errorMessage: error?.message,
         errorCode: error?.code
       });
