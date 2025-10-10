@@ -355,6 +355,27 @@ export class GoogleAuthService {
       
       this.accessToken = tokens.access_token;
       const refreshToken = tokens.refresh_token;
+
+      // If this is a reauth flow, require a fresh refresh_token
+      try {
+        const isReauth = sessionStorage.getItem('reauth_mode') === '1';
+        if (isReauth && !refreshToken) {
+          console.warn('🔐 Reauth flow missing refresh_token. Instruct user to revoke access and retry.');
+          try {
+            await loggingService.log('google_oauth_reauth_missing_refresh', {
+              userEmail: this.currentUser?.email,
+              eventData: {
+                note: 'No new refresh_token on reauth',
+                timestamp: new Date().toISOString()
+              }
+            });
+          } catch {}
+          localStorage.setItem('reauth_missing_refresh_token', '1');
+          // Ensure we do not proceed with a short-lived access token only
+          this.clearStoredAuth();
+          return false;
+        }
+      } catch {}
       
       // Check what scopes were actually granted by the user
       console.log('🔐 Checking granted scopes...');

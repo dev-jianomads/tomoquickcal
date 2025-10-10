@@ -108,7 +108,10 @@ const ReauthCalendar: React.FC = () => {
         console.warn('Failed to log reauth attempt:', logError);
       }
 
+      // Mark this as a reauth attempt so OAuth callback can enforce a fresh refresh_token
+      sessionStorage.setItem('reauth_mode', '1');
       const success = await signIn();
+      sessionStorage.removeItem('reauth_mode');
       
       if (success) {
         console.log('✅ ReauthCalendar: Google reauth successful');
@@ -264,6 +267,13 @@ const ReauthCalendar: React.FC = () => {
         }
       } else {
         console.log('❌ ReauthCalendar: Google reauth failed');
+        // Detect missing refresh token guidance flag
+        const missingRefresh = localStorage.getItem('reauth_missing_refresh_token') === '1';
+        if (missingRefresh) {
+          localStorage.removeItem('reauth_missing_refresh_token');
+          // Show helpful guidance to user
+          alert('Reconnection almost complete, but Google did not return a new refresh token. Please open Google Account → Security → Third‑party access, remove access for Tomo QuickCal, then try reconnecting again.');
+        }
         
         // Log reauth failure
         try {

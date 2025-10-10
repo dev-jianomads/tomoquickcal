@@ -16,6 +16,7 @@ export type EventType =
   | 'google_oauth_start'
   | 'google_oauth_success' 
   | 'google_oauth_error'
+  | 'google_oauth_reauth_missing_refresh'
   | 'google_oauth_scope_check_start'
   | 'google_oauth_scope_api_response'
   | 'google_oauth_scope_raw_data'
