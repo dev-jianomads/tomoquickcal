@@ -198,7 +198,7 @@ const Success: React.FC = () => {
       
       // Show a more prominent message
       setTimeout(() => {
-        alert('Setup complete! You can now close this tab and start using Tomo QuickCal through Telegram.');
+        alert('Setup complete! You can now close this tab and start using Hello Tomo through Telegram.');
       }, 500);
     }
   };
@@ -219,8 +219,8 @@ const Success: React.FC = () => {
           <div className="space-y-2">
             <p className="text-gray-600 text-lg leading-relaxed">
               {location.state?.reconnected 
-                ? 'Your Google Calendar has been reconnected. Tomo QuickCal is ready to help you schedule meetings through Telegram.'
-                : 'Tomo QuickCal is connected and ready to help you schedule meetings through Telegram.'
+                ? 'Your Google Calendar has been reconnected. Hello Tomo is ready to help you schedule meetings through Telegram.'
+                : 'Hello Tomo is connected and ready to help you schedule meetings through Telegram.'
               }
             </p>
           </div>

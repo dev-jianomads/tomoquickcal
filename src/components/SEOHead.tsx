@@ -12,7 +12,7 @@ interface SEOHeadProps {
 }
 
 const SEOHead: React.FC<SEOHeadProps> = ({
-  title = "Free Smart Telegram Calendar Bot - Tomo QuickCal",
+  title = "Free Smart Telegram Calendar Bot - Hello Tomo",
   description = "Free smart Telegram calendar bot for Google Calendar. Schedule meetings, create events, and manage your calendar directly through Telegram messages. Connect in 2 minutes.",
   keywords = "smart telegram calendar, google calendar telegram bot, schedule meetings telegram, smart calendar bot, meeting scheduler, telegram automation, google calendar integration, free calendar bot, telegram scheduling assistant",
   canonical = "https://cal.hellotomo.ai",
@@ -33,7 +33,7 @@ const SEOHead: React.FC<SEOHeadProps> = ({
       <meta property="og:description" content={ogDescription || description} />
       <meta property="og:url" content={ogUrl || canonical} />
       <meta property="og:type" content="website" />
-      <meta property="og:site_name" content="Tomo QuickCal" />
+      <meta property="og:site_name" content="Hello Tomo" />
       
       {/* Twitter Card */}
       <meta name="twitter:card" content="summary" />

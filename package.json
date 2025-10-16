@@ -3,7 +3,7 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "description": "Frontend for Tomo QuickCal - Google Calendar integration and Signal phone number collection",
+  "description": "Frontend for Hello Tomo - Google Calendar integration and Signal phone number collection",
   "scripts": {
     "dev": "vite",
     "build": "vite build",

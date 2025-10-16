@@ -1,6 +1,6 @@
-# Tomo QuickCal - Telegram Frontend
+# Hello Tomo - Telegram Frontend
 
-A React frontend for Tomo QuickCal that handles Google Calendar integration and user onboarding. Users can connect their Google Calendar, enter their phone number, and receive an SMS link to start chatting with @AskTomoBot on Telegram.
+A React frontend for Hello Tomo that handles Google Calendar integration and user onboarding. Users can connect their Google Calendar, enter their phone number, and receive an SMS link to start chatting with @AskTomoBot on Telegram.
 
 ## 🚀 Features
 
@@ -125,7 +125,7 @@ src/
 
 ## 📱 User Flow
 
-1. **Welcome** - Introduction to Tomo QuickCal
+1. **Welcome** - Introduction to Hello Tomo
 2. **Connect Bot** - Enter phone number for SMS
 3. **Success** - Setup complete, SMS sent with Telegram link
 4. **Success** - Setup complete, ready for Signal integration

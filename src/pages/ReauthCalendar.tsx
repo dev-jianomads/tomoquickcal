@@ -412,7 +412,7 @@ const ReauthCalendar: React.FC = () => {
               Reconnect Google Calendar
             </h1>
             <p className="text-gray-600 text-lg leading-relaxed">
-              Your Google Calendar connection has expired. Please reconnect to continue using Tomo QuickCal.
+              Your Google Calendar connection has expired. Please reconnect to continue using Hello Tomo.
             </p>
           </div>
 
@@ -487,7 +487,7 @@ const ReauthCalendar: React.FC = () => {
                 ⚡ Quick reconnection
               </p>
               <p className="text-blue-700 text-sm">
-                This process takes just 30 seconds. Once reconnected, your Tomo QuickCal bot 
+                This process takes just 30 seconds. Once reconnected, your Hello Tomo bot 
                 will immediately resume creating calendar events from your Telegram messages.
               </p>
             </div>

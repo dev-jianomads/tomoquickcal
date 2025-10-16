@@ -456,7 +456,7 @@ const DeleteAccount: React.FC = () => {
                 Delete Account
               </h1>
               <p className="text-gray-600 text-lg leading-relaxed">
-                Enter your email address to find and delete your Tomo QuickCal account.
+                Enter your email address to find and delete your Hello Tomo account.
               </p>
             </div>
 
@@ -537,7 +537,7 @@ const DeleteAccount: React.FC = () => {
               </div>
             )}
             <p className="text-gray-600 text-lg leading-relaxed">
-              Permanently delete your Tomo QuickCal account and revoke all permissions.
+              Permanently delete your Hello Tomo account and revoke all permissions.
             </p>
           </div>
 
