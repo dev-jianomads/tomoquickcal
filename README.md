@@ -2,6 +2,8 @@
 
 A React frontend for Hello Tomo that handles Google Calendar integration and user onboarding. Users can connect their Google Calendar, enter their phone number, and receive an SMS link to start chatting with @AskTomoBot on Telegram.
 
+**Created by:** Ken
+
 ## 🚀 Features
 
 - **Google OAuth Integration** - Connect Google Calendar and Contacts
