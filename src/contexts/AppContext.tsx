@@ -6,6 +6,7 @@ interface AppData {
   proactiveScheduling?: boolean;
   userEmail?: string;
   userId?: string;
+  selectedPlatform?: 'telegram' | 'whatsapp';
 }
 
 interface AppContextType {

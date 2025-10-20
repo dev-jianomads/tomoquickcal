@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, ArrowLeft, Smartphone, ChevronDown, Zap } from 'lucide-react';
+import { User, ArrowLeft, Smartphone, ChevronDown, Zap, MessageCircle } from 'lucide-react';
 import PageContainer from '../components/PageContainer';
 import Button from '../components/Button';
 import { useApp } from '../contexts/AppContext';
@@ -17,6 +17,7 @@ export default function CreateAccount() {
   const [isCheckingAuth, setIsCheckingAuth] = React.useState(true);
   const [countryCode, setCountryCode] = useState('+1');
   const [phoneNumber, setPhoneNumber] = useState('');
+  const [selectedPlatform, setSelectedPlatform] = useState<'telegram' | 'whatsapp'>('telegram');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
   
@@ -761,14 +762,21 @@ export default function CreateAccount() {
         userId: userData.id 
       }));
       
-      // Account creation successful - navigate to Telegram connection
-      console.log('✅ Account creation successful, navigating to connect-telegram');
+      // Account creation successful - navigate to selected platform connection
+      console.log('✅ Account creation successful, navigating to', selectedPlatform);
       
-      // Show loading state briefly then navigate to Telegram connection
-      console.log('🔄 Navigating to connect-telegram in 1.5 seconds...');
+      // Store selected platform in app context for later use
+      setAppData(prev => ({ 
+        ...prev, 
+        selectedPlatform: selectedPlatform
+      }));
+      
+      // Show loading state briefly then navigate to selected platform
+      console.log(`🔄 Navigating to ${selectedPlatform} connection in 1.5 seconds...`);
       setTimeout(() => {
-        console.log('🔄 Executing navigation to /connect-telegram');
-        navigate('/connect-telegram');
+        const route = selectedPlatform === 'telegram' ? '/connect-telegram' : '/connect-whatsapp';
+        console.log(`🔄 Executing navigation to ${route}`);
+        navigate(route);
       }, 1500);
       
     } catch (err) {
@@ -988,7 +996,7 @@ export default function CreateAccount() {
               Create Your Account
             </h1>
             <p className="text-gray-600 text-lg leading-relaxed">
-              Enter your number and enable Telegram connection
+              Enter your number and choose your messaging platform
             </p>
           </div>
 
@@ -1042,6 +1050,80 @@ export default function CreateAccount() {
                     </p>
                   </div>
                 )}
+              </div>
+            </div>
+
+            {/* Platform Selection */}
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-4">
+              <h3 className="font-semibold text-gray-900">Choose Your Platform</h3>
+              <p className="text-gray-600 text-sm">Select where you'd like to chat with Tomo</p>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {/* Telegram Option */}
+                <button
+                  type="button"
+                  onClick={() => setSelectedPlatform('telegram')}
+                  className={`p-4 rounded-xl border-2 transition-all ${
+                    selectedPlatform === 'telegram'
+                      ? 'border-blue-500 bg-blue-50'
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                >
+                  <div className="flex items-center space-x-3">
+                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                      selectedPlatform === 'telegram' ? 'bg-blue-500' : 'bg-gray-100'
+                    }`}>
+                      <MessageCircle className={`w-5 h-5 ${
+                        selectedPlatform === 'telegram' ? 'text-white' : 'text-gray-600'
+                      }`} />
+                    </div>
+                    <div className="text-left">
+                      <div className={`font-semibold ${
+                        selectedPlatform === 'telegram' ? 'text-blue-900' : 'text-gray-900'
+                      }`}>
+                        Telegram
+                      </div>
+                      <div className={`text-sm ${
+                        selectedPlatform === 'telegram' ? 'text-blue-700' : 'text-gray-600'
+                      }`}>
+                        Chat with @AskTomoBot
+                      </div>
+                    </div>
+                  </div>
+                </button>
+
+                {/* WhatsApp Option */}
+                <button
+                  type="button"
+                  onClick={() => setSelectedPlatform('whatsapp')}
+                  className={`p-4 rounded-xl border-2 transition-all ${
+                    selectedPlatform === 'whatsapp'
+                      ? 'border-green-500 bg-green-50'
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                >
+                  <div className="flex items-center space-x-3">
+                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                      selectedPlatform === 'whatsapp' ? 'bg-green-500' : 'bg-gray-100'
+                    }`}>
+                      <MessageCircle className={`w-5 h-5 ${
+                        selectedPlatform === 'whatsapp' ? 'text-white' : 'text-gray-600'
+                      }`} />
+                    </div>
+                    <div className="text-left">
+                      <div className={`font-semibold ${
+                        selectedPlatform === 'whatsapp' ? 'text-green-900' : 'text-gray-900'
+                      }`}>
+                        WhatsApp
+                      </div>
+                      <div className={`text-sm ${
+                        selectedPlatform === 'whatsapp' ? 'text-green-700' : 'text-gray-600'
+                      }`}>
+                        Chat with Tomo Bot
+                      </div>
+                    </div>
+                  </div>
+                </button>
               </div>
             </div>
 

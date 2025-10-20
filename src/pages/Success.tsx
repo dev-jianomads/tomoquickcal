@@ -12,6 +12,9 @@ const Success: React.FC = () => {
   const { setAppData, appData } = useApp();
   const [isRedirecting, setIsRedirecting] = React.useState(false);
   const [redirectMessage, setRedirectMessage] = React.useState('');
+  
+  // Determine the platform from app context
+  const selectedPlatform = appData.selectedPlatform || 'telegram';
 
   useEffect(() => {
     // Set signalLinked as linked when page loads (keeping legacy field name)
@@ -198,7 +201,7 @@ const Success: React.FC = () => {
       
       // Show a more prominent message
       setTimeout(() => {
-        alert('Setup complete! You can now close this tab and start using Hello Tomo through Telegram.');
+        alert(`Setup complete! You can now close this tab and start using Hello Tomo through ${selectedPlatform === 'telegram' ? 'Telegram' : 'WhatsApp'}.`);
       }, 500);
     }
   };
@@ -219,8 +222,8 @@ const Success: React.FC = () => {
           <div className="space-y-2">
             <p className="text-gray-600 text-lg leading-relaxed">
               {location.state?.reconnected 
-                ? 'Your Google Calendar has been reconnected. Hello Tomo is ready to help you schedule meetings through Telegram.'
-                : 'Hello Tomo is connected and ready to help you schedule meetings through Telegram.'
+                ? `Your Google Calendar has been reconnected. Hello Tomo is ready to help you schedule meetings through ${selectedPlatform === 'telegram' ? 'Telegram' : 'WhatsApp'}.`
+                : `Hello Tomo is connected and ready to help you schedule meetings through ${selectedPlatform === 'telegram' ? 'Telegram' : 'WhatsApp'}.`
               }
             </p>
           </div>
@@ -244,23 +247,39 @@ const Success: React.FC = () => {
             </div>
             
             <div className="flex items-center space-x-3 p-3 bg-white/60 rounded-lg border border-white/40">
-              <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
-                <Zap className="w-4 h-4 text-purple-600" />
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                selectedPlatform === 'telegram' ? 'bg-purple-100' : 'bg-green-100'
+              }`}>
+                <Zap className={`w-4 h-4 ${
+                  selectedPlatform === 'telegram' ? 'text-purple-600' : 'text-green-600'
+                }`} />
               </div>
-              <span className="text-gray-800 font-medium">Telegram Connected</span>
+              <span className="text-gray-800 font-medium">
+                {selectedPlatform === 'telegram' ? 'Telegram' : 'WhatsApp'} Connected
+              </span>
             </div>
           </div>
         </div>
 
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-left">
+        <div className={`border rounded-lg p-4 text-left ${
+          selectedPlatform === 'telegram' 
+            ? 'bg-blue-50 border-blue-200' 
+            : 'bg-green-50 border-green-200'
+        }`}>
           <div className="flex items-start space-x-3">
-            <MessageCircle className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+            <MessageCircle className={`w-5 h-5 mt-0.5 flex-shrink-0 ${
+              selectedPlatform === 'telegram' ? 'text-blue-600' : 'text-green-600'
+            }`} />
             <div className="space-y-1">
-              <p className="text-blue-800 text-sm font-medium">
-                Check Telegram for Tomo's welcome message
+              <p className={`text-sm font-medium ${
+                selectedPlatform === 'telegram' ? 'text-blue-800' : 'text-green-800'
+              }`}>
+                Check {selectedPlatform === 'telegram' ? 'Telegram' : 'WhatsApp'} for Tomo's welcome message
               </p>
-              <p className="text-blue-700 text-sm">
-                If you don't see a welcome message from Tomo in Telegram please check your email and click that smart link
+              <p className={`text-sm ${
+                selectedPlatform === 'telegram' ? 'text-blue-700' : 'text-green-700'
+              }`}>
+                If you don't see a welcome message from Tomo in {selectedPlatform === 'telegram' ? 'Telegram' : 'WhatsApp'} please check your email and click that smart link
               </p>
             </div>
           </div>

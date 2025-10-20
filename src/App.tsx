@@ -4,6 +4,7 @@ import { AppProvider } from './contexts/AppContext';
 import Welcome from './pages/Welcome';
 import CreateAccount from './pages/CreateAccount';
 import ConnectTelegram from './pages/ConnectTelegram';
+import ConnectWhatsApp from './pages/ConnectWhatsApp';
 import Success from './pages/Success';
 import TestCalendar from './pages/TestCalendar';
 import ReconnectCalendar from './pages/ReconnectCalendar';
@@ -158,6 +159,7 @@ function App() {
             <Route path="/welcome" element={<Welcome />} />
             <Route path="/create-account" element={<CreateAccount />} />
             <Route path="/connect-telegram" element={<ConnectTelegram />} />
+            <Route path="/connect-whatsapp" element={<ConnectWhatsApp />} />
             <Route path="/success" element={<Success />} />
             <Route path="/test-calendar" element={<TestCalendar />} />
             <Route path="/reconnect-calendar" element={<ReconnectCalendar />} />
