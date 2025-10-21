@@ -452,7 +452,7 @@ const ReauthCalendar: React.FC = () => {
                   Your privacy is protected
                 </p>
                 <p className="text-green-700 text-sm">
-                  We only create events you explicitly request through Telegram messages. 
+                  We only create events you explicitly request through your chat messages. 
                   We never read your existing calendar or personal information.
                 </p>
               </div>
@@ -488,7 +488,7 @@ const ReauthCalendar: React.FC = () => {
               </p>
               <p className="text-blue-700 text-sm">
                 This process takes just 30 seconds. Once reconnected, your Hello Tomo bot 
-                will immediately resume creating calendar events from your Telegram messages.
+                will immediately resume creating calendar events from your chat messages.
               </p>
             </div>
           </div>

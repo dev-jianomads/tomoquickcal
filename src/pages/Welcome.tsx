@@ -331,9 +331,9 @@ const Welcome: React.FC = () => {
   return (
     <>
       <SEOHead 
-        title="Free Smart Telegram Calendar Bot - Hello Tomo"
-        description="Free smart Telegram calendar bot for Google Calendar. Schedule meetings, create events, and manage your calendar directly through Telegram messages. Connect in 2 minutes."
-        keywords="free smart telegram calendar bot, smart telegram calendar, google calendar telegram bot, schedule meetings telegram, smart calendar automation, telegram scheduling assistant, free calendar bot"
+        title="Free Smart Calendar Bot - Hello Tomo"
+        description="Free smart calendar bot for Google Calendar. Schedule meetings, create events, and manage your calendar directly through your favorite chat app. Connect in 2 minutes."
+        keywords="free smart calendar bot, smart calendar automation, google calendar bot, schedule meetings chat app, calendar automation, scheduling assistant, free calendar bot"
         canonical="https://cal.hellotomo.ai/welcome"
       />
       <PageContainer>
@@ -364,7 +364,7 @@ const Welcome: React.FC = () => {
               Hello Tomo
             </h1>
             <p className="text-gray-600 text-lg leading-relaxed max-w-md mx-auto">
-              Schedule meetings effortlessly through Telegram messages.
+              Schedule meetings effortlessly through your favorite chat app.
             </p>
           </div>
         </div>
