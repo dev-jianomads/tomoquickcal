@@ -221,6 +221,24 @@ export class SupabaseService {
     }
   }
 
+  async removeServiceIntegration(userId: string, serviceId: string, externalUserId?: string | null): Promise<boolean> {
+    try {
+      await loggingService.log('rpc_call', { eventData: { name: 'remove_service_integration', user_id: userId, service_id: serviceId } });
+      const { data, error } = await supabase.rpc('remove_service_integration', {
+        user_id: userId,
+        service_id: serviceId,
+        external_user_id: externalUserId ?? null
+      });
+      if (error) throw error;
+      await loggingService.log('rpc_success', { eventData: { name: 'remove_service_integration' } });
+      return !!data;
+    } catch (error) {
+      console.error('❌ Error removing service integration via RPC:', error);
+      await loggingService.log('rpc_error', { errorMessage: (error as any)?.message, eventData: { name: 'remove_service_integration' } });
+      return false;
+    }
+  }
+
   // Look up user by email
   async findUserByEmail(email: string): Promise<UserData | null> {
     try {

@@ -52,50 +52,61 @@ exports.handler = async (event, context) => {
     }
 
     // Parse request body
-    const { userEmail } = JSON.parse(event.body);
+    const { userEmail, userId } = JSON.parse(event.body);
 
-    if (!userEmail) {
-      console.error('❌ Missing userEmail');
+    if (!userEmail && !userId) {
+      console.error('❌ Missing userEmail or userId');
       return {
         statusCode: 400,
         headers: {
           'Access-Control-Allow-Origin': '*'
         },
         body: JSON.stringify({ 
-          error: 'Missing userEmail',
+          error: 'Missing userEmail or userId',
           success: false
         })
       };
     }
 
-    console.log('🔧 Revoking Google permissions for user:', userEmail);
+    console.log('🔧 Revoking Google permissions for user:', { userEmail, userId });
 
     // Create Supabase client with service role key (bypasses RLS)
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Get user's access token
-    const { data: userData, error: fetchError } = await supabase
-      .from('users')
-      .select('access_token_2, refresh_token_2')
-      .eq('email', userEmail)
-      .single();
-
-    if (fetchError) {
-      console.error('❌ Error fetching user data:', fetchError);
-      return {
-        statusCode: 404,
-        headers: {
-          'Access-Control-Allow-Origin': '*'
-        },
-        body: JSON.stringify({ 
-          error: 'User not found',
-          success: false
-        })
-      };
+    // Resolve user id from email if necessary
+    let resolvedUserId = userId;
+    if (!resolvedUserId && userEmail) {
+      const { data: userRow, error: userErr } = await supabase
+        .from('users')
+        .select('id')
+        .eq('email', userEmail)
+        .single();
+      if (userErr || !userRow) {
+        console.error('❌ Error fetching user by email:', userErr);
+        return {
+          statusCode: 404,
+          headers: { 'Access-Control-Allow-Origin': '*' },
+          body: JSON.stringify({ error: 'User not found', success: false })
+        };
+      }
+      resolvedUserId = userRow.id;
     }
 
-    const accessToken = userData.access_token_2;
-    const refreshToken = userData.refresh_token_2;
+    // Fetch tokens from normalized table user_integrations (google_calendar)
+    const { data: integration, error: integErr } = await supabase
+      .from('user_integrations')
+      .select('access_token, refresh_token')
+      .eq('user_id', resolvedUserId)
+      .eq('service_id', 'google_calendar')
+      .eq('is_active', true)
+      .maybeSingle();
+
+    if (integErr) {
+      console.error('❌ Error fetching integration:', integErr);
+    }
+
+    const accessToken = integration?.access_token || null;
+    const refreshToken = integration?.refresh_token || null;
 
     console.log('🔧 Found user tokens:', {
       hasAccessToken: !!accessToken,
@@ -155,18 +166,21 @@ exports.handler = async (event, context) => {
       }
     }
 
-    // Clear tokens from database regardless of revocation success
+    // Clear tokens from database regardless of revocation success (normalized table)
     try {
-      console.log('🔧 Clearing tokens from database...');
+      console.log('🔧 Clearing tokens from database (user_integrations)...');
       const { error: updateError } = await supabase
-        .from('users')
+        .from('user_integrations')
         .update({
-          access_token_2: null,
-          refresh_token_2: null,
-          client_id_2: null,
-          client_secret_2: null
+          access_token: null,
+          refresh_token: null,
+          token_expires_at: null,
+          token_expiration_date: null,
+          refresh_expired: null,
+          is_active: false
         })
-        .eq('email', userEmail);
+        .eq('user_id', resolvedUserId)
+        .eq('service_id', 'google_calendar');
 
       if (updateError) {
         console.error('❌ Error clearing tokens from database:', updateError);

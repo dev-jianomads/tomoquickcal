@@ -247,14 +247,16 @@ const DeleteAccount: React.FC = () => {
             console.warn('Failed to log user data deletion:', logError);
           }
           
-          // Delete user (cascades to related tables)
+          // Delete user by primary key (more reliable than email)
           const { error: deleteError } = await supabaseService.supabase
             .from('users')
             .delete()
-            .eq('email', emailToDelete);
+            .eq('id', userData.id);
 
           if (deleteError) {
-            throw deleteError;
+            // Improve error visibility in logs and UI
+            const errMsg = (deleteError as any)?.message || (deleteError as any)?.details || (deleteError as any)?.code || 'Unknown error';
+            throw new Error(errMsg);
           }
 
           console.log('✅ User deleted from Supabase successfully');

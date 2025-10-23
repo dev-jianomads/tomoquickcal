@@ -1,10 +1,8 @@
-import React, { ReactNode } from 'react';
+import React, { ReactNode, ButtonHTMLAttributes } from 'react';
 
-interface ButtonProps {
+interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   children: ReactNode;
-  onClick?: () => void;
   variant?: 'primary' | 'secondary';
-  disabled?: boolean;
   className?: string;
 }
 
@@ -13,7 +11,9 @@ const Button: React.FC<ButtonProps> = ({
   onClick, 
   variant = 'primary', 
   disabled = false,
-  className = ''
+  className = '',
+  type = 'button',
+  ...rest
 }) => {
   const baseClasses = `
     w-full max-w-80 px-6 py-3 rounded-lg font-medium
@@ -35,9 +35,11 @@ const Button: React.FC<ButtonProps> = ({
 
   return (
     <button 
+      type={type}
       onClick={onClick}
       disabled={disabled}
       className={`${baseClasses} ${variantClasses[variant]} ${className}`}
+      {...rest}
     >
       {children}
     </button>
