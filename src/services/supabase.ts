@@ -79,9 +79,8 @@ export class SupabaseService {
     const msg = (error as any)?.message || '';
     const notFound = msg.includes('could not find') || msg.includes('not find the function') || msg.includes('schema cache');
     if (notFound) {
-      // Fallback to dev schema
-      const fallbackFn = (`dev.${fn}`) as any;
-      const fallback = await supabase.rpc(fallbackFn, params);
+      // Fallback to dev schema: use schema() API so PostgREST targets dev
+      const fallback = await supabase.schema('dev').rpc(fn as any, params);
       if (!fallback.error) return { data: fallback.data as T, error: null, schema: 'dev' };
       return { data: null, error: fallback.error, schema: 'dev' };
     }
