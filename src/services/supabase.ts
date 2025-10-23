@@ -89,7 +89,7 @@ export class SupabaseService {
   async getUserIntegrations(userId: string): Promise<any[]> {
     try {
       await loggingService.log('rpc_call', { eventData: { name: 'get_user_integrations', user_id: userId } });
-      const { data, error, schema } = await this.callRpc<any[]>('get_user_integrations', { user_id: userId });
+      const { data, error, schema } = await this.callRpc<any[]>('get_user_integrations', { p_user_id: userId });
       if (error) throw error;
       await loggingService.log('rpc_success', { eventData: { name: 'get_user_integrations', schema, count: Array.isArray(data) ? data.length : 0 } });
       return Array.isArray(data as any) ? (data as any) : [];
@@ -103,7 +103,7 @@ export class SupabaseService {
   async userHasService(userId: string, serviceId: string): Promise<boolean> {
     try {
       await loggingService.log('rpc_call', { eventData: { name: 'user_has_service', user_id: userId, service_id: serviceId } });
-      const { data, error, schema } = await this.callRpc<any>('user_has_service', { user_id: userId, service_id: serviceId });
+      const { data, error, schema } = await this.callRpc<any>('user_has_service', { p_user_id: userId, p_service_id: serviceId });
       if (error) throw error;
       await loggingService.log('rpc_success', { eventData: { name: 'user_has_service', schema, result: !!data } });
       return !!data;
@@ -142,15 +142,15 @@ export class SupabaseService {
     try {
       await loggingService.log('rpc_call', { eventData: { name: 'link_calendar_to_user', user_id: userId, has_refresh: !!(refreshToken ?? null) } });
       const { error, schema } = await this.callRpc<any>('link_calendar_to_user', {
-        user_id: userId,
-        access_token: accessToken,
-        refresh_token: refreshToken ?? null,
-        expires_at: expiresAtIso ?? null,
-        client_id: clientId ?? null,
-        client_secret: clientSecret ?? null,
-        granted_scopes: grantedScopes ?? null,
-        external_user_id: externalUserId ?? null,
-        display_label: displayLabel ?? 'Google Calendar'
+        p_user_id: userId,
+        p_access_token: accessToken,
+        p_refresh_token: refreshToken ?? null,
+        p_expires_at: expiresAtIso ?? null,
+        p_client_id: clientId ?? null,
+        p_client_secret: clientSecret ?? null,
+        p_granted_scopes: grantedScopes ?? null,
+        p_external_user_id: externalUserId ?? null,
+        p_display_label: displayLabel ?? 'Google Calendar'
       });
       if (error) throw error;
       await loggingService.log('rpc_success', { eventData: { name: 'link_calendar_to_user', schema } });
@@ -164,10 +164,10 @@ export class SupabaseService {
     try {
       await loggingService.log('rpc_call', { eventData: { name: 'update_calendar_token', user_id: userId, has_refresh: !!(refreshToken ?? null), expiry_seconds: expirySeconds ?? 3600 } });
       const { data, error, schema } = await this.callRpc<any>('update_calendar_token', {
-        user_id: userId,
-        access_token: accessToken,
-        expiry_seconds: expirySeconds ?? 3600,
-        refresh_token: refreshToken ?? null
+        p_user_id: userId,
+        p_access_token: accessToken,
+        p_expiry_seconds: expirySeconds ?? 3600,
+        p_refresh_token: refreshToken ?? null
       });
       if (error) throw error;
       await loggingService.log('rpc_success', { eventData: { name: 'update_calendar_token', schema } });
@@ -183,10 +183,10 @@ export class SupabaseService {
     try {
       await loggingService.log('rpc_call', { eventData: { name: 'link_telegram_to_user', user_id: userId, telegram_id: telegramId } });
       const { data, error, schema } = await this.callRpc<any>('link_telegram_to_user', {
-        user_id: userId,
-        telegram_id: telegramId,
-        username: username ?? null,
-        label: label ?? 'Telegram'
+        p_user_id: userId,
+        p_telegram_id: telegramId,
+        p_username: username ?? null,
+        p_label: label ?? 'Telegram'
       });
       if (error) throw error;
       await loggingService.log('rpc_success', { eventData: { name: 'link_telegram_to_user', schema } });
@@ -202,10 +202,10 @@ export class SupabaseService {
     try {
       await loggingService.log('rpc_call', { eventData: { name: 'link_whatsapp_to_user', user_id: userId, whatsapp_id: whatsappId } });
       const { data, error, schema } = await this.callRpc<any>('link_whatsapp_to_user', {
-        user_id: userId,
-        whatsapp_id: whatsappId,
-        username: username ?? null,
-        label: label ?? 'WhatsApp'
+        p_user_id: userId,
+        p_whatsapp_id: whatsappId,
+        p_username: username ?? null,
+        p_label: label ?? 'WhatsApp'
       });
       if (error) throw error;
       await loggingService.log('rpc_success', { eventData: { name: 'link_whatsapp_to_user', schema } });
@@ -221,9 +221,9 @@ export class SupabaseService {
     try {
       await loggingService.log('rpc_call', { eventData: { name: 'unlink_service_from_user', user_id: userId, service_id: serviceId } });
       const { data, error, schema } = await this.callRpc<any>('unlink_service_from_user', {
-        user_id: userId,
-        service_id: serviceId,
-        external_user_id: externalUserId ?? null
+        p_user_id: userId,
+        p_service_id: serviceId,
+        p_external_user_id: externalUserId ?? null
       });
       if (error) throw error;
       await loggingService.log('rpc_success', { eventData: { name: 'unlink_service_from_user', schema } });
@@ -239,9 +239,9 @@ export class SupabaseService {
     try {
       await loggingService.log('rpc_call', { eventData: { name: 'remove_service_integration', user_id: userId, service_id: serviceId } });
       const { data, error, schema } = await this.callRpc<any>('remove_service_integration', {
-        user_id: userId,
-        service_id: serviceId,
-        external_user_id: externalUserId ?? null
+        p_user_id: userId,
+        p_service_id: serviceId,
+        p_external_user_id: externalUserId ?? null
       });
       if (error) throw error;
       await loggingService.log('rpc_success', { eventData: { name: 'remove_service_integration', schema } });
