@@ -105,7 +105,8 @@ exports.handler = async (event, context) => {
           error: `n8n webhook failed: ${response.status}`,
           details: responseText,
           url: n8nWebhookUrl,
-          payload: payload
+          payload: payload,
+          hint: 'Verify N8N_WEBHOOK_URL_TG env and that the n8n workflow is active and reachable'
         })
       };
     }

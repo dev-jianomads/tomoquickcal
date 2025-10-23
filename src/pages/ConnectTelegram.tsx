@@ -114,6 +114,25 @@ const ConnectTelegram: React.FC = () => {
       if (!response.ok) {
         const errorText = await response.text();
         console.error('🔗 Response error:', errorText);
+        // Try to parse error JSON from Netlify function (includes url/payload)
+        let serverErrorJson: any = null;
+        try { serverErrorJson = JSON.parse(errorText); } catch {}
+        try {
+          await loggingService.log('telegram_connection_failure', {
+            userId: appData.userId,
+            userEmail: appData.userEmail,
+            success: false,
+            errorMessage: `HTTP ${response.status}: ${response.statusText}`,
+            eventData: {
+              failure_type: 'netlify_webhook_forward',
+              http_status: response.status,
+              http_status_text: response.statusText,
+              server_error: serverErrorJson,
+              raw_response: errorText,
+              timestamp: new Date().toISOString()
+            }
+          });
+        } catch {}
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
       
