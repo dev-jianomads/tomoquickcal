@@ -72,19 +72,10 @@ export class SupabaseService {
   }
 
   // ===== New RPC Helpers for normalized integrations schema (public.*) =====
-  private async callRpc<T = any>(fn: string, params: Record<string, any>): Promise<{ data: T | null; error: any; schema: 'public' | 'dev' }>{
-    // Try public first
-    let { data, error } = await supabase.rpc(fn, params);
-    if (!error) return { data: data as T, error: null, schema: 'public' };
-    const msg = (error as any)?.message || '';
-    const notFound = msg.includes('could not find') || msg.includes('not find the function') || msg.includes('schema cache');
-    if (notFound) {
-      // Fallback to dev schema: use schema() API so PostgREST targets dev
-      const fallback = await supabase.schema('dev').rpc(fn as any, params);
-      if (!fallback.error) return { data: fallback.data as T, error: null, schema: 'dev' };
-      return { data: null, error: fallback.error, schema: 'dev' };
-    }
-    return { data: null, error, schema: 'public' };
+  private async callRpc<T = any>(fn: string, params: Record<string, any>): Promise<{ data: T | null; error: any; schema: 'public' }>{
+    const { data, error } = await supabase.rpc(fn, params);
+    if (error) return { data: null, error, schema: 'public' };
+    return { data: data as T, error: null, schema: 'public' };
   }
   async getUserIntegrations(userId: string): Promise<any[]> {
     try {
