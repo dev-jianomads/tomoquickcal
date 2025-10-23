@@ -1,8 +1,7 @@
 import React, { useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { CheckCircle2, Calendar, MessageCircle, Trash2, Zap, ExternalLink } from 'lucide-react';
+import { CheckCircle2, Calendar, MessageCircle, Trash2, Zap } from 'lucide-react';
 import PageContainer from '../components/PageContainer';
-import Button from '../components/Button';
 import { useApp } from '../contexts/AppContext';
 import { loggingService } from '../services/logging';
 
@@ -10,8 +9,7 @@ const Success: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { setAppData, appData } = useApp();
-  const [isRedirecting, setIsRedirecting] = React.useState(false);
-  const [redirectMessage, setRedirectMessage] = React.useState('');
+  // Removed redirect button UX; no redirecting state needed
   
   // Determine the platform from app context
   const selectedPlatform = appData.selectedPlatform || 'telegram';
@@ -50,126 +48,6 @@ const Success: React.FC = () => {
     }
   }, [setAppData, appData.userId, appData.userEmail]);
 
-  const handleAddTomoBot = async () => {
-    console.log('🤖 Add Tomo Bot clicked');
-    
-    if (!appData.userId || !appData.userEmail) {
-      console.error('❌ Missing user data for Telegram signup');
-      return;
-    }
-    
-    setIsRedirecting(true);
-    setRedirectMessage('Getting your Telegram link...');
-    
-    try {
-      // Call the endpoint to get Telegram bot link
-      console.log('🔗 Calling Telegram signup endpoint...');
-      const response = await fetch('https://n8n.srv845833.hstgr.cloud/webhook/tg-sign-up', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          user_id: appData.userId,
-          email: appData.userEmail
-        })
-      });
-      
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-      
-      const data = await response.json();
-      console.log('✅ Telegram link received:', data);
-      
-      if (!data.link) {
-        throw new Error('No Telegram link received from server');
-      }
-      
-      // Show redirect message
-      setRedirectMessage('Opening Telegram app...');
-      
-      // Wait 1.5 seconds to show the message
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // Open Telegram with the bot link
-      console.log('🚀 Opening Telegram app with link:', data.link);
-      
-      // Safari-specific handling for Telegram links
-      const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent) || 
-                       /iPhone|iPad|iPod/i.test(navigator.userAgent);
-      
-      // Mobile detection
-      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-      
-      if (isSafari || isMobile) {
-        console.log('🍎 Safari or mobile detected, using direct navigation for Telegram link');
-        // Safari works better with direct navigation for custom URL schemes
-        // Mobile browsers also work better with direct navigation for app links
-        window.location.href = data.link;
-      } else {
-        console.log('🌐 Desktop browser, using window.open');
-        window.open(data.link, '_blank');
-      }
-      
-      // Log successful Telegram SMS sent (keeping same event name for consistency)
-      try {
-        await loggingService.logTelegramSmsSent(appData.userId, appData.userEmail, 'direct_link');
-      } catch (logError) {
-        console.warn('Failed to log Telegram link generation:', logError);
-      }
-      
-      // Show completion message
-      setRedirectMessage('Telegram opened! You can now chat with Tomo.');
-      
-      // Reset after 3 seconds
-      setTimeout(() => {
-        setIsRedirecting(false);
-        setRedirectMessage('');
-      }, 3000);
-      
-    } catch (error) {
-      console.error('❌ Failed to get Telegram link:', error);
-      
-      // Log the failure to Supabase
-      try {
-        await loggingService.log('telegram_addbot_failure', {
-          userId: appData.userId,
-          userEmail: appData.userEmail,
-          success: false,
-          errorMessage: error instanceof Error ? error.message : 'Unknown error',
-          eventData: {
-            failure_type: 'telegram_link_generation',
-            error_details: error instanceof Error ? error.message : 'Unknown error',
-            timestamp: new Date().toISOString()
-          }
-        });
-      } catch (logError) {
-        console.warn('Failed to log Telegram failure:', logError);
-      }
-      
-      // Enhanced error handling with specific messages
-      let errorMessage = 'Failed to connect to Telegram. Please try again.';
-      
-      if (error instanceof Error) {
-        if (error.message.includes('404') || error.message.includes('not found')) {
-          errorMessage = 'User not found. Please complete the setup process again.';
-        } else if (error.message.includes('500') || error.message.includes('503')) {
-          errorMessage = 'Telegram service temporarily unavailable. Please try again in a moment.';
-        } else if (error.message.includes('network') || error.message.includes('fetch')) {
-          errorMessage = 'Network error. Please check your connection and try again.';
-        }
-      }
-      
-      setRedirectMessage(errorMessage);
-      
-      // Reset after 3 seconds
-      setTimeout(() => {
-        setIsRedirecting(false);
-        setRedirectMessage('');
-      }, 5000); // Longer timeout for error messages
-    }
-  };
 
   const handleFinish = () => {
     console.log('🔄 Success: Close Setup clicked');
@@ -270,16 +148,11 @@ const Success: React.FC = () => {
             <MessageCircle className={`w-5 h-5 mt-0.5 flex-shrink-0 ${
               selectedPlatform === 'telegram' ? 'text-blue-600' : 'text-green-600'
             }`} />
-            <div className="space-y-1">
+            <div>
               <p className={`text-sm font-medium ${
                 selectedPlatform === 'telegram' ? 'text-blue-800' : 'text-green-800'
               }`}>
-                Check {selectedPlatform === 'telegram' ? 'Telegram' : 'WhatsApp'} for Tomo's welcome message
-              </p>
-              <p className={`text-sm ${
-                selectedPlatform === 'telegram' ? 'text-blue-700' : 'text-green-700'
-              }`}>
-                If you don't see a welcome message from Tomo in {selectedPlatform === 'telegram' ? 'Telegram' : 'WhatsApp'} please check your email and click that smart link
+                Look for Tomo's welcome message on {selectedPlatform === 'telegram' ? 'Telegram' : 'WhatsApp'}.
               </p>
             </div>
           </div>

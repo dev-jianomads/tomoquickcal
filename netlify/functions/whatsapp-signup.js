@@ -32,8 +32,21 @@ exports.handler = async (event, context) => {
   try {
     console.log('🔧 Processing POST request...');
     
-    // Get N8N webhook URL from environment variable or use default
-    const n8nWebhookUrl = process.env.N8N_WEBHOOK_URL_WA || 'https://n8n.srv845833.hstgr.cloud/webhook/wa-sign-up';
+    // Get N8N webhook URL from environment variable (no fallback)
+    const n8nWebhookUrl = process.env.N8N_WEBHOOK_URL_WA;
+    if (!n8nWebhookUrl) {
+      console.error('❌ Missing required N8N webhook env var (N8N_WEBHOOK_URL_WA)');
+      return {
+        statusCode: 500,
+        headers: {
+          'Access-Control-Allow-Origin': '*'
+        },
+        body: JSON.stringify({ 
+          error: 'Server misconfiguration: missing N8N webhook URL',
+          requiredEnv: ['N8N_WEBHOOK_URL_WA']
+        })
+      };
+    }
     console.log('🔧 Using N8N webhook URL:', n8nWebhookUrl);
     
     // Parse request body
