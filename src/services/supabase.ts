@@ -72,13 +72,28 @@ export class SupabaseService {
   }
 
   // ===== New RPC Helpers for normalized integrations schema (public.*) =====
+  private async callRpc<T = any>(fn: string, params: Record<string, any>): Promise<{ data: T | null; error: any; schema: 'public' | 'dev' }>{
+    // Try public first
+    let { data, error } = await supabase.rpc(fn, params);
+    if (!error) return { data: data as T, error: null, schema: 'public' };
+    const msg = (error as any)?.message || '';
+    const notFound = msg.includes('could not find') || msg.includes('not find the function') || msg.includes('schema cache');
+    if (notFound) {
+      // Fallback to dev schema
+      const fallbackFn = (`dev.${fn}`) as any;
+      const fallback = await supabase.rpc(fallbackFn, params);
+      if (!fallback.error) return { data: fallback.data as T, error: null, schema: 'dev' };
+      return { data: null, error: fallback.error, schema: 'dev' };
+    }
+    return { data: null, error, schema: 'public' };
+  }
   async getUserIntegrations(userId: string): Promise<any[]> {
     try {
       await loggingService.log('rpc_call', { eventData: { name: 'get_user_integrations', user_id: userId } });
-      const { data, error } = await supabase.rpc('get_user_integrations', { user_id: userId });
+      const { data, error, schema } = await this.callRpc<any[]>('get_user_integrations', { user_id: userId });
       if (error) throw error;
-      await loggingService.log('rpc_success', { eventData: { name: 'get_user_integrations', count: Array.isArray(data) ? data.length : 0 } });
-      return Array.isArray(data) ? data : [];
+      await loggingService.log('rpc_success', { eventData: { name: 'get_user_integrations', schema, count: Array.isArray(data) ? data.length : 0 } });
+      return Array.isArray(data as any) ? (data as any) : [];
     } catch (error) {
       console.error('❌ Error getting user integrations:', error);
       await loggingService.log('rpc_error', { errorMessage: (error as any)?.message, eventData: { name: 'get_user_integrations' } });
@@ -89,9 +104,9 @@ export class SupabaseService {
   async userHasService(userId: string, serviceId: string): Promise<boolean> {
     try {
       await loggingService.log('rpc_call', { eventData: { name: 'user_has_service', user_id: userId, service_id: serviceId } });
-      const { data, error } = await supabase.rpc('user_has_service', { user_id: userId, service_id: serviceId });
+      const { data, error, schema } = await this.callRpc<any>('user_has_service', { user_id: userId, service_id: serviceId });
       if (error) throw error;
-      await loggingService.log('rpc_success', { eventData: { name: 'user_has_service', result: !!data } });
+      await loggingService.log('rpc_success', { eventData: { name: 'user_has_service', schema, result: !!data } });
       return !!data;
     } catch (error) {
       console.error('❌ Error checking user service:', error);
@@ -127,7 +142,7 @@ export class SupabaseService {
 
     try {
       await loggingService.log('rpc_call', { eventData: { name: 'link_calendar_to_user', user_id: userId, has_refresh: !!(refreshToken ?? null) } });
-      const { error } = await supabase.rpc('link_calendar_to_user', {
+      const { error, schema } = await this.callRpc<any>('link_calendar_to_user', {
         user_id: userId,
         access_token: accessToken,
         refresh_token: refreshToken ?? null,
@@ -139,7 +154,7 @@ export class SupabaseService {
         display_label: displayLabel ?? 'Google Calendar'
       });
       if (error) throw error;
-      await loggingService.log('rpc_success', { eventData: { name: 'link_calendar_to_user' } });
+      await loggingService.log('rpc_success', { eventData: { name: 'link_calendar_to_user', schema } });
     } catch (error) {
       console.error('❌ Error linking calendar to user via RPC:', error);
       await loggingService.log('rpc_error', { errorMessage: (error as any)?.message, eventData: { name: 'link_calendar_to_user' } });
@@ -149,14 +164,14 @@ export class SupabaseService {
   async updateCalendarToken(userId: string, accessToken: string, expirySeconds?: number, refreshToken?: string | null): Promise<boolean> {
     try {
       await loggingService.log('rpc_call', { eventData: { name: 'update_calendar_token', user_id: userId, has_refresh: !!(refreshToken ?? null), expiry_seconds: expirySeconds ?? 3600 } });
-      const { data, error } = await supabase.rpc('update_calendar_token', {
+      const { data, error, schema } = await this.callRpc<any>('update_calendar_token', {
         user_id: userId,
         access_token: accessToken,
         expiry_seconds: expirySeconds ?? 3600,
         refresh_token: refreshToken ?? null
       });
       if (error) throw error;
-      await loggingService.log('rpc_success', { eventData: { name: 'update_calendar_token' } });
+      await loggingService.log('rpc_success', { eventData: { name: 'update_calendar_token', schema } });
       return !!data;
     } catch (error) {
       console.error('❌ Error updating calendar token via RPC:', error);
@@ -168,14 +183,14 @@ export class SupabaseService {
   async linkTelegramToUser(userId: string, telegramId: string, username?: string | null, label?: string | null): Promise<boolean> {
     try {
       await loggingService.log('rpc_call', { eventData: { name: 'link_telegram_to_user', user_id: userId, telegram_id: telegramId } });
-      const { data, error } = await supabase.rpc('link_telegram_to_user', {
+      const { data, error, schema } = await this.callRpc<any>('link_telegram_to_user', {
         user_id: userId,
         telegram_id: telegramId,
         username: username ?? null,
         label: label ?? 'Telegram'
       });
       if (error) throw error;
-      await loggingService.log('rpc_success', { eventData: { name: 'link_telegram_to_user' } });
+      await loggingService.log('rpc_success', { eventData: { name: 'link_telegram_to_user', schema } });
       return !!data;
     } catch (error) {
       console.error('❌ Error linking Telegram via RPC:', error);
@@ -187,14 +202,14 @@ export class SupabaseService {
   async linkWhatsAppToUser(userId: string, whatsappId: string, username?: string | null, label?: string | null): Promise<boolean> {
     try {
       await loggingService.log('rpc_call', { eventData: { name: 'link_whatsapp_to_user', user_id: userId, whatsapp_id: whatsappId } });
-      const { data, error } = await supabase.rpc('link_whatsapp_to_user', {
+      const { data, error, schema } = await this.callRpc<any>('link_whatsapp_to_user', {
         user_id: userId,
         whatsapp_id: whatsappId,
         username: username ?? null,
         label: label ?? 'WhatsApp'
       });
       if (error) throw error;
-      await loggingService.log('rpc_success', { eventData: { name: 'link_whatsapp_to_user' } });
+      await loggingService.log('rpc_success', { eventData: { name: 'link_whatsapp_to_user', schema } });
       return !!data;
     } catch (error) {
       console.error('❌ Error linking WhatsApp via RPC:', error);
@@ -206,13 +221,13 @@ export class SupabaseService {
   async unlinkServiceFromUser(userId: string, serviceId: string, externalUserId?: string | null): Promise<boolean> {
     try {
       await loggingService.log('rpc_call', { eventData: { name: 'unlink_service_from_user', user_id: userId, service_id: serviceId } });
-      const { data, error } = await supabase.rpc('unlink_service_from_user', {
+      const { data, error, schema } = await this.callRpc<any>('unlink_service_from_user', {
         user_id: userId,
         service_id: serviceId,
         external_user_id: externalUserId ?? null
       });
       if (error) throw error;
-      await loggingService.log('rpc_success', { eventData: { name: 'unlink_service_from_user' } });
+      await loggingService.log('rpc_success', { eventData: { name: 'unlink_service_from_user', schema } });
       return !!data;
     } catch (error) {
       console.error('❌ Error unlinking service via RPC:', error);
@@ -224,13 +239,13 @@ export class SupabaseService {
   async removeServiceIntegration(userId: string, serviceId: string, externalUserId?: string | null): Promise<boolean> {
     try {
       await loggingService.log('rpc_call', { eventData: { name: 'remove_service_integration', user_id: userId, service_id: serviceId } });
-      const { data, error } = await supabase.rpc('remove_service_integration', {
+      const { data, error, schema } = await this.callRpc<any>('remove_service_integration', {
         user_id: userId,
         service_id: serviceId,
         external_user_id: externalUserId ?? null
       });
       if (error) throw error;
-      await loggingService.log('rpc_success', { eventData: { name: 'remove_service_integration' } });
+      await loggingService.log('rpc_success', { eventData: { name: 'remove_service_integration', schema } });
       return !!data;
     } catch (error) {
       console.error('❌ Error removing service integration via RPC:', error);
