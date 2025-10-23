@@ -6,8 +6,6 @@ import CreateAccount from './pages/CreateAccount';
 import ConnectTelegram from './pages/ConnectTelegram';
 import ConnectWhatsApp from './pages/ConnectWhatsApp';
 import Success from './pages/Success';
-import TestCalendar from './pages/TestCalendar';
-import ReconnectCalendar from './pages/ReconnectCalendar';
 import ReauthCalendar from './pages/ReauthCalendar';
 import DeleteAccount from './pages/DeleteAccount';
 
@@ -161,8 +159,6 @@ function App() {
             <Route path="/connect-telegram" element={<ConnectTelegram />} />
             <Route path="/connect-whatsapp" element={<ConnectWhatsApp />} />
             <Route path="/success" element={<Success />} />
-            <Route path="/test-calendar" element={<TestCalendar />} />
-            <Route path="/reconnect-calendar" element={<ReconnectCalendar />} />
             <Route path="/reauth-calendar" element={<ReauthCalendar />} />
             <Route path="/delete-account" element={<DeleteAccount />} />
             {/* Legacy redirects */}

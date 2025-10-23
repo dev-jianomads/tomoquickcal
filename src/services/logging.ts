@@ -17,6 +17,11 @@ export type EventType =
   | 'google_oauth_success' 
   | 'google_oauth_error'
   | 'google_oauth_reauth_missing_refresh'
+  | 'reauth_invalid_user_id'
+  | 'reauth_flow_started'
+  | 'reauth_google_oauth_start'
+  | 'reauth_google_oauth_success'
+  | 'reauth_google_oauth_error'
   | 'google_oauth_scope_check_start'
   | 'google_oauth_scope_api_response'
   | 'google_oauth_scope_raw_data'
@@ -39,7 +44,11 @@ export type EventType =
   | 'google_permissions_revoked'
   | 'user_data_deleted'
   | 'telegram_connection_failure'
+  | 'whatsapp_connection_failure'
   | 'telegram_addbot_failure'
+  | 'rpc_call'
+  | 'rpc_success'
+  | 'rpc_error'
   | 'setup_completed';
 
 export class LoggingService {

@@ -31,12 +31,13 @@ const ConnectTelegram: React.FC = () => {
         return;
       }
 
-      // Check if user already has Telegram connected
+      // Check if user already has Telegram connected via RPC
       try {
         const { supabaseService } = await import('../services/supabase');
         const userData = await supabaseService.findUserByEmail(appData.userEmail);
-        
-        if (userData?.telegram_id) {
+        const hasTelegram = userData?.id ? await supabaseService.userHasService(userData.id, 'telegram') : false;
+
+        if (hasTelegram) {
           console.log('✅ Telegram already connected, redirecting to success');
           navigate('/success', { 
             state: { 

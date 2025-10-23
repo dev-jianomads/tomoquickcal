@@ -1,6 +1,6 @@
-# Hello Tomo - Telegram Frontend
+# Hello Tomo - Onboarding Frontend
 
-A React frontend for Hello Tomo that handles Google Calendar integration and user onboarding. Users can connect their Google Calendar, enter their phone number, and receive an SMS link to start chatting with @AskTomoBot on Telegram.
+A React frontend for Hello Tomo that handles Google Calendar integration and user onboarding. Users connect Google Calendar, enter their phone number, and choose Telegram or WhatsApp to chat with Tomo.
 
 **Created by:** Ken
 
@@ -11,7 +11,7 @@ A React frontend for Hello Tomo that handles Google Calendar integration and use
 - **Supabase Storage** - User data and tokens saved securely
 - **Responsive Design** - Works on desktop and mobile
 - **Clean UI/UX** - Step-by-step onboarding flow
-- **Telegram Integration** - SMS link to start chatting with @AskTomoBot
+- **Messaging Integrations** - Connect Telegram or WhatsApp
 
 ## 🛠️ Tech Stack
 
@@ -19,7 +19,7 @@ A React frontend for Hello Tomo that handles Google Calendar integration and use
 - **Vite** for fast development and building
 - **Tailwind CSS** for styling
 - **React Router** for navigation
-- **Supabase** for database and user management
+- **Supabase** for database and user management (normalized schema)
 - **Google APIs** for Calendar and Contacts integration
 - **Telegram Bot** integration via SMS links
 
@@ -99,14 +99,20 @@ Set these in **Netlify Dashboard → Site Settings → Environment Variables**:
    https://your-domain.netlify.app/oauth-success
    ```
 
-## 📊 Supabase Setup
+## 📊 Supabase Setup (Normalized Schema)
 
 1. Create a new Supabase project
-2. Run the SQL migrations in the `supabase/migrations` folder
-3. Enable Row Level Security (RLS)
+2. New tables in public schema: `users`, `user_integrations`, `services`
+3. RPC available in public schema (callable from anon):
+   - `public.get_user_integrations(user_id)`
+   - `public.user_has_service(user_id, service_id)`
+   - `public.link_calendar_to_user(...)`
+   - `public.update_calendar_token(user_id, access_token, expiry_seconds, refresh_token?)`
+   - `public.link_telegram_to_user(...)`, `public.link_whatsapp_to_user(...)`
+   - `public.unlink_service_from_user(user_id, service_id, external_user_id?)`
 4. Get your project URL and anon key
 
-## 📁 Project Structure
+## 📁 Project Structure (Key Files)
 
 ```
 src/
@@ -116,30 +122,34 @@ src/
 ├── pages/              # Page components
 ├── services/           # API and external service integrations
 └── main.tsx           # Application entry point
+
+Netlify Functions:
+- `netlify/functions/telegram-signup.js` (proxies to n8n)
+- `netlify/functions/whatsapp-signup.js` (proxies to n8n)
 ```
 
-## 🔒 Security
+## 🔒 Security Notes
 
 - Environment variables are properly prefixed with `VITE_`
-- Google OAuth tokens are securely stored in Supabase
-- Row Level Security (RLS) enabled on all tables
+- Tokens are stored in `user_integrations` via RPC; frontend uses anon RPC
+- Keep sensitive token-returning RPC usage to backend if you later enable strict RLS
 - Proper CORS and security headers configured
 
 ## 📱 User Flow
 
 1. **Welcome** - Introduction to Hello Tomo
-2. **Connect Bot** - Enter phone number for SMS
-3. **Success** - Setup complete, SMS sent with Telegram link
-4. **Success** - Setup complete, ready for Signal integration
+2. **Create Account** - Enter phone number and choose Telegram/WhatsApp
+3. **Connect Telegram/WhatsApp** - Trigger Netlify function (n8n webhook)
+4. **Success** - Setup complete
 
-## 🔗 Telegram Integration
+## 🔗 Integrations
 
-This frontend saves user data to Supabase. Your Telegram backend can:
+This frontend saves user profile and service links to Supabase. Your messaging backends can:
 
 1. **Read user data** from Supabase
-2. **Send SMS** with Telegram bot links using stored phone numbers
-3. **Create calendar events** using stored Google tokens
-4. **Process Telegram messages** from @AskTomoBot
+2. **Send links/messages** using stored phone numbers
+3. **Create calendar events** using Google tokens retrieved server-side
+4. **Process chat messages** and call backend services
 
 ## 🤝 Contributing
 

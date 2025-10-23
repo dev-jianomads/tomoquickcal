@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MessageCircle, ArrowLeft, ExternalLink, Zap, RefreshCw } from 'lucide-react';
+import { MessageCircle, ArrowLeft, Zap, RefreshCw } from 'lucide-react';
 import PageContainer from '../components/PageContainer';
 import Button from '../components/Button';
 import { useApp } from '../contexts/AppContext';
@@ -31,12 +31,13 @@ const ConnectWhatsApp: React.FC = () => {
         return;
       }
 
-      // Check if user already has WhatsApp connected
+      // Check if user already has WhatsApp connected via RPC
       try {
         const { supabaseService } = await import('../services/supabase');
         const userData = await supabaseService.findUserByEmail(appData.userEmail);
-        
-        if (userData?.whatsapp_id) {
+        const hasWhatsApp = userData?.id ? await supabaseService.userHasService(userData.id, 'whatsapp') : false;
+
+        if (hasWhatsApp) {
           console.log('✅ WhatsApp already connected, redirecting to success');
           navigate('/success', { 
             state: { 
@@ -328,8 +329,8 @@ const ConnectWhatsApp: React.FC = () => {
           {error && retryCount > 0 && (
             <div className="pt-2">
               <Button 
-                onClick={handleRetry} 
-                variant="outline"
+                onClick={handleRetry}
+                variant="secondary"
                 className="w-full"
               >
                 <div className="flex items-center justify-center space-x-2">

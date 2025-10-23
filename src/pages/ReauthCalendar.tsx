@@ -186,30 +186,9 @@ const ReauthCalendar: React.FC = () => {
               });
             }
 
-            // Update user tokens and clear refresh_expired_2 flag
-            console.log('🔄 ReauthCalendar: Updating user tokens in database...');
-            
-            const updateData = {
-              access_token_2: accessToken,
-              refresh_token_2: refreshToken,
-              refresh_expired_2: false,
-              granted_scopes: grantedScopes
-            };
-            
-            console.log('🔍 ReauthCalendar: Update data being sent:', {
-              hasAccessToken: !!updateData.access_token_2,
-              hasRefreshToken: !!updateData.refresh_token_2,
-              refreshExpired2: updateData.refresh_expired_2,
-              hasGrantedScopes: !!updateData.granted_scopes,
-              updateDataKeys: Object.keys(updateData)
-            });
-            
-            await supabaseService.updateUser(userId, {
-              access_token_2: accessToken,
-              refresh_token_2: refreshToken,
-              refresh_expired_2: false,
-              granted_scopes: grantedScopes
-            });
+            // Update tokens via RPC (normalized schema)
+            console.log('🔄 ReauthCalendar: Updating calendar token via RPC...');
+            await supabaseService.updateCalendarToken(userId, accessToken, 3600, refreshToken ?? null);
 
             console.log('✅ ReauthCalendar: User tokens updated successfully');
 

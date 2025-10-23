@@ -292,7 +292,7 @@ export default function CreateAccount() {
       userEmail: user?.email || appData.userEmail
     });
     
-    // Log form submission start
+    // Log form submission start (including selected platform)
     try {
       await loggingService.log('phone_number_entered', {
         userEmail: user?.email || appData.userEmail,
@@ -300,7 +300,8 @@ export default function CreateAccount() {
           phone_number_masked: phoneNumber.substring(0, 3) + '***' + phoneNumber.substring(phoneNumber.length - 3),
           country_code: countryCode,
           phone_length: phoneNumber.replace(/\D/g, '').length,
-          form_submission_started: true
+          form_submission_started: true,
+          selected_platform: selectedPlatform
         }
       });
     } catch (logError) {
@@ -348,7 +349,7 @@ export default function CreateAccount() {
     
     console.log('✅ Phone number validation passed');
     
-    // Log validation success
+    // Log validation success (include selected platform)
     try {
       await loggingService.log('phone_number_entered', {
         userEmail: user?.email || appData.userEmail,
@@ -356,7 +357,8 @@ export default function CreateAccount() {
           phone_number_masked: phoneNumber.substring(0, 3) + '***' + phoneNumber.substring(phoneNumber.length - 3),
           country_code: countryCode,
           phone_length: cleanNumber.length,
-          validation_passed: true
+          validation_passed: true,
+          selected_platform: selectedPlatform
         }
       });
     } catch (logError) {
@@ -399,14 +401,15 @@ export default function CreateAccount() {
     try {
       console.log('👤 Starting account creation process...');
       
-      // Log submission process start
+      // Log submission process start (include platform)
       try {
         await loggingService.log('phone_number_entered', {
           userEmail,
           eventData: {
             submission_process_started: true,
             has_current_user: !!currentUser,
-            user_email_source: currentUser?.email ? 'current_user' : 'app_data'
+            user_email_source: currentUser?.email ? 'current_user' : 'app_data',
+            selected_platform: selectedPlatform
           }
         });
       } catch (logError) {
@@ -563,7 +566,7 @@ export default function CreateAccount() {
       
       console.log('💾 Creating/updating Supabase record with complete data for:', userEmail);
       
-      // Log parsed auth data
+      // Log parsed auth data (include platform)
       try {
         await loggingService.log('phone_number_entered', {
           userEmail,
@@ -571,7 +574,8 @@ export default function CreateAccount() {
             temp_auth_parsed: true,
             has_access_token: !!tempAuthData.accessToken,
             has_refresh_token: !!tempAuthData.refreshToken,
-            ready_for_user_creation: true
+            ready_for_user_creation: true,
+            selected_platform: selectedPlatform
           }
         });
       } catch (logError) {
@@ -742,13 +746,14 @@ export default function CreateAccount() {
       
       // Log successful user operation
       try {
-        await loggingService.log('phone_number_saved', {
+          await loggingService.log('phone_number_saved', {
           userId: userData.id,
           userEmail: userData.email,
           eventData: {
             user_operation_successful: true,
             phone_number_masked: fullPhoneNumber.substring(0, 3) + '***' + fullPhoneNumber.substring(fullPhoneNumber.length - 3),
-            ready_for_telegram_connection: true
+              ready_for_telegram_connection: true,
+              selected_platform: selectedPlatform
           }
         });
       } catch (logError) {

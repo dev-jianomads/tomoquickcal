@@ -64,7 +64,7 @@ const Welcome: React.FC = () => {
   // Check for iOS Safari opened from Telegram (common pattern)
   const isIOSSafariFromTelegram = /iPhone|iPad|iPod/i.test(ua) &&
                                   /Safari/i.test(ua) &&
-                                  !window.chrome && // Not Chrome
+                                  !(window as any).chrome && // Not Chrome
                                   (hasTelegramAPI || isLikelyTelegramContext);
   
   // Check for Android Telegram in-app browser
@@ -100,7 +100,7 @@ const Welcome: React.FC = () => {
   // iOS LinkedIn app detection
   const isIOSLinkedInApp = /iPhone|iPad|iPod/i.test(ua) &&
                            /Safari/i.test(ua) &&
-                           !window.chrome &&
+                           !(window as any).chrome &&
                            referrerIncludesLinkedIn;
   
   // Detect LinkedIn in-app browser
@@ -243,12 +243,12 @@ const Welcome: React.FC = () => {
             if (existingUser) {
               console.log('Welcome: Existing user found, checking completion status...');
               
-              // Check if user has phone number and tokens
+              // Check if user has phone number and integrations via RPC
               const hasPhoneNumber = !!(existingUser.phone_number && 
                                       existingUser.phone_number.trim() !== '' && 
                                       existingUser.phone_number !== 'null');
-              const hasTokens = !!(existingUser.access_token_2);
-              const hasTelegram = !!(existingUser.telegram_id);
+              const hasTokens = await supabaseService.userHasService(existingUser.id, 'google_calendar');
+              const hasTelegram = await supabaseService.userHasService(existingUser.id, 'telegram');
               
               console.log('Welcome: User completion status:', {
                 hasPhoneNumber,
@@ -273,8 +273,6 @@ const Welcome: React.FC = () => {
                 phone_number_trimmed: existingUser.phone_number?.trim(),
                 phone_number_is_null_string: existingUser.phone_number === 'null',
                 phone_number_is_empty_string: existingUser.phone_number === '',
-                access_token_2: existingUser.access_token_2 ? 'present' : 'missing',
-                telegram_id: existingUser.telegram_id ? 'present' : 'missing',
                 hasPhoneNumber,
                 hasTokens,
                 hasTelegram,

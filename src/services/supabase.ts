@@ -71,6 +71,156 @@ export class SupabaseService {
     return result;
   }
 
+  // ===== New RPC Helpers for normalized integrations schema (public.*) =====
+  async getUserIntegrations(userId: string): Promise<any[]> {
+    try {
+      await loggingService.log('rpc_call', { eventData: { name: 'get_user_integrations', user_id: userId } });
+      const { data, error } = await supabase.rpc('get_user_integrations', { user_id: userId });
+      if (error) throw error;
+      await loggingService.log('rpc_success', { eventData: { name: 'get_user_integrations', count: Array.isArray(data) ? data.length : 0 } });
+      return Array.isArray(data) ? data : [];
+    } catch (error) {
+      console.error('❌ Error getting user integrations:', error);
+      await loggingService.log('rpc_error', { errorMessage: (error as any)?.message, eventData: { name: 'get_user_integrations' } });
+      return [];
+    }
+  }
+
+  async userHasService(userId: string, serviceId: string): Promise<boolean> {
+    try {
+      await loggingService.log('rpc_call', { eventData: { name: 'user_has_service', user_id: userId, service_id: serviceId } });
+      const { data, error } = await supabase.rpc('user_has_service', { user_id: userId, service_id: serviceId });
+      if (error) throw error;
+      await loggingService.log('rpc_success', { eventData: { name: 'user_has_service', result: !!data } });
+      return !!data;
+    } catch (error) {
+      console.error('❌ Error checking user service:', error);
+      await loggingService.log('rpc_error', { errorMessage: (error as any)?.message, eventData: { name: 'user_has_service' } });
+      return false;
+    }
+  }
+
+  async linkCalendarToUser(params: {
+    userId: string;
+    accessToken: string | null | undefined;
+    refreshToken?: string | null | undefined;
+    expiresAtIso?: string | null;
+    clientId?: string | null;
+    clientSecret?: string | null;
+    grantedScopes?: any | null;
+    externalUserId?: string | null;
+    displayLabel?: string | null;
+  }): Promise<void> {
+    const {
+      userId,
+      accessToken,
+      refreshToken,
+      expiresAtIso,
+      clientId,
+      clientSecret,
+      grantedScopes,
+      externalUserId,
+      displayLabel
+    } = params;
+
+    if (!accessToken) return; // nothing to link
+
+    try {
+      await loggingService.log('rpc_call', { eventData: { name: 'link_calendar_to_user', user_id: userId, has_refresh: !!(refreshToken ?? null) } });
+      const { error } = await supabase.rpc('link_calendar_to_user', {
+        user_id: userId,
+        access_token: accessToken,
+        refresh_token: refreshToken ?? null,
+        expires_at: expiresAtIso ?? null,
+        client_id: clientId ?? null,
+        client_secret: clientSecret ?? null,
+        granted_scopes: grantedScopes ?? null,
+        external_user_id: externalUserId ?? null,
+        display_label: displayLabel ?? 'Google Calendar'
+      });
+      if (error) throw error;
+      await loggingService.log('rpc_success', { eventData: { name: 'link_calendar_to_user' } });
+    } catch (error) {
+      console.error('❌ Error linking calendar to user via RPC:', error);
+      await loggingService.log('rpc_error', { errorMessage: (error as any)?.message, eventData: { name: 'link_calendar_to_user' } });
+    }
+  }
+
+  async updateCalendarToken(userId: string, accessToken: string, expirySeconds?: number, refreshToken?: string | null): Promise<boolean> {
+    try {
+      await loggingService.log('rpc_call', { eventData: { name: 'update_calendar_token', user_id: userId, has_refresh: !!(refreshToken ?? null), expiry_seconds: expirySeconds ?? 3600 } });
+      const { data, error } = await supabase.rpc('update_calendar_token', {
+        user_id: userId,
+        access_token: accessToken,
+        expiry_seconds: expirySeconds ?? 3600,
+        refresh_token: refreshToken ?? null
+      });
+      if (error) throw error;
+      await loggingService.log('rpc_success', { eventData: { name: 'update_calendar_token' } });
+      return !!data;
+    } catch (error) {
+      console.error('❌ Error updating calendar token via RPC:', error);
+      await loggingService.log('rpc_error', { errorMessage: (error as any)?.message, eventData: { name: 'update_calendar_token' } });
+      return false;
+    }
+  }
+
+  async linkTelegramToUser(userId: string, telegramId: string, username?: string | null, label?: string | null): Promise<boolean> {
+    try {
+      await loggingService.log('rpc_call', { eventData: { name: 'link_telegram_to_user', user_id: userId, telegram_id: telegramId } });
+      const { data, error } = await supabase.rpc('link_telegram_to_user', {
+        user_id: userId,
+        telegram_id: telegramId,
+        username: username ?? null,
+        label: label ?? 'Telegram'
+      });
+      if (error) throw error;
+      await loggingService.log('rpc_success', { eventData: { name: 'link_telegram_to_user' } });
+      return !!data;
+    } catch (error) {
+      console.error('❌ Error linking Telegram via RPC:', error);
+      await loggingService.log('rpc_error', { errorMessage: (error as any)?.message, eventData: { name: 'link_telegram_to_user' } });
+      return false;
+    }
+  }
+
+  async linkWhatsAppToUser(userId: string, whatsappId: string, username?: string | null, label?: string | null): Promise<boolean> {
+    try {
+      await loggingService.log('rpc_call', { eventData: { name: 'link_whatsapp_to_user', user_id: userId, whatsapp_id: whatsappId } });
+      const { data, error } = await supabase.rpc('link_whatsapp_to_user', {
+        user_id: userId,
+        whatsapp_id: whatsappId,
+        username: username ?? null,
+        label: label ?? 'WhatsApp'
+      });
+      if (error) throw error;
+      await loggingService.log('rpc_success', { eventData: { name: 'link_whatsapp_to_user' } });
+      return !!data;
+    } catch (error) {
+      console.error('❌ Error linking WhatsApp via RPC:', error);
+      await loggingService.log('rpc_error', { errorMessage: (error as any)?.message, eventData: { name: 'link_whatsapp_to_user' } });
+      return false;
+    }
+  }
+
+  async unlinkServiceFromUser(userId: string, serviceId: string, externalUserId?: string | null): Promise<boolean> {
+    try {
+      await loggingService.log('rpc_call', { eventData: { name: 'unlink_service_from_user', user_id: userId, service_id: serviceId } });
+      const { data, error } = await supabase.rpc('unlink_service_from_user', {
+        user_id: userId,
+        service_id: serviceId,
+        external_user_id: externalUserId ?? null
+      });
+      if (error) throw error;
+      await loggingService.log('rpc_success', { eventData: { name: 'unlink_service_from_user' } });
+      return !!data;
+    } catch (error) {
+      console.error('❌ Error unlinking service via RPC:', error);
+      await loggingService.log('rpc_error', { errorMessage: (error as any)?.message, eventData: { name: 'unlink_service_from_user' } });
+      return false;
+    }
+  }
+
   // Look up user by email
   async findUserByEmail(email: string): Promise<UserData | null> {
     try {
@@ -117,7 +267,7 @@ export class SupabaseService {
     }
   }
 
-  // Create new user
+  // Create new user (profile-only); route token fields to integrations via RPC
   async createUser(userData: Omit<UserData, 'id' | 'created_at'>): Promise<UserData> {
     try {
       const userId = this.generateFirebaseUID();
@@ -155,21 +305,10 @@ export class SupabaseService {
         id: userId,
         email: userData.email,
         display_name: userData.display_name || null,
-        phone_number: userData.phone_number || null,
-        access_token_2: userData.access_token_2 || null,
-        refresh_token_2: userData.refresh_token_2 || null,
-        client_id_2: userData.client_id_2 || null,
-        client_secret_2: userData.client_secret_2 || null,
-        granted_scopes: userData.granted_scopes || null,
+        phone_number: userData.phone_number || null
       };
 
       console.log('👤 Final newUser object for Supabase:', JSON.stringify(newUser, null, 2));
-      console.log('👤 granted_scopes in newUser:', {
-        hasGrantedScopes: 'granted_scopes' in newUser,
-        grantedScopesValue: newUser.granted_scopes,
-        grantedScopesType: typeof newUser.granted_scopes,
-        grantedScopesIsNull: newUser.granted_scopes === null
-      });
 
       const { data, error } = await supabase
         .from('users')
@@ -201,6 +340,20 @@ export class SupabaseService {
       // Log user creation
       await loggingService.logUserCreated(data.id, data.email, data);
       
+      // If Google token fields were provided, link calendar integration via RPC
+      if (userData.access_token_2 || userData.refresh_token_2) {
+        await this.linkCalendarToUser({
+          userId,
+          accessToken: userData.access_token_2,
+          refreshToken: userData.refresh_token_2,
+          clientId: userData.client_id_2,
+          clientSecret: userData.client_secret_2,
+          grantedScopes: userData.granted_scopes,
+          externalUserId: userData.email,
+          displayLabel: 'Google Calendar'
+        });
+      }
+
       return data;
     } catch (error) {
       console.error('❌ Error creating user:', error);
@@ -208,7 +361,7 @@ export class SupabaseService {
     }
   }
 
-  // Update existing user
+  // Update existing user (profile-only); route token updates to integrations via RPC
   async updateUser(userId: string, updates: Partial<Omit<UserData, 'id' | 'created_at'>>): Promise<UserData> {
     try {
       console.log('🔄 Updating user:', userId, 'with updates:', JSON.stringify(updates, null, 2));
@@ -250,38 +403,63 @@ export class SupabaseService {
         return mockUser;
       }
 
-      // CRITICAL: Log what we're about to send to Supabase
-      console.log('🔄 SENDING TO SUPABASE:', JSON.stringify(updates, null, 2));
-      
-      const { data, error } = await supabase
-        .from('users')
-        .update(updates)
-        .eq('id', userId)
-        .select()
-        .single();
+      // Separate profile fields vs token fields
+      const profileUpdates: Record<string, any> = {};
+      if ('display_name' in updates) profileUpdates.display_name = updates.display_name ?? null;
+      if ('phone_number' in updates) profileUpdates.phone_number = updates.phone_number ?? null;
 
-      console.log('🔄 Supabase update result:', {
-        hasData: !!data,
-        hasError: !!error,
-        dataGrantedScopes: data?.granted_scopes,
-        dataGrantedScopesType: typeof data?.granted_scopes,
-        dataRefreshExpired2: data?.refresh_expired_2,
-        dataRefreshExpired2Type: typeof data?.refresh_expired_2,
-        returnedKeys: data ? Object.keys(data) : [],
-        errorMessage: error?.message,
-        errorCode: error?.code
-      });
-
-      if (error) {
-        console.error('❌ Supabase update error:', error);
-        console.error('🔄 Supabase update error details:', {
-          message: error.message,
-          code: error.code,
-          details: error.details,
-          hint: error.hint
-        });
-        throw error;
+      // Apply profile updates if any
+      let data: any = null;
+      if (Object.keys(profileUpdates).length > 0) {
+        console.log('🔄 SENDING PROFILE UPDATES TO SUPABASE:', JSON.stringify(profileUpdates, null, 2));
+        const resp = await supabase
+          .from('users')
+          .update(profileUpdates)
+          .eq('id', userId)
+          .select()
+          .single();
+        data = resp.data;
+        if (resp.error) {
+          console.error('❌ Supabase profile update error:', resp.error);
+          throw resp.error;
+        }
+      } else {
+        // If no profile updates, fetch the user to return consistent shape
+        const resp = await supabase
+          .from('users')
+          .select('*')
+          .eq('id', userId)
+          .single();
+        data = resp.data;
       }
+
+      // Handle calendar token linking/updating via RPC
+      const hasAnyTokenField = (
+        'access_token_2' in updates ||
+        'refresh_token_2' in updates ||
+        'client_id_2' in updates ||
+        'client_secret_2' in updates ||
+        'granted_scopes' in updates
+      );
+      if (hasAnyTokenField) {
+        const alreadyLinked = await this.userHasService(userId, 'google_calendar');
+        if (!alreadyLinked) {
+          await this.linkCalendarToUser({
+            userId,
+            accessToken: updates.access_token_2,
+            refreshToken: updates.refresh_token_2,
+            clientId: updates.client_id_2,
+            clientSecret: updates.client_secret_2,
+            grantedScopes: updates.granted_scopes,
+            externalUserId: data?.email ?? null,
+            displayLabel: 'Google Calendar'
+          });
+        } else if (updates.access_token_2) {
+          await this.updateCalendarToken(userId, updates.access_token_2, undefined, updates.refresh_token_2 ?? null);
+        }
+      }
+
+      console.log('🔄 Supabase update result (profile + RPC tokens handled).');
 
       console.log('✅ User updated successfully. Final data:', JSON.stringify(data, null, 2));
       
