@@ -114,7 +114,6 @@ export class SupabaseService {
     clientSecret?: string | null;
     grantedScopes?: any | null;
     externalUserId?: string | null;
-    displayLabel?: string | null;
   }): Promise<void> {
     const {
       userId,
@@ -124,8 +123,7 @@ export class SupabaseService {
       clientId,
       clientSecret,
       grantedScopes,
-      externalUserId,
-      displayLabel
+      externalUserId
     } = params;
 
     if (!accessToken) return; // nothing to link
@@ -136,12 +134,12 @@ export class SupabaseService {
         p_user_id: userId,
         p_access_token: accessToken,
         p_refresh_token: refreshToken ?? null,
-        p_expires_at: expiresAtIso ?? null,
+        p_token_expiration_date: expiresAtIso ?? null,
         p_client_id: clientId ?? null,
         p_client_secret: clientSecret ?? null,
+        p_auth_code: null,
         p_granted_scopes: grantedScopes ?? null,
-        p_external_user_id: externalUserId ?? null,
-        p_display_label: displayLabel ?? 'Google Calendar'
+        p_external_user_id: externalUserId ?? null
       });
       if (error) throw error;
       await loggingService.log('rpc_success', { eventData: { name: 'link_calendar_to_user', schema } });
