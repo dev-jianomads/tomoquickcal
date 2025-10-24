@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { CheckCircle2, Calendar, MessageCircle, Trash2, Zap } from 'lucide-react';
 import PageContainer from '../components/PageContainer';
+import Button from '../components/Button';
 import { useApp } from '../contexts/AppContext';
 import { loggingService } from '../services/logging';
 
@@ -10,6 +11,9 @@ const Success: React.FC = () => {
   const location = useLocation();
   const { setAppData, appData } = useApp();
   // Removed redirect button UX; no redirecting state needed
+  const [telegramConnected, setTelegramConnected] = React.useState<boolean | null>(null);
+  const [whatsappConnected, setWhatsappConnected] = React.useState<boolean | null>(null);
+  const [statusError, setStatusError] = React.useState<string>('');
   
   // Determine the platform from app context
   const selectedPlatform = appData.selectedPlatform || 'telegram';
@@ -47,6 +51,48 @@ const Success: React.FC = () => {
       console.log('✅ Success page: Existing/reconnected user, skipping setup completion log');
     }
   }, [setAppData, appData.userId, appData.userEmail]);
+
+  // Fetch connection status (Telegram/WhatsApp)
+  useEffect(() => {
+    const fetchConnectionStatus = async () => {
+      if (!appData.userEmail) {
+        setTelegramConnected(null);
+        setWhatsappConnected(null);
+        return;
+      }
+      try {
+        const { supabaseService } = await import('../services/supabase');
+        const user = await supabaseService.findUserByEmail(appData.userEmail);
+        if (!user?.id) {
+          setTelegramConnected(false);
+          setWhatsappConnected(false);
+          return;
+        }
+        const [hasTelegram, hasWhatsApp] = await Promise.all([
+          supabaseService.userHasService(user.id, 'telegram'),
+          supabaseService.userHasService(user.id, 'whatsapp')
+        ]);
+        setTelegramConnected(!!hasTelegram);
+        setWhatsappConnected(!!hasWhatsApp);
+        setStatusError('');
+      } catch (err) {
+        console.warn('Failed to fetch connection status:', err);
+        setStatusError('Could not load connection status.');
+      }
+    };
+
+    fetchConnectionStatus();
+  }, [appData.userEmail]);
+
+  const goConnectTelegram = () => {
+    setAppData(prev => ({ ...prev, selectedPlatform: 'telegram' }));
+    navigate('/connect-telegram');
+  };
+
+  const goConnectWhatsApp = () => {
+    setAppData(prev => ({ ...prev, selectedPlatform: 'whatsapp' }));
+    navigate('/connect-whatsapp');
+  };
 
 
   const handleFinish = () => {
@@ -135,6 +181,70 @@ const Success: React.FC = () => {
               <span className="text-gray-800 font-medium">
                 {selectedPlatform === 'telegram' ? 'Telegram' : 'WhatsApp'} Connected
               </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Try it out tip */}
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 text-left space-y-2">
+          <h3 className="font-semibold text-gray-900">Try it out</h3>
+          <p className="text-gray-700 text-sm">
+            Open your chat app and say: <span className="font-mono">"Create meeting tomorrow 2pm"</span>
+          </p>
+        </div>
+
+        {/* Connections status card */}
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 text-left space-y-4">
+          <div className="flex items-center space-x-2 mb-2">
+            <Zap className="w-4 h-4 text-blue-600" />
+            <h3 className="font-semibold text-gray-900">Connections</h3>
+          </div>
+
+          {statusError && (
+            <div className="p-3 bg-yellow-50 border border-yellow-200 rounded">
+              <p className="text-yellow-800 text-sm">{statusError}</p>
+            </div>
+          )}
+
+          <div className="space-y-3">
+            {/* Telegram row */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
+                  <MessageCircle className="w-4 h-4 text-purple-600" />
+                </div>
+                <div>
+                  <p className="text-gray-900 font-medium">Telegram</p>
+                  <p className="text-xs text-gray-600">
+                    {telegramConnected === null ? 'Checking…' : telegramConnected ? 'Connected' : 'Not connected'}
+                  </p>
+                </div>
+              </div>
+              {!telegramConnected && telegramConnected !== null && (
+                <Button onClick={goConnectTelegram}>
+                  Connect Telegram
+                </Button>
+              )}
+            </div>
+
+            {/* WhatsApp row */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                  <MessageCircle className="w-4 h-4 text-green-600" />
+                </div>
+                <div>
+                  <p className="text-gray-900 font-medium">WhatsApp</p>
+                  <p className="text-xs text-gray-600">
+                    {whatsappConnected === null ? 'Checking…' : whatsappConnected ? 'Connected' : 'Not connected'}
+                  </p>
+                </div>
+              </div>
+              {!whatsappConnected && whatsappConnected !== null && (
+                <Button onClick={goConnectWhatsApp}>
+                  Connect WhatsApp
+                </Button>
+              )}
             </div>
           </div>
         </div>
