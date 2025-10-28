@@ -7,6 +7,7 @@ interface AppData {
   userEmail?: string;
   userId?: string;
   selectedPlatform?: 'telegram' | 'whatsapp';
+  preselectedPhone?: string; // phone (E.164 preferred) provided via deep link
 }
 
 interface AppContextType {

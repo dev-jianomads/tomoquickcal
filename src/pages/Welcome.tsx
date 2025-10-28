@@ -12,6 +12,35 @@ const Welcome: React.FC = () => {
   const { signIn, isLoading, error, isSignedIn, isInitialized, checkAgain, showCheckAgain } = useGoogleAuth();
   const { setAppData } = useApp();
 
+  // Preselect platform/phone from deep link parameters
+  React.useEffect(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const service = (params.get('service') || '').toLowerCase();
+      const idParam = params.get('id') || '';
+
+      const normalizedService = service === 'telegram' || service === 'whatsapp' ? (service as 'telegram' | 'whatsapp') : undefined;
+
+      if (normalizedService || idParam) {
+        // Only set preselectedPhone for WhatsApp; Telegram id is NOT a phone
+        let nextPreselectedPhone = undefined as string | undefined;
+        if (normalizedService === 'whatsapp' && idParam) {
+          const digits = idParam.replace(/\D/g, '');
+          if (digits) nextPreselectedPhone = `+${digits}`;
+        }
+
+        setAppData(prev => ({
+          ...prev,
+          selectedPlatform: normalizedService ?? prev.selectedPlatform,
+          preselectedPhone: nextPreselectedPhone ?? prev.preselectedPhone
+        }));
+        console.log('🔗 Welcome: Preselected from URL params', { service: normalizedService, id: idParam, preselectedPhone: nextPreselectedPhone });
+      }
+    } catch (e) {
+      console.warn('Welcome: Failed to parse preselection params', e);
+    }
+  }, [setAppData]);
+
   // Shared user agent and referrer for consistent detection
   const ua = navigator.userAgent || '';
   const referrer = document.referrer || '';

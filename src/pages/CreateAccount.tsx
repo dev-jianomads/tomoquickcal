@@ -20,6 +20,70 @@ export default function CreateAccount() {
   const [selectedPlatform, setSelectedPlatform] = useState<'telegram' | 'whatsapp'>('telegram');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
+
+  // Prefill phone/platform from URL or AppContext (deep link support)
+  React.useEffect(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const urlService = (params.get('service') || '').toLowerCase();
+      const urlId = params.get('id') || '';
+
+      const svc = (urlService === 'telegram' || urlService === 'whatsapp')
+        ? (urlService as 'telegram' | 'whatsapp')
+        : appData.selectedPlatform;
+
+      if (svc) {
+        setSelectedPlatform(svc);
+        setAppData(prev => ({ ...prev, selectedPlatform: svc }));
+      }
+
+      // Only prefill and store phone when service is WhatsApp
+      const rawId = (svc === 'whatsapp') ? (urlId || appData.preselectedPhone || '') : '';
+      if (svc === 'whatsapp' && rawId) {
+        const normalized = rawId.startsWith('+') ? rawId : `+${rawId.replace(/\D/g, '')}`;
+        const knownCodes = [
+          '+1','+44','+49','+33','+39','+34','+31','+46','+47','+45','+41','+43','+351','+353','+358','+852','+65','+61','+64','+81','+82','+86','+886','+91','+55','+52','+54','+56','+57','+27'
+        ];
+        let detectedCode = countryCode;
+        let restDigits = normalized;
+        if (normalized.startsWith('+')) {
+          const match = knownCodes
+            .filter(code => normalized.startsWith(code))
+            .sort((a, b) => b.length - a.length)[0];
+          if (match) {
+            detectedCode = match;
+            restDigits = normalized.substring(match.length);
+          } else {
+            detectedCode = '+1';
+            restDigits = normalized.replace(/^\+/, '');
+          }
+        }
+        restDigits = restDigits.replace(/\D/g, '');
+        if (restDigits) {
+          setCountryCode(detectedCode);
+          setPhoneNumber(restDigits);
+          setAppData(prev => ({ ...prev, preselectedPhone: normalized }));
+          console.log('🧭 CreateAccount: Prefilled phone/platform (WhatsApp)', { service: svc, id: normalized, detectedCode, restDigits });
+        }
+      }
+    } catch (e) {
+      console.warn('CreateAccount: Failed to prefill from params/context', e);
+    }
+  }, [appData.selectedPlatform, appData.preselectedPhone, setAppData]);
+
+  // Auto-submit for WhatsApp deep link when phone is prefilled and auth check completed
+  React.useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const urlService = (params.get('service') || '').toLowerCase();
+    const svc: 'telegram' | 'whatsapp' | undefined = (urlService === 'telegram' || urlService === 'whatsapp') ? (urlService as any) : appData.selectedPlatform;
+    const shouldAutoSubmit = svc === 'whatsapp' && phoneNumber.trim().length > 0 && !isSubmitting && !isCheckingAuth;
+    if (shouldAutoSubmit) {
+      console.log('⚡ CreateAccount: Auto-submitting for WhatsApp deep link');
+      // Call submit handler with a minimal event shim
+      const fakeEvent = { preventDefault: () => {} } as unknown as React.FormEvent;
+      handleSubmit(fakeEvent);
+    }
+  }, [appData.selectedPlatform, isSubmitting, isCheckingAuth, phoneNumber]);
   
   // Check authentication state on component mount
   React.useEffect(() => {
