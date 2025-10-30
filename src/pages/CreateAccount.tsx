@@ -1253,21 +1253,21 @@ export default function CreateAccount() {
                         selectedPlatform === 'whatsapp' ? 'text-white' : 'text-gray-600'
                       }`} />
                     </div>
-                    <div className="text-left">
+                    <div className="text-left w-full">
                       <div className={`font-semibold ${
                         selectedPlatform === 'whatsapp' ? 'text-green-900' : 'text-gray-900'
                       }`}>
                         WhatsApp
                       </div>
-                      <div className="mt-1">
-                        <span className="inline-block text-xs px-2 py-0.5 rounded-full bg-gray-200 text-gray-700">
-                          Coming Soon
-                        </span>
-                      </div>
                       <div className={`text-sm ${
                         selectedPlatform === 'whatsapp' ? 'text-green-700' : 'text-gray-600'
                       }`}>
-                        Chat with Tomo Bot
+                        Chat with Tomo
+                      </div>
+                      <div className="mt-1 w-full flex justify-center">
+                        <span className="inline-block text-[10px] px-1.5 py-0.5 rounded-full bg-gray-200 text-gray-700">
+                          Coming Soon
+                        </span>
                       </div>
                     </div>
                   </div>
