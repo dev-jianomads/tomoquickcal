@@ -34,6 +34,11 @@ const Welcome: React.FC = () => {
           selectedPlatform: normalizedService ?? prev.selectedPlatform,
           preselectedPhone: nextPreselectedPhone ?? prev.preselectedPhone
         }));
+        try {
+          // Persist across OAuth navigation
+          if (normalizedService) localStorage.setItem('deeplink_service', normalizedService);
+          if (idParam) localStorage.setItem('deeplink_id', idParam);
+        } catch {}
         console.log('🔗 Welcome: Preselected from URL params', { service: normalizedService, id: idParam, preselectedPhone: nextPreselectedPhone });
       }
     } catch (e) {

@@ -25,8 +25,8 @@ export default function CreateAccount() {
   React.useEffect(() => {
     try {
       const params = new URLSearchParams(window.location.search);
-      const urlService = (params.get('service') || '').toLowerCase();
-      const urlId = params.get('id') || '';
+      const urlService = (params.get('service') || '').toLowerCase() || (typeof localStorage !== 'undefined' ? (localStorage.getItem('deeplink_service') || '').toLowerCase() : '');
+      const urlId = (params.get('id') || (typeof localStorage !== 'undefined' ? (localStorage.getItem('deeplink_id') || '') : ''));
 
       const svc = (urlService === 'telegram' || urlService === 'whatsapp')
         ? (urlService as 'telegram' | 'whatsapp')
@@ -74,7 +74,7 @@ export default function CreateAccount() {
   // Auto-submit for WhatsApp deep link when phone is prefilled and auth check completed
   React.useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const urlService = (params.get('service') || '').toLowerCase();
+    const urlService = (params.get('service') || '').toLowerCase() || (typeof localStorage !== 'undefined' ? (localStorage.getItem('deeplink_service') || '').toLowerCase() : '');
     const svc: 'telegram' | 'whatsapp' | undefined = (urlService === 'telegram' || urlService === 'whatsapp') ? (urlService as any) : appData.selectedPlatform;
     const shouldAutoSubmit = svc === 'whatsapp' && phoneNumber.trim().length > 0 && !isSubmitting && !isCheckingAuth;
     if (shouldAutoSubmit) {
@@ -836,8 +836,8 @@ export default function CreateAccount() {
       setAppData(prev => ({ ...prev, selectedPlatform }));
 
       const params = new URLSearchParams(window.location.search);
-      const urlService = (params.get('service') || '').toLowerCase();
-      const urlId = params.get('id') || '';
+      const urlService = (params.get('service') || '').toLowerCase() || (typeof localStorage !== 'undefined' ? (localStorage.getItem('deeplink_service') || '').toLowerCase() : '');
+      const urlId = params.get('id') || (typeof localStorage !== 'undefined' ? (localStorage.getItem('deeplink_id') || '') : '');
       const isWhatsAppDeepLink = selectedPlatform === 'whatsapp' && urlService === 'whatsapp' && !!urlId;
 
       try {
@@ -887,6 +887,7 @@ export default function CreateAccount() {
           } catch (e) {
             console.warn('WhatsApp integration verification failed (non-blocking):', e);
           } finally {
+            try { localStorage.removeItem('deeplink_service'); localStorage.removeItem('deeplink_id'); } catch {}
             navigate('/success');
           }
         } else {
@@ -911,6 +912,7 @@ export default function CreateAccount() {
           } catch (e) {
             console.warn('WhatsApp webhook trigger error (non-blocking):', e);
           } finally {
+            try { localStorage.removeItem('deeplink_service'); localStorage.removeItem('deeplink_id'); } catch {}
             navigate('/success');
           }
         }
