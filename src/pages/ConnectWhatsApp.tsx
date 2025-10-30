@@ -130,54 +130,50 @@ const ConnectWhatsApp: React.FC = () => {
       }
       
       const data = await response.json();
-      
-      console.log('✅ WhatsApp link received:', data);
-      
-      if (!data.link) {
+      console.log('✅ WhatsApp endpoint response payload:', data);
+
+      // Accept multiple success shapes
+      const link = data.link || data.url || data.deepLink || data.whatsapp_link;
+      const isSuccess = data.success === true || data.ok === true || typeof data === 'string';
+
+      if (link) {
+        // Show redirect message
+        setConnectionMessage('Opening WhatsApp...');
+        await new Promise(resolve => setTimeout(resolve, 1500));
+
+        console.log('🚀 Opening WhatsApp with link:', link);
+        const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent) || /iPhone|iPad|iPod/i.test(navigator.userAgent);
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        if (isSafari || isMobile) {
+          window.location.href = link;
+        } else {
+          window.open(link, '_blank');
+        }
+
+        try {
+          await loggingService.logTelegramSmsSent(appData.userId, appData.userEmail, 'whatsapp_direct_link');
+        } catch (logError) {
+          console.warn('Failed to log WhatsApp link generation:', logError);
+        }
+
+        setConnectionMessage('WhatsApp opened! Redirecting to completion...');
+        setTimeout(() => {
+          console.log('🔄 Navigating to success page');
+          navigate('/success');
+        }, 2000);
+      } else if (isSuccess) {
+        // Backend succeeded but did not return a link (message sent server-side). Treat as success.
+        console.log('✅ WhatsApp message sent server-side; no link returned. Proceeding to success.');
+        setConnectionMessage('Message sent on WhatsApp! Redirecting to completion...');
+        try {
+          await loggingService.logTelegramSmsSent(appData.userId, appData.userEmail, 'whatsapp_message_sent_no_link');
+        } catch {}
+        setTimeout(() => {
+          navigate('/success');
+        }, 1500);
+      } else {
         throw new Error('No WhatsApp link received from server');
       }
-      
-      // Show redirect message
-      setConnectionMessage('Opening WhatsApp...');
-      
-      // Wait 1.5 seconds to show the message
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // Open WhatsApp with the bot link
-      console.log('🚀 Opening WhatsApp with link:', data.link);
-      
-      // Safari-specific handling for WhatsApp links
-      const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent) || 
-                       /iPhone|iPad|iPod/i.test(navigator.userAgent);
-      
-      // Mobile detection
-      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-      
-      if (isSafari || isMobile) {
-        console.log('🍎 Safari or mobile detected, using direct navigation for WhatsApp link');
-        // Safari works better with direct navigation for custom URL schemes
-        // Mobile browsers also work better with direct navigation for app links
-        window.location.href = data.link;
-      } else {
-        console.log('🌐 Desktop browser, using window.open');
-        window.open(data.link, '_blank');
-      }
-      
-      // Log successful WhatsApp link generation
-      try {
-        await loggingService.logTelegramSmsSent(appData.userId, appData.userEmail, 'whatsapp_direct_link');
-      } catch (logError) {
-        console.warn('Failed to log WhatsApp link generation:', logError);
-      }
-      
-      // Show completion message and navigate to success
-      setConnectionMessage('WhatsApp opened! Redirecting to completion...');
-      
-      // Wait a bit then navigate to success
-      setTimeout(() => {
-        console.log('🔄 Navigating to success page');
-        navigate('/success');
-      }, 2000);
       
     } catch (error) {
       console.error('❌ Failed to connect to WhatsApp:', error);

@@ -49,7 +49,8 @@ export type EventType =
   | 'rpc_call'
   | 'rpc_success'
   | 'rpc_error'
-  | 'setup_completed';
+  | 'setup_completed'
+  | 'onboarding_path';
 
 export class LoggingService {
   private sessionId: string;

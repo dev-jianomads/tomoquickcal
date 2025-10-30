@@ -831,22 +831,94 @@ export default function CreateAccount() {
         userId: userData.id 
       }));
       
-      // Account creation successful - navigate to selected platform connection
-      console.log('✅ Account creation successful, navigating to', selectedPlatform);
-      
-      // Store selected platform in app context for later use
-      setAppData(prev => ({ 
-        ...prev, 
-        selectedPlatform: selectedPlatform
-      }));
-      
-      // Show loading state briefly then navigate to selected platform
-      console.log(`🔄 Navigating to ${selectedPlatform} connection in 1.5 seconds...`);
-      setTimeout(() => {
-        const route = selectedPlatform === 'telegram' ? '/connect-telegram' : '/connect-whatsapp';
-        console.log(`🔄 Executing navigation to ${route}`);
-        navigate(route);
-      }, 1500);
+      // Decide next step based on platform and deep-link presence
+      console.log('✅ Account creation successful; deciding next step based on platform/deeplink');
+      setAppData(prev => ({ ...prev, selectedPlatform }));
+
+      const params = new URLSearchParams(window.location.search);
+      const urlService = (params.get('service') || '').toLowerCase();
+      const urlId = params.get('id') || '';
+      const isWhatsAppDeepLink = selectedPlatform === 'whatsapp' && urlService === 'whatsapp' && !!urlId;
+
+      try {
+        await loggingService.log('onboarding_path', {
+          userId: userData.id,
+          userEmail: userData.email,
+          eventData: {
+            path: selectedPlatform === 'whatsapp' ? (isWhatsAppDeepLink ? 'whatsapp_deeplink' : 'whatsapp_standard') : 'telegram_standard',
+            from_deeplink: isWhatsAppDeepLink,
+            selected_platform: selectedPlatform
+          }
+        });
+      } catch {}
+
+      if (selectedPlatform === 'whatsapp') {
+        if (isWhatsAppDeepLink) {
+          // Deeplink path: backend initiated from chat; verify integration exists, auto-repair if missing
+          console.log('🟢 WhatsApp deeplink path: verifying integration before navigating to success');
+          try {
+            const hasWA = await supabaseService.userHasService(userData.id, 'whatsapp');
+            if (!hasWA) {
+              console.log('🛠️ WhatsApp integration missing on deeplink path, triggering webhook as safety-net');
+              try {
+                const fallbackPhone = userData.phone_number || `${countryCode}${getCleanPhoneNumber()}`;
+                const response = await fetch('/.netlify/functions/whatsapp-signup', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ user_id: userData.id, phone: fallbackPhone })
+                });
+                const respText = await response.text();
+                try {
+                  await loggingService.log('onboarding_path', {
+                    userId: userData.id,
+                    userEmail: userData.email,
+                    eventData: {
+                      path: 'whatsapp_deeplink_auto_repair',
+                      response_ok: response.ok,
+                      response_status: response.status,
+                      response_body: respText
+                    }
+                  });
+                } catch {}
+              } catch (e) {
+                console.warn('WhatsApp webhook safety-net error (non-blocking):', e);
+              }
+            }
+          } catch (e) {
+            console.warn('WhatsApp integration verification failed (non-blocking):', e);
+          } finally {
+            navigate('/success');
+          }
+        } else {
+          // Standard path: trigger WhatsApp signup webhook, then go to success
+          console.log('🟢 WhatsApp standard path: triggering webhook then navigating to success');
+          try {
+            const response = await fetch('/.netlify/functions/whatsapp-signup', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ user_id: userData.id, phone: `${countryCode}${getCleanPhoneNumber()}` })
+            });
+            const respText = await response.text();
+            try {
+              await loggingService.log('whatsapp_connection_failure', {
+                userId: userData.id,
+                userEmail: userData.email,
+                success: response.ok,
+                errorMessage: response.ok ? undefined : `HTTP ${response.status}`,
+                eventData: { phase: 'create_account_trigger', response_body: respText }
+              });
+            } catch {}
+          } catch (e) {
+            console.warn('WhatsApp webhook trigger error (non-blocking):', e);
+          } finally {
+            navigate('/success');
+          }
+        }
+      } else {
+        // Telegram path: continue to connect-telegram UI
+        console.log('🟣 Telegram path: navigating to connect-telegram');
+        navigate('/connect-telegram');
+      }
       
     } catch (err) {
       console.error('Failed to create account:', err);
