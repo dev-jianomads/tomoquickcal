@@ -75,8 +75,8 @@ export default function CreateAccount() {
   React.useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const urlService = (params.get('service') || '').toLowerCase() || (typeof localStorage !== 'undefined' ? (localStorage.getItem('deeplink_service') || '').toLowerCase() : '');
-    const svc: 'telegram' | 'whatsapp' | undefined = (urlService === 'telegram' || urlService === 'whatsapp') ? (urlService as any) : appData.selectedPlatform;
-    const shouldAutoSubmit = svc === 'whatsapp' && phoneNumber.trim().length > 0 && !isSubmitting && !isCheckingAuth;
+    const isDeeplink = urlService === 'whatsapp' || urlService === 'telegram';
+    const shouldAutoSubmit = isDeeplink && urlService === 'whatsapp' && phoneNumber.trim().length > 0 && !isSubmitting && !isCheckingAuth;
     if (shouldAutoSubmit) {
       console.log('⚡ CreateAccount: Auto-submitting for WhatsApp deep link');
       // Call submit handler with a minimal event shim
