@@ -1254,13 +1254,13 @@ export default function CreateAccount() {
                       }`} />
                     </div>
                     <div className="text-left">
-                      <div className="flex items-center space-x-2">
-                        <div className={`font-semibold ${
-                          selectedPlatform === 'whatsapp' ? 'text-green-900' : 'text-gray-900'
-                        }`}>
-                          WhatsApp
-                        </div>
-                        <span className="text-xs px-2 py-0.5 rounded-full bg-gray-200 text-gray-700">
+                      <div className={`font-semibold ${
+                        selectedPlatform === 'whatsapp' ? 'text-green-900' : 'text-gray-900'
+                      }`}>
+                        WhatsApp
+                      </div>
+                      <div className="mt-1">
+                        <span className="inline-block text-xs px-2 py-0.5 rounded-full bg-gray-200 text-gray-700">
                           Coming Soon
                         </span>
                       </div>
