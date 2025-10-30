@@ -84,17 +84,73 @@ const OAuthSuccessHandler: React.FC = () => {
           console.log('🔄 OAuthSuccessHandler: handleAuthCallback result:', success);
           
           if (success) {
-            console.log('🔄 OAuthSuccessHandler: OAuth successful, navigating to /create-account');
-            // Check if we're in the OAuth tab (has opener) or main tab
+            console.log('🔄 OAuthSuccessHandler: OAuth successful, deciding next route...');
+            // Determine deep-link context (persisted in localStorage by Welcome)
+            const deeplinkService = (localStorage.getItem('deeplink_service') || '').toLowerCase();
+            const deeplinkId = localStorage.getItem('deeplink_id') || '';
+
+            let nextRoute = '/create-account';
+            try {
+              if (deeplinkService === 'whatsapp') {
+                // For WhatsApp deep link: if user already complete, skip CreateAccount
+                const currentUser = googleAuthService.getCurrentUser();
+                if (currentUser?.email) {
+                  const { supabaseService } = await import('./services/supabase');
+                  const user = await supabaseService.findUserByEmail(currentUser.email);
+                  if (user) {
+                    const hasPhone = !!(user.phone_number && user.phone_number.trim() !== '' && user.phone_number !== 'null');
+                    const hasGcal = await supabaseService.userHasService(user.id, 'google_calendar');
+                    const hasWA = await supabaseService.userHasService(user.id, 'whatsapp');
+                    if (hasPhone && hasGcal) {
+                      nextRoute = '/success';
+                      // Safety net: ensure WhatsApp integration exists; trigger if missing
+                      if (!hasWA) {
+                        try {
+                          console.log('🛠️ OAuthSuccessHandler: WhatsApp integration missing; triggering webhook');
+                          const response = await fetch('/.netlify/functions/whatsapp-signup', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ user_id: user.id, phone: user.phone_number })
+                          });
+                          const respText = await response.text();
+                          try {
+                            const { loggingService } = await import('./services/logging');
+                            await loggingService.log('onboarding_path', {
+                              userId: user.id,
+                              userEmail: user.email,
+                              eventData: {
+                                path: 'whatsapp_deeplink_oauth_handler_auto_repair',
+                                response_ok: response.ok,
+                                response_status: response.status,
+                                response_body: respText
+                              }
+                            });
+                          } catch {}
+                        } catch (e) {
+                          console.warn('OAuthSuccessHandler: WhatsApp webhook safety-net error (non-blocking):', e);
+                        }
+                      }
+                    }
+                    console.log('🔄 OAuthSuccessHandler: Deep link decision', { hasPhone, hasGcal, hasWA, nextRoute });
+                  }
+                }
+              }
+            } catch (deeplinkCheckErr) {
+              console.warn('⚠️ OAuthSuccessHandler: deeplink decision check failed, defaulting to CreateAccount', deeplinkCheckErr);
+              nextRoute = '/create-account';
+            }
+
+            // Clear deeplink flags after decision
+            try { localStorage.removeItem('deeplink_service'); localStorage.removeItem('deeplink_id'); } catch {}
+
+            // Navigate
             if (window.opener && !window.opener.closed) {
-              // We're in the OAuth tab, redirect the main tab and close this one
-              console.log('🔄 OAuthSuccessHandler: In OAuth tab, redirecting main tab');
-              window.opener.location.href = '/create-account';
+              console.log('🔄 OAuthSuccessHandler: In OAuth tab, redirecting main tab to', nextRoute);
+              window.opener.location.href = nextRoute;
               window.close();
             } else {
-              // We're in the main tab, just navigate normally
-              console.log('🔄 OAuthSuccessHandler: In main tab, navigating normally');
-              window.location.href = '/create-account';
+              console.log('🔄 OAuthSuccessHandler: In main tab, navigating to', nextRoute);
+              window.location.href = nextRoute;
             }
           } else {
             console.log('🔄 OAuthSuccessHandler: OAuth failed, redirecting to /welcome');
