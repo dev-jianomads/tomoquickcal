@@ -171,8 +171,14 @@ const OAuthSuccessHandler: React.FC = () => {
               nextRoute = '/create-account';
             }
 
-            // Clear deeplink flags after decision
-            try { localStorage.removeItem('deeplink_service'); localStorage.removeItem('deeplink_id'); } catch {}
+            // Clear deeplink flags only when NOT going to Create Account,
+            // so CreateAccount can still read them for prefill/auto-submit.
+            try {
+              if (nextRoute !== '/create-account') {
+                localStorage.removeItem('deeplink_service');
+                localStorage.removeItem('deeplink_id');
+              }
+            } catch {}
 
             // Navigate
             if (window.opener && !window.opener.closed) {
