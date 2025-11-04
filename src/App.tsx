@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useSearchParams } from 'react-router-dom';
 import { AppProvider } from './contexts/AppContext';
+import { useApp } from './contexts/AppContext';
 import Welcome from './pages/Welcome';
 import CreateAccount from './pages/CreateAccount';
 import ConnectTelegram from './pages/ConnectTelegram';
@@ -46,6 +47,7 @@ const ReauthRedirectHandler: React.FC = () => {
 // Simple component to handle OAuth success and redirect
 const OAuthSuccessHandler: React.FC = () => {
   const [isProcessing, setIsProcessing] = React.useState(true);
+  const { setAppData } = useApp();
   
   React.useEffect(() => {
     const handleOAuthSuccess = async () => {
@@ -98,6 +100,16 @@ const OAuthSuccessHandler: React.FC = () => {
                   const { supabaseService } = await import('./services/supabase');
                   const user = await supabaseService.findUserByEmail(currentUser.email);
                   if (user) {
+                    // Persist context so Success page can resolve statuses
+                    try {
+                      setAppData(prev => ({
+                        ...prev,
+                        userEmail: user.email,
+                        userId: user.id,
+                        gcalLinked: true,
+                        selectedPlatform: 'whatsapp'
+                      }));
+                    } catch {}
                     const hasPhone = !!(user.phone_number && user.phone_number.trim() !== '' && user.phone_number !== 'null');
                     const hasGcal = await supabaseService.userHasService(user.id, 'google_calendar');
                     const hasWA = await supabaseService.userHasService(user.id, 'whatsapp');
@@ -134,6 +146,25 @@ const OAuthSuccessHandler: React.FC = () => {
                     console.log('🔄 OAuthSuccessHandler: Deep link decision', { hasPhone, hasGcal, hasWA, nextRoute });
                   }
                 }
+              }
+              // Also handle Telegram deep link: set platform for UI (still routes to create-account normally)
+              if (deeplinkService === 'telegram') {
+                try {
+                  const currentUser = googleAuthService.getCurrentUser();
+                  if (currentUser?.email) {
+                    const { supabaseService } = await import('./services/supabase');
+                    const user = await supabaseService.findUserByEmail(currentUser.email);
+                    if (user) {
+                      setAppData(prev => ({
+                        ...prev,
+                        userEmail: user.email,
+                        userId: user.id,
+                        gcalLinked: true,
+                        selectedPlatform: 'telegram'
+                      }));
+                    }
+                  }
+                } catch {}
               }
             } catch (deeplinkCheckErr) {
               console.warn('⚠️ OAuthSuccessHandler: deeplink decision check failed, defaulting to CreateAccount', deeplinkCheckErr);
