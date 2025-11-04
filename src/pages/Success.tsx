@@ -54,6 +54,28 @@ const Success: React.FC = () => {
 
   // Fetch connection status (Telegram/WhatsApp)
   useEffect(() => {
+    // Ensure app context has user identity even if we arrived without it (e.g., existing user)
+    const ensureUserInContext = async () => {
+      if (appData.userEmail && appData.userId) return;
+      try {
+        const { default: googleAuthService } = await import('../services/googleAuth');
+        await googleAuthService.initialize();
+        const currentUser = googleAuthService.getCurrentUser();
+        if (currentUser?.email) {
+          setAppData(prev => ({ ...prev, userEmail: currentUser.email, gcalLinked: true }));
+          return;
+        }
+        const stored = localStorage.getItem('google_user');
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (parsed?.email) setAppData(prev => ({ ...prev, userEmail: parsed.email, gcalLinked: true }));
+        }
+      } catch {}
+    };
+    ensureUserInContext();
+  }, [appData.userEmail, appData.userId, setAppData]);
+
+  useEffect(() => {
     const fetchConnectionStatus = async () => {
       if (!appData.userEmail) {
         setTelegramConnected(null);
@@ -75,6 +97,13 @@ const Success: React.FC = () => {
         setTelegramConnected(!!hasTelegram);
         setWhatsappConnected(!!hasWhatsApp);
         setStatusError('');
+        // Adjust selected platform if not set or mismatched
+        setAppData(prev => {
+          const current = prev.selectedPlatform;
+          if (hasWhatsApp && !hasTelegram && current !== 'whatsapp') return { ...prev, selectedPlatform: 'whatsapp' };
+          if (hasTelegram && !hasWhatsApp && current !== 'telegram') return { ...prev, selectedPlatform: 'telegram' };
+          return prev;
+        });
       } catch (err) {
         console.warn('Failed to fetch connection status:', err);
         setStatusError('Could not load connection status.');
@@ -82,7 +111,7 @@ const Success: React.FC = () => {
     };
 
     fetchConnectionStatus();
-  }, [appData.userEmail]);
+  }, [appData.userEmail, setAppData]);
 
   // Light polling to reflect backend-created integrations that may arrive shortly after navigation
   useEffect(() => {
@@ -187,51 +216,13 @@ const Success: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-gradient-to-r from-green-50 to-blue-50 rounded-2xl p-6 space-y-4">
-          <div className="flex items-center justify-center space-x-2 mb-4">
-            <Zap className="w-5 h-5 text-blue-500" />
-            <h3 className="font-semibold text-gray-900">
-              You're all set!
-            </h3>
-            <Zap className="w-5 h-5 text-blue-500" />
-          </div>
-          
-          <div className="grid grid-cols-1 gap-3">
-            <div className="flex items-center space-x-3 p-3 bg-white/60 rounded-lg border border-white/40">
-              <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                <Calendar className="w-4 h-4 text-green-600" />
-              </div>
-              <span className="text-gray-800 font-medium text-left">Google Connected</span>
-            </div>
-            
-            <div className="flex items-center space-x-3 p-3 bg-white/60 rounded-lg border border-white/40">
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                selectedPlatform === 'telegram' ? 'bg-purple-100' : 'bg-green-100'
-              }`}>
-                <Zap className={`w-4 h-4 ${
-                  selectedPlatform === 'telegram' ? 'text-purple-600' : 'text-green-600'
-                }`} />
-              </div>
-              <span className="text-gray-800 font-medium">
-                {selectedPlatform === 'telegram' ? 'Telegram' : 'WhatsApp'} Connected
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Try it out tip */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 text-left space-y-2">
-          <h3 className="font-semibold text-gray-900">Try it out</h3>
-          <p className="text-gray-700 text-sm">
-            Open your chat app and say: <span className="font-mono">"Create meeting tomorrow 2pm"</span>
-          </p>
-        </div>
-
-        {/* Connections status card */}
+        {/* Combined status card */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 text-left space-y-4">
           <div className="flex items-center space-x-2 mb-2">
             <Zap className="w-4 h-4 text-blue-600" />
-            <h3 className="font-semibold text-gray-900">Connections</h3>
+            <h3 className="font-semibold text-gray-900">
+              {(telegramConnected || whatsappConnected) ? "You're all set!" : 'Finish connecting'}
+            </h3>
           </div>
 
           {statusError && (
@@ -241,6 +232,17 @@ const Success: React.FC = () => {
           )}
 
           <div className="space-y-3">
+            {/* Google row */}
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                <Calendar className="w-4 h-4 text-green-600" />
+              </div>
+              <div>
+                <p className="text-gray-900 font-medium">Google</p>
+                <p className="text-xs text-gray-600">Connected</p>
+              </div>
+            </div>
+
             {/* Telegram row */}
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
@@ -282,6 +284,16 @@ const Success: React.FC = () => {
             </div>
           </div>
         </div>
+
+        {/* Try it out tip */}
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 text-left space-y-2">
+          <h3 className="font-semibold text-gray-900">Try it out</h3>
+          <p className="text-gray-700 text-sm">
+            Open your chat app and say: <span className="font-mono">"Create meeting tomorrow 2pm"</span>
+          </p>
+        </div>
+
+        {/* Removed separate Connections card - merged above */}
 
         <div className={`border rounded-lg p-4 text-left ${
           selectedPlatform === 'telegram' 
