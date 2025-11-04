@@ -84,6 +84,40 @@ const Success: React.FC = () => {
     fetchConnectionStatus();
   }, [appData.userEmail]);
 
+  // Light polling to reflect backend-created integrations that may arrive shortly after navigation
+  useEffect(() => {
+    let cancelled = false;
+    let attempts = 0;
+    const maxAttempts = 6; // ~6 seconds
+
+    const poll = async () => {
+      if (!appData.userEmail || attempts >= maxAttempts) return;
+      attempts += 1;
+      try {
+        const { supabaseService } = await import('../services/supabase');
+        const user = await supabaseService.findUserByEmail(appData.userEmail);
+        if (user?.id) {
+          const [hasTelegram, hasWhatsApp] = await Promise.all([
+            supabaseService.userHasService(user.id, 'telegram'),
+            supabaseService.userHasService(user.id, 'whatsapp')
+          ]);
+          if (!cancelled) {
+            setTelegramConnected(!!hasTelegram);
+            setWhatsappConnected(!!hasWhatsApp);
+          }
+          if (hasTelegram || hasWhatsApp) return; // stop early once any connected
+        }
+      } catch {}
+      if (!cancelled && attempts < maxAttempts) setTimeout(poll, 1000);
+    };
+
+    // Start polling only if we have an email and at least one status is unknown
+    if (appData.userEmail && (telegramConnected === null || whatsappConnected === null)) {
+      setTimeout(poll, 1000);
+    }
+    return () => { cancelled = true; };
+  }, [appData.userEmail, telegramConnected, whatsappConnected]);
+
   const goConnectTelegram = () => {
     setAppData(prev => ({ ...prev, selectedPlatform: 'telegram' }));
     navigate('/connect-telegram');
