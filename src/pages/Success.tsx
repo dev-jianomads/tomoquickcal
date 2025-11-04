@@ -255,7 +255,7 @@ const Success: React.FC = () => {
                 </div>
               </div>
               {!telegramConnected && telegramConnected !== null && (
-                <Button onClick={goConnectTelegram}>
+                <Button onClick={goConnectTelegram} className="w-auto max-w-none px-3 py-2 text-sm">
                   Connect Telegram
                 </Button>
               )}
@@ -275,7 +275,7 @@ const Success: React.FC = () => {
                 </div>
               </div>
               {!whatsappConnected && whatsappConnected !== null && (
-                <Button onClick={goConnectWhatsApp}>
+                <Button onClick={goConnectWhatsApp} className="w-auto max-w-none px-3 py-2 text-sm">
                   Connect WhatsApp
                 </Button>
               )}
