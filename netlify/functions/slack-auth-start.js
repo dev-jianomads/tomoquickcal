@@ -48,9 +48,9 @@ exports.handler = async (event, context) => {
       };
     }
 
-    // Optional: pass through user_id via query param so we can map after callback
-    const url = new URL(event.headers.referer || 'https://cal.hellotomo.ai');
-    const userId = (url.searchParams && url.searchParams.get('user_id')) || null;
+    // Pass through user_id via query string if provided
+    const qp = event.queryStringParameters || {};
+    const userId = qp.user_id || null;
     const rawState = JSON.stringify({
       v: 1,
       ts: Date.now(),

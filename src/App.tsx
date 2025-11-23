@@ -166,6 +166,25 @@ const OAuthSuccessHandler: React.FC = () => {
                   }
                 } catch {}
               }
+              // Slack deep link: preselect Slack (CreateAccount will handle phone + linking)
+              if (deeplinkService === 'slack') {
+                try {
+                  const currentUser = googleAuthService.getCurrentUser();
+                  if (currentUser?.email) {
+                    const { supabaseService } = await import('./services/supabase');
+                    const user = await supabaseService.findUserByEmail(currentUser.email);
+                    if (user) {
+                      setAppData(prev => ({
+                        ...prev,
+                        userEmail: user.email,
+                        userId: user.id,
+                        gcalLinked: true,
+                        selectedPlatform: 'slack'
+                      }));
+                    }
+                  }
+                } catch {}
+              }
             } catch (deeplinkCheckErr) {
               console.warn('⚠️ OAuthSuccessHandler: deeplink decision check failed, defaulting to CreateAccount', deeplinkCheckErr);
               nextRoute = '/create-account';

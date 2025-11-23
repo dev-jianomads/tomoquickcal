@@ -18,8 +18,13 @@ const Welcome: React.FC = () => {
       const params = new URLSearchParams(window.location.search);
       const service = (params.get('service') || '').toLowerCase();
       const idParam = params.get('id') || '';
+      const slackUserId = params.get('user_id') || '';
+      const slackTeamId = params.get('team_id') || '';
+      const slackAppId = params.get('app_id') || '';
+      const slackToken = params.get('token') || '';
+      const slackBotUserId = params.get('bot_user_id') || '';
 
-      const normalizedService = service === 'telegram' || service === 'whatsapp' ? (service as 'telegram' | 'whatsapp') : undefined;
+      const normalizedService = service === 'telegram' || service === 'whatsapp' || service === 'slack' ? (service as any) : undefined;
 
       if (normalizedService || idParam) {
         // Only set preselectedPhone for WhatsApp; Telegram id is NOT a phone
@@ -38,6 +43,13 @@ const Welcome: React.FC = () => {
           // Persist across OAuth navigation
           if (normalizedService) localStorage.setItem('deeplink_service', normalizedService);
           if (idParam) localStorage.setItem('deeplink_id', idParam);
+          if (normalizedService === 'slack') {
+            if (slackUserId) localStorage.setItem('slack_user_id', slackUserId);
+            if (slackTeamId) localStorage.setItem('slack_team_id', slackTeamId);
+            if (slackAppId) localStorage.setItem('slack_app_id', slackAppId);
+            if (slackToken) localStorage.setItem('slack_token', slackToken);
+            if (slackBotUserId) localStorage.setItem('slack_bot_user_id', slackBotUserId);
+          }
         } catch {}
         console.log('🔗 Welcome: Preselected from URL params', { service: normalizedService, id: idParam, preselectedPhone: nextPreselectedPhone });
       }

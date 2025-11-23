@@ -6,7 +6,7 @@ interface AppData {
   proactiveScheduling?: boolean;
   userEmail?: string;
   userId?: string;
-  selectedPlatform?: 'telegram' | 'whatsapp';
+  selectedPlatform?: 'telegram' | 'whatsapp' | 'slack';
   preselectedPhone?: string; // phone (E.164 preferred) provided via deep link
 }
 

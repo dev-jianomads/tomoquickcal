@@ -13,6 +13,7 @@ const Success: React.FC = () => {
   // Removed redirect button UX; no redirecting state needed
   const [telegramConnected, setTelegramConnected] = React.useState<boolean | null>(null);
   const [whatsappConnected, setWhatsappConnected] = React.useState<boolean | null>(null);
+  const [slackConnected, setSlackConnected] = React.useState<boolean | null>(null);
   const [statusError, setStatusError] = React.useState<string>('');
   
   // Determine the platform from app context
@@ -80,6 +81,7 @@ const Success: React.FC = () => {
       if (!appData.userEmail) {
         setTelegramConnected(null);
         setWhatsappConnected(null);
+        setSlackConnected(null);
         return;
       }
       try {
@@ -88,20 +90,24 @@ const Success: React.FC = () => {
         if (!user?.id) {
           setTelegramConnected(false);
           setWhatsappConnected(false);
+          setSlackConnected(false);
           return;
         }
-        const [hasTelegram, hasWhatsApp] = await Promise.all([
+        const [hasTelegram, hasWhatsApp, hasSlack] = await Promise.all([
           supabaseService.userHasService(user.id, 'telegram'),
-          supabaseService.userHasService(user.id, 'whatsapp')
+          supabaseService.userHasService(user.id, 'whatsapp'),
+          supabaseService.userHasService(user.id, 'slack')
         ]);
         setTelegramConnected(!!hasTelegram);
         setWhatsappConnected(!!hasWhatsApp);
+        setSlackConnected(!!hasSlack);
         setStatusError('');
         // Adjust selected platform if not set or mismatched
         setAppData(prev => {
           const current = prev.selectedPlatform;
-          if (hasWhatsApp && !hasTelegram && current !== 'whatsapp') return { ...prev, selectedPlatform: 'whatsapp' };
-          if (hasTelegram && !hasWhatsApp && current !== 'telegram') return { ...prev, selectedPlatform: 'telegram' };
+          if (hasWhatsApp && !hasTelegram && !hasSlack && current !== 'whatsapp') return { ...prev, selectedPlatform: 'whatsapp' };
+          if (hasTelegram && !hasWhatsApp && !hasSlack && current !== 'telegram') return { ...prev, selectedPlatform: 'telegram' };
+          if (hasSlack && !hasTelegram && !hasWhatsApp && current !== 'slack') return { ...prev, selectedPlatform: 'slack' };
           return prev;
         });
       } catch (err) {
@@ -126,26 +132,28 @@ const Success: React.FC = () => {
         const { supabaseService } = await import('../services/supabase');
         const user = await supabaseService.findUserByEmail(appData.userEmail);
         if (user?.id) {
-          const [hasTelegram, hasWhatsApp] = await Promise.all([
+          const [hasTelegram, hasWhatsApp, hasSlack] = await Promise.all([
             supabaseService.userHasService(user.id, 'telegram'),
-            supabaseService.userHasService(user.id, 'whatsapp')
+            supabaseService.userHasService(user.id, 'whatsapp'),
+            supabaseService.userHasService(user.id, 'slack')
           ]);
           if (!cancelled) {
             setTelegramConnected(!!hasTelegram);
             setWhatsappConnected(!!hasWhatsApp);
+            setSlackConnected(!!hasSlack);
           }
-          if (hasTelegram || hasWhatsApp) return; // stop early once any connected
+          if (hasTelegram || hasWhatsApp || hasSlack) return; // stop early once any connected
         }
       } catch {}
       if (!cancelled && attempts < maxAttempts) setTimeout(poll, 1000);
     };
 
     // Start polling only if we have an email and at least one status is unknown
-    if (appData.userEmail && (telegramConnected === null || whatsappConnected === null)) {
+    if (appData.userEmail && (telegramConnected === null || whatsappConnected === null || slackConnected === null)) {
       setTimeout(poll, 1000);
     }
     return () => { cancelled = true; };
-  }, [appData.userEmail, telegramConnected, whatsappConnected]);
+  }, [appData.userEmail, telegramConnected, whatsappConnected, slackConnected]);
 
   const goConnectTelegram = () => {
     setAppData(prev => ({ ...prev, selectedPlatform: 'telegram' }));
@@ -209,8 +217,8 @@ const Success: React.FC = () => {
           <div className="space-y-2">
             <p className="text-gray-600 text-lg leading-relaxed">
               {location.state?.reconnected 
-                ? `Your Google Calendar has been reconnected. Hello Tomo is ready to help you schedule meetings through ${selectedPlatform === 'telegram' ? 'Telegram' : 'WhatsApp'}.`
-                : `Hello Tomo is connected and ready to help you schedule meetings through ${selectedPlatform === 'telegram' ? 'Telegram' : 'WhatsApp'}.`
+                ? `Your Google Calendar has been reconnected. Hello Tomo is ready to help you schedule meetings through ${selectedPlatform === 'telegram' ? 'Telegram' : selectedPlatform === 'whatsapp' ? 'WhatsApp' : 'Slack'}.`
+                : `Hello Tomo is connected and ready to help you schedule meetings through ${selectedPlatform === 'telegram' ? 'Telegram' : selectedPlatform === 'whatsapp' ? 'WhatsApp' : 'Slack'}.`
               }
             </p>
           </div>
@@ -221,7 +229,7 @@ const Success: React.FC = () => {
           <div className="flex items-center space-x-2 mb-2">
             <Zap className="w-4 h-4 text-blue-600" />
             <h3 className="font-semibold text-gray-900">
-              {(telegramConnected || whatsappConnected) ? "You're all set!" : 'Finish connecting'}
+              {(telegramConnected || whatsappConnected || slackConnected) ? "You're all set!" : 'Finish connecting'}
             </h3>
           </div>
 
@@ -282,6 +290,29 @@ const Success: React.FC = () => {
                 </Button>
               )}
             </div>
+            
+            {/* Slack row */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
+                  <MessageCircle className="w-4 h-4 text-gray-600" />
+                </div>
+                <div>
+                  <p className="text-gray-900 font-medium">Slack</p>
+                  <p className="text-xs text-gray-600">
+                    {slackConnected === null ? 'Checking…' : slackConnected ? 'Connected' : 'Not connected'}
+                  </p>
+                </div>
+              </div>
+              {!slackConnected && slackConnected !== null && appData.userId && (
+                <Button
+                  onClick={() => { window.location.href = `/.netlify/functions/slack-auth-start?user_id=${encodeURIComponent(appData.userId as string)}`; }}
+                  className="w-auto max-w-none px-3 py-2 text-sm"
+                >
+                  Add to Slack
+                </Button>
+              )}
+            </div>
           </div>
         </div>
 
@@ -298,17 +329,19 @@ const Success: React.FC = () => {
         <div className={`border rounded-lg p-4 text-left ${
           selectedPlatform === 'telegram' 
             ? 'bg-blue-50 border-blue-200' 
-            : 'bg-green-50 border-green-200'
+            : selectedPlatform === 'whatsapp'
+            ? 'bg-green-50 border-green-200'
+            : 'bg-gray-50 border-gray-200'
         }`}>
           <div className="flex items-start space-x-3">
             <MessageCircle className={`w-5 h-5 mt-0.5 flex-shrink-0 ${
-              selectedPlatform === 'telegram' ? 'text-blue-600' : 'text-green-600'
+              selectedPlatform === 'telegram' ? 'text-blue-600' : selectedPlatform === 'whatsapp' ? 'text-green-600' : 'text-gray-600'
             }`} />
             <div>
               <p className={`text-sm font-medium ${
-                selectedPlatform === 'telegram' ? 'text-blue-800' : 'text-green-800'
+                selectedPlatform === 'telegram' ? 'text-blue-800' : selectedPlatform === 'whatsapp' ? 'text-green-800' : 'text-gray-800'
               }`}>
-                Look for Tomo's welcome message on {selectedPlatform === 'telegram' ? 'Telegram' : 'WhatsApp'}.
+                Look for Tomo's welcome message on {selectedPlatform === 'telegram' ? 'Telegram' : selectedPlatform === 'whatsapp' ? 'WhatsApp' : 'Slack'}.
               </p>
             </div>
           </div>

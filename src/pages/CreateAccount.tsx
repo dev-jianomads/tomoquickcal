@@ -17,7 +17,7 @@ export default function CreateAccount() {
   const [isCheckingAuth, setIsCheckingAuth] = React.useState(true);
   const [countryCode, setCountryCode] = useState('+1');
   const [phoneNumber, setPhoneNumber] = useState('');
-  const [selectedPlatform, setSelectedPlatform] = useState<'telegram' | 'whatsapp'>('telegram');
+  const [selectedPlatform, setSelectedPlatform] = useState<'telegram' | 'whatsapp' | 'slack'>('telegram');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
 
@@ -28,8 +28,8 @@ export default function CreateAccount() {
       const urlService = (params.get('service') || '').toLowerCase() || (typeof localStorage !== 'undefined' ? (localStorage.getItem('deeplink_service') || '').toLowerCase() : '');
       const urlId = (params.get('id') || (typeof localStorage !== 'undefined' ? (localStorage.getItem('deeplink_id') || '') : ''));
 
-      const svc = (urlService === 'telegram' || urlService === 'whatsapp')
-        ? (urlService as 'telegram' | 'whatsapp')
+      const svc = (urlService === 'telegram' || urlService === 'whatsapp' || urlService === 'slack')
+        ? (urlService as any)
         : appData.selectedPlatform;
 
       if (svc) {
@@ -841,12 +841,15 @@ export default function CreateAccount() {
       const isWhatsAppDeepLink = selectedPlatform === 'whatsapp' && urlService === 'whatsapp' && !!urlId;
 
       try {
+        let path: string = 'telegram_standard';
+        if (selectedPlatform === 'whatsapp') path = isWhatsAppDeepLink ? 'whatsapp_deeplink' : 'whatsapp_standard';
+        if (selectedPlatform === 'slack') path = (urlService === 'slack') ? 'slack_deeplink' : 'slack_standard';
         await loggingService.log('onboarding_path', {
           userId: userData.id,
           userEmail: userData.email,
           eventData: {
-            path: selectedPlatform === 'whatsapp' ? (isWhatsAppDeepLink ? 'whatsapp_deeplink' : 'whatsapp_standard') : 'telegram_standard',
-            from_deeplink: isWhatsAppDeepLink,
+            path,
+            from_deeplink: urlService === selectedPlatform,
             selected_platform: selectedPlatform
           }
         });
@@ -915,6 +918,50 @@ export default function CreateAccount() {
             try { localStorage.removeItem('deeplink_service'); localStorage.removeItem('deeplink_id'); } catch {}
             navigate('/success');
           }
+        }
+      } else if (selectedPlatform === 'slack') {
+        try {
+          await loggingService.log('onboarding_path', {
+            userId: userData.id,
+            userEmail: userData.email,
+            eventData: {
+              path: (urlService === 'slack') ? 'slack_deeplink' : 'slack_standard',
+              selected_platform: 'slack'
+            }
+          });
+        } catch {}
+        if (urlService === 'slack') {
+          console.log('🟢 Slack deeplink path: linking via server');
+          try {
+            const slackPayload = {
+              user_id: userData.id,
+              slack_user_id: localStorage.getItem('slack_user_id') || undefined,
+              team_id: localStorage.getItem('slack_team_id') || undefined,
+              app_id: localStorage.getItem('slack_app_id') || undefined,
+              token: localStorage.getItem('slack_token') || undefined,
+              bot_user_id: localStorage.getItem('slack_bot_user_id') || undefined
+            };
+            await fetch('/.netlify/functions/slack-link', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(slackPayload)
+            });
+          } catch (e) {
+            console.warn('Slack deeplink linking failed (non-blocking):', e);
+          } finally {
+            try {
+              localStorage.removeItem('slack_user_id');
+              localStorage.removeItem('slack_team_id');
+              localStorage.removeItem('slack_app_id');
+              localStorage.removeItem('slack_token');
+              localStorage.removeItem('slack_bot_user_id');
+              localStorage.removeItem('deeplink_service');
+            } catch {}
+            navigate('/success');
+          }
+        } else {
+          console.log('🟢 Slack standard path: starting OAuth');
+          window.location.href = `/.netlify/functions/slack-auth-start?user_id=${encodeURIComponent(userData.id)}`;
         }
       } else {
         // Telegram path: continue to connect-telegram UI
@@ -1201,7 +1248,7 @@ export default function CreateAccount() {
               <h3 className="font-semibold text-gray-900">Choose Your Platform</h3>
               <p className="text-gray-600 text-sm">Select where you'd like to chat with Tomo</p>
               
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 {/* Telegram Option */}
                 <button
                   type="button"
@@ -1235,6 +1282,38 @@ export default function CreateAccount() {
                   </div>
                 </button>
 
+                {/* Slack Option */}
+                <button
+                  type="button"
+                  onClick={() => setSelectedPlatform('slack')}
+                  className={`p-4 rounded-xl border-2 transition-all ${
+                    selectedPlatform === 'slack'
+                      ? 'border-gray-500 bg-gray-50'
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                >
+                  <div className="flex items-center space-x-3">
+                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                      selectedPlatform === 'slack' ? 'bg-gray-600' : 'bg-gray-100'
+                    }`}>
+                      <MessageCircle className={`w-5 h-5 ${
+                        selectedPlatform === 'slack' ? 'text-white' : 'text-gray-600'
+                      }`} />
+                    </div>
+                    <div className="text-left">
+                      <div className={`font-semibold ${
+                        selectedPlatform === 'slack' ? 'text-gray-900' : 'text-gray-900'
+                      }`}>
+                        Slack
+                      </div>
+                      <div className={`text-sm ${
+                        selectedPlatform === 'slack' ? 'text-gray-700' : 'text-gray-600'
+                      }`}>
+                        Add Tomo to your workspace
+                      </div>
+                    </div>
+                  </div>
+                </button>
                 {/* WhatsApp Option */}
                 <button
                   type="button"
