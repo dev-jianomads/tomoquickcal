@@ -960,8 +960,33 @@ export default function CreateAccount() {
             navigate('/success');
           }
         } else {
-          console.log('🟢 Slack standard path: starting OAuth');
-          window.location.href = `/.netlify/functions/slack-auth-start?user_id=${encodeURIComponent(userData.id)}`;
+          console.log('🟢 Slack standard path: triggering n8n slack-signup then navigating to success');
+          try {
+            const payload = {
+              user_id: userData.id,
+              slack_user_id: localStorage.getItem('slack_user_id') || undefined,
+              token: localStorage.getItem('slack_token') || undefined,
+              team_id: localStorage.getItem('slack_team_id') || undefined,
+              app_id: localStorage.getItem('slack_app_id') || undefined,
+              bot_user_id: localStorage.getItem('slack_bot_user_id') || undefined
+            };
+            await fetch('/.netlify/functions/slack-signup', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(payload)
+            });
+          } catch (e) {
+            console.warn('Slack standard webhook trigger error (non-blocking):', e);
+          } finally {
+            try {
+              localStorage.removeItem('slack_user_id');
+              localStorage.removeItem('slack_team_id');
+              localStorage.removeItem('slack_app_id');
+              localStorage.removeItem('slack_token');
+              localStorage.removeItem('slack_bot_user_id');
+            } catch {}
+            navigate('/success');
+          }
         }
       } else {
         // Telegram path: continue to connect-telegram UI

@@ -131,36 +131,36 @@ const ConnectWhatsApp: React.FC = () => {
       
       const data = await response.json();
       console.log('✅ WhatsApp endpoint response payload:', data);
-
+      
       // Accept multiple success shapes
       const link = data.link || data.url || data.deepLink || data.whatsapp_link;
       const isSuccess = data.success === true || data.ok === true || typeof data === 'string';
-
+      
       if (link) {
-        // Show redirect message
-        setConnectionMessage('Opening WhatsApp...');
-        await new Promise(resolve => setTimeout(resolve, 1500));
-
+      // Show redirect message
+      setConnectionMessage('Opening WhatsApp...');
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
         console.log('🚀 Opening WhatsApp with link:', link);
         const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent) || /iPhone|iPad|iPod/i.test(navigator.userAgent);
-        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-        if (isSafari || isMobile) {
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      if (isSafari || isMobile) {
           window.location.href = link;
-        } else {
+      } else {
           window.open(link, '_blank');
-        }
-
-        try {
-          await loggingService.logTelegramSmsSent(appData.userId, appData.userEmail, 'whatsapp_direct_link');
-        } catch (logError) {
-          console.warn('Failed to log WhatsApp link generation:', logError);
-        }
-
-        setConnectionMessage('WhatsApp opened! Redirecting to completion...');
-        setTimeout(() => {
-          console.log('🔄 Navigating to success page');
-          navigate('/success');
-        }, 2000);
+      }
+      
+      try {
+        await loggingService.logTelegramSmsSent(appData.userId, appData.userEmail, 'whatsapp_direct_link');
+      } catch (logError) {
+        console.warn('Failed to log WhatsApp link generation:', logError);
+      }
+      
+      setConnectionMessage('WhatsApp opened! Redirecting to completion...');
+      setTimeout(() => {
+        console.log('🔄 Navigating to success page');
+        navigate('/success');
+      }, 2000);
       } else if (isSuccess) {
         // Backend succeeded but did not return a link (message sent server-side). Treat as success.
         console.log('✅ WhatsApp message sent server-side; no link returned. Proceeding to success.');
