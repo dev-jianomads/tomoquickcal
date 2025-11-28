@@ -1,3 +1,5 @@
+const { createClient } = require('@supabase/supabase-js');
+
 exports.handler = async (event, context) => {
   console.log('🔧 Netlify Function: slack-signup called');
   console.log('🔧 HTTP Method:', event.httpMethod);
@@ -27,6 +29,8 @@ exports.handler = async (event, context) => {
   try {
     // Get N8N webhook URL from environment variable (no fallback)
     const n8nWebhookUrl = process.env.N8N_WEBHOOK_URL_SLACK;
+    const supabaseUrl = process.env.VITE_SUPABASE_URL;
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
     if (!n8nWebhookUrl) {
       console.error('❌ Missing required N8N webhook env var (N8N_WEBHOOK_URL_SLACK)');
       return {
@@ -52,6 +56,28 @@ exports.handler = async (event, context) => {
       };
     }
 
+    // Prepare masked payload for logging (avoid leaking full token)
+    const maskedForLog = {
+      ...requestBody,
+      token: requestBody?.token ? `${String(requestBody.token).slice(0, 6)}***` : null
+    };
+
+    // Log payload about to send (best-effort)
+    try {
+      if (supabaseUrl && supabaseServiceKey) {
+        const supabase = createClient(supabaseUrl, supabaseServiceKey);
+        await supabase.from('user_logs').insert([{
+          event_type: 'slack_signup_forward_request',
+          user_id: requestBody?.user_id || null,
+          user_email: null,
+          event_data: maskedForLog,
+          success: true
+        }]);
+      }
+    } catch (e) {
+      console.warn('⚠️ Failed to log slack-signup request (non-blocking):', e?.message);
+    }
+
     // Forward to n8n webhook
     const response = await fetch(n8nWebhookUrl, {
       method: 'POST',
@@ -63,6 +89,28 @@ exports.handler = async (event, context) => {
     });
 
     const responseText = await response.text();
+
+    // Log response status/body (masked)
+    try {
+      if (supabaseUrl && supabaseServiceKey) {
+        const supabase = createClient(supabaseUrl, supabaseServiceKey);
+        await supabase.from('user_logs').insert([{
+          event_type: 'slack_signup_forward_response',
+          user_id: requestBody?.user_id || null,
+          user_email: null,
+          event_data: {
+            http_status: response.status,
+            ok: response.ok,
+            body: responseText?.length > 2000 ? `${responseText.slice(0, 2000)}…` : responseText
+          },
+          success: response.ok,
+          error_message: response.ok ? null : `HTTP ${response.status}`
+        }]);
+      }
+    } catch (e) {
+      console.warn('⚠️ Failed to log slack-signup response (non-blocking):', e?.message);
+    }
+
     if (!response.ok) {
       return {
         statusCode: response.status,
