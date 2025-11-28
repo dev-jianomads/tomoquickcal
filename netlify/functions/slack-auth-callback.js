@@ -1,5 +1,3 @@
-const { createClient } = require('@supabase/supabase-js');
-
 exports.handler = async (event, context) => {
   // Handle CORS preflight
   if (event.httpMethod === 'OPTIONS') {
@@ -31,10 +29,9 @@ exports.handler = async (event, context) => {
     const SLACK_CLIENT_ID = process.env.SLACK_CLIENT_ID;
     const SLACK_CLIENT_SECRET = process.env.SLACK_CLIENT_SECRET;
     const SLACK_REDIRECT_URL = process.env.SLACK_REDIRECT_URL;
-    const SUPABASE_URL = process.env.VITE_SUPABASE_URL;
-    const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    const N8N_WEBHOOK_URL_SLACK = process.env.N8N_WEBHOOK_URL_SLACK;
 
-    if (!SLACK_CLIENT_ID || !SLACK_CLIENT_SECRET || !SLACK_REDIRECT_URL || !SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
+    if (!SLACK_CLIENT_ID || !SLACK_CLIENT_SECRET || !SLACK_REDIRECT_URL || !N8N_WEBHOOK_URL_SLACK) {
       return {
         statusCode: 500,
         headers: { 'Access-Control-Allow-Origin': '*' },
@@ -87,10 +84,7 @@ exports.handler = async (event, context) => {
       }
     } catch {}
 
-    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
-
-    // If we don't have onboardUserId, we cannot link to a specific user safely.
-    // Redirect to /success, frontend can complete linking via RPC if needed.
+    // If we don't have onboardUserId, redirect to success; nothing to send.
     if (!onboardUserId) {
       return {
         statusCode: 302,
@@ -99,47 +93,26 @@ exports.handler = async (event, context) => {
       };
     }
 
-    // Upsert into user_integrations (service_id='slack')
-    // We avoid logging sensitive values like tokens.
+    // Prepare payload for n8n webhook (do not log sensitive fields)
     const payload = {
       user_id: onboardUserId,
-      service_id: 'slack',
-      external_user_id: authedUserId || null,
+      slack_user_id: authedUserId || null,
+      token: accessToken || null,
       team_id: teamId || null,
+      app_id: appId || null,
       bot_user_id: botUserId || null,
-      access_token: accessToken || null,
-      scopes: scope || null,
-      is_active: true
+      scope: scope || null
     };
 
-    // Attempt upsert; if onConflict not available, fallback to update or insert
-    let upsertError = null;
+    // Forward to n8n to create user_integrations row
     try {
-      const { error } = await supabase
-        .from('user_integrations')
-        .upsert(payload, { onConflict: 'user_id,service_id' });
-      upsertError = error;
+      await fetch(N8N_WEBHOOK_URL_SLACK, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'User-Agent': 'Netlify-Function/1.0' },
+        body: JSON.stringify(payload)
+      });
     } catch (e) {
-      upsertError = e;
-    }
-
-    if (upsertError) {
-      // Fallback: check if record exists then update/insert
-      const { data: existing } = await supabase
-        .from('user_integrations')
-        .select('user_id, service_id')
-        .eq('user_id', onboardUserId)
-        .eq('service_id', 'slack')
-        .maybeSingle();
-      if (existing) {
-        await supabase
-          .from('user_integrations')
-          .update(payload)
-          .eq('user_id', onboardUserId)
-          .eq('service_id', 'slack');
-      } else {
-        await supabase.from('user_integrations').insert([payload]);
-      }
+      // Non-blocking: still redirect to success
     }
 
     return {
