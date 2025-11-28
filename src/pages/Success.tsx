@@ -252,54 +252,54 @@ const Success: React.FC = () => {
             </div>
 
             {/* Telegram row */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div className="flex items-center space-x-3 min-w-0">
                 <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
                   <MessageCircle className="w-4 h-4 text-purple-600" />
                 </div>
-                <div>
-                  <p className="text-gray-900 font-medium">Telegram</p>
-                  <p className="text-xs text-gray-600">
+                <div className="min-w-0">
+                  <p className="text-gray-900 font-medium truncate">Telegram</p>
+                  <p className="text-xs text-gray-600 truncate">
                     {telegramConnected === null ? 'Checking…' : telegramConnected ? 'Connected' : 'Not connected'}
                   </p>
                 </div>
               </div>
               {!telegramConnected && telegramConnected !== null && (
-                <Button onClick={goConnectTelegram} className="w-auto max-w-none px-3 py-2 text-sm">
+                <Button onClick={goConnectTelegram} className="w-auto max-w-full sm:max-w-none px-3 py-2 text-sm">
                   Connect Telegram
                 </Button>
               )}
             </div>
 
             {/* WhatsApp row */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div className="flex items-center space-x-3 min-w-0">
                 <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
                   <MessageCircle className="w-4 h-4 text-green-600" />
                 </div>
-                <div>
-                  <p className="text-gray-900 font-medium">WhatsApp</p>
-                  <p className="text-xs text-gray-600">
+                <div className="min-w-0">
+                  <p className="text-gray-900 font-medium truncate">WhatsApp</p>
+                  <p className="text-xs text-gray-600 truncate">
                     {whatsappConnected === null ? 'Checking…' : whatsappConnected ? 'Connected' : 'Not connected'}
                   </p>
                 </div>
               </div>
               {!whatsappConnected && whatsappConnected !== null && (
-                <Button onClick={goConnectWhatsApp} className="w-auto max-w-none px-3 py-2 text-sm">
+                <Button onClick={goConnectWhatsApp} className="w-auto max-w-full sm:max-w-none px-3 py-2 text-sm">
                   Connect WhatsApp
                 </Button>
               )}
             </div>
             
             {/* Slack row */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div className="flex items-center space-x-3 min-w-0">
                 <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
                   <MessageCircle className="w-4 h-4 text-gray-600" />
                 </div>
-                <div>
-                  <p className="text-gray-900 font-medium">Slack</p>
-                  <p className="text-xs text-gray-600">
+                <div className="min-w-0">
+                  <p className="text-gray-900 font-medium truncate">Slack</p>
+                  <p className="text-xs text-gray-600 truncate">
                     {slackConnected === null ? 'Checking…' : slackConnected ? 'Connected' : 'Not connected'}
                   </p>
                 </div>
@@ -307,7 +307,7 @@ const Success: React.FC = () => {
               {!slackConnected && slackConnected !== null && appData.userId && (
                 <Button
                   onClick={() => { window.location.href = `/.netlify/functions/slack-auth-start?user_id=${encodeURIComponent(appData.userId as string)}`; }}
-                  className="w-auto max-w-none px-3 py-2 text-sm"
+                  className="w-auto max-w-full sm:max-w-none px-3 py-2 text-sm"
                 >
                   Add to Slack
                 </Button>
