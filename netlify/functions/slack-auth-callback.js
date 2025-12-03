@@ -93,15 +93,14 @@ exports.handler = async (event, context) => {
       };
     }
 
-    // Prepare payload for n8n webhook (do not log sensitive fields)
+    // Prepare payload for n8n webhook with exact fields and order (no extras)
     const payload = {
-      user_id: onboardUserId,
-      slack_user_id: authedUserId || null,
-      token: accessToken || null,
-      team_id: teamId || null,
-      app_id: appId || null,
-      bot_user_id: botUserId || null,
-      scope: scope || null
+      user_id: onboardUserId ?? null,
+      slack_user_id: authedUserId ?? null,
+      token: accessToken ?? null,
+      team_id: teamId ?? null,
+      app_id: appId ?? null,
+      bot_user_id: botUserId ?? null
     };
 
     // Forward to n8n to create user_integrations row

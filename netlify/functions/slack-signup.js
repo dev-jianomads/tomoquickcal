@@ -56,10 +56,20 @@ exports.handler = async (event, context) => {
       };
     }
 
+    // Normalize payload to always include expected keys; coerce undefined → null
+    const payload = {
+      user_id: requestBody?.user_id ?? null,
+      slack_user_id: requestBody?.slack_user_id ?? null,
+      token: requestBody?.token ?? null,
+      team_id: requestBody?.team_id ?? null,
+      app_id: requestBody?.app_id ?? null,
+      bot_user_id: requestBody?.bot_user_id ?? null
+    };
+
     // Prepare masked payload for logging (avoid leaking full token)
     const maskedForLog = {
-      ...requestBody,
-      token: requestBody?.token ? `${String(requestBody.token).slice(0, 6)}***` : null
+      ...payload,
+      token: payload.token ? `${String(payload.token).slice(0, 6)}***` : null
     };
 
     // Log payload about to send (best-effort)
@@ -68,7 +78,7 @@ exports.handler = async (event, context) => {
         const supabase = createClient(supabaseUrl, supabaseServiceKey);
         await supabase.from('user_logs').insert([{
           event_type: 'slack_signup_forward_request',
-          user_id: requestBody?.user_id || null,
+          user_id: payload.user_id || null,
           user_email: null,
           event_data: maskedForLog,
           success: true
@@ -85,7 +95,7 @@ exports.handler = async (event, context) => {
         'Content-Type': 'application/json',
         'User-Agent': 'Netlify-Function/1.0'
       },
-      body: JSON.stringify(requestBody)
+      body: JSON.stringify(payload)
     });
 
     const responseText = await response.text();
@@ -96,7 +106,7 @@ exports.handler = async (event, context) => {
         const supabase = createClient(supabaseUrl, supabaseServiceKey);
         await supabase.from('user_logs').insert([{
           event_type: 'slack_signup_forward_response',
-          user_id: requestBody?.user_id || null,
+          user_id: payload.user_id || null,
           user_email: null,
           event_data: {
             http_status: response.status,
@@ -117,7 +127,9 @@ exports.handler = async (event, context) => {
         headers: { 'Access-Control-Allow-Origin': '*' },
         body: JSON.stringify({ 
           error: `n8n webhook failed: ${response.status}`,
-          details: responseText
+          details: responseText,
+          url: n8nWebhookUrl,
+          payload: maskedForLog
         })
       };
     }
