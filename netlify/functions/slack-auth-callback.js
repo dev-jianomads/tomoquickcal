@@ -21,7 +21,7 @@ exports.handler = async (event, context) => {
     if (errorParam) {
       return {
         statusCode: 302,
-        headers: { Location: '/success' },
+        headers: { Location: '/create-account?slack_error=access_denied' },
         body: ''
       };
     }
@@ -61,9 +61,9 @@ exports.handler = async (event, context) => {
     const tokenJson = await tokenResp.json();
     if (!tokenJson.ok) {
       return {
-        statusCode: 500,
-        headers: { 'Access-Control-Allow-Origin': '*' },
-        body: JSON.stringify({ error: 'Slack token exchange failed' })
+        statusCode: 302,
+        headers: { Location: '/create-account?slack_error=token_exchange_failed' },
+        body: ''
       };
     }
 
@@ -105,13 +105,24 @@ exports.handler = async (event, context) => {
 
     // Forward to n8n to create user_integrations row
     try {
-      await fetch(N8N_WEBHOOK_URL_SLACK, {
+      const n8nResp = await fetch(N8N_WEBHOOK_URL_SLACK, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'User-Agent': 'Netlify-Function/1.0' },
         body: JSON.stringify(payload)
       });
+      if (!n8nResp.ok) {
+        return {
+          statusCode: 302,
+          headers: { Location: '/create-account?slack_error=link_failed' },
+          body: ''
+        };
+      }
     } catch (e) {
-      // Non-blocking: still redirect to success
+      return {
+        statusCode: 302,
+        headers: { Location: '/create-account?slack_error=link_failed' },
+        body: ''
+      };
     }
 
     return {

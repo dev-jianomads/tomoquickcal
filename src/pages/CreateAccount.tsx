@@ -20,11 +20,13 @@ export default function CreateAccount() {
   const [selectedPlatform, setSelectedPlatform] = useState<'telegram' | 'whatsapp' | 'slack'>('telegram');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [slackErrorCode, setSlackErrorCode] = React.useState<string | null>(null);
 
   // Prefill phone/platform from URL or AppContext (deep link support)
   React.useEffect(() => {
     try {
       const params = new URLSearchParams(window.location.search);
+      const slackErr = params.get('slack_error');
       const urlService = (params.get('service') || '').toLowerCase() || (typeof localStorage !== 'undefined' ? (localStorage.getItem('deeplink_service') || '').toLowerCase() : '');
       const urlId = (params.get('id') || (typeof localStorage !== 'undefined' ? (localStorage.getItem('deeplink_id') || '') : ''));
 
@@ -32,7 +34,12 @@ export default function CreateAccount() {
         ? (urlService as any)
         : appData.selectedPlatform;
 
-      if (svc) {
+      if (slackErr) {
+        setSlackErrorCode(slackErr);
+        // Ensure Slack is selected when error is about Slack
+        setSelectedPlatform('slack');
+        setAppData(prev => ({ ...prev, selectedPlatform: 'slack' }));
+      } else if (svc) {
         setSelectedPlatform(svc);
         setAppData(prev => ({ ...prev, selectedPlatform: svc }));
       }
@@ -1189,6 +1196,22 @@ export default function CreateAccount() {
               Enter your number and choose your messaging platform
             </p>
           </div>
+
+          {/* Slack error banner (if redirected back from OAuth with error) */}
+          {slackErrorCode && (
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 text-left">
+              <p className="text-yellow-800 text-sm font-semibold">
+                Slack installation wasn’t completed{slackErrorCode === 'access_denied' ? ' (you cancelled or switched workspaces)' :
+                  slackErrorCode === 'token_exchange_failed' ? ' (token exchange failed)' :
+                  slackErrorCode === 'link_failed' ? ' (linking failed)' : ''}.
+              </p>
+              <p className="text-yellow-700 text-xs mt-1">
+                {slackErrorCode === 'access_denied'
+                  ? 'You didn’t finish installing the Ask Tomo app in Slack. Click Connect Slack to finish. Your workspace may require admin approval.'
+                  : 'Please click Connect Slack to try again. Your workspace may require admin approval.'}
+              </p>
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-4">
