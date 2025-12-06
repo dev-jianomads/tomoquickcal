@@ -265,8 +265,8 @@ const Success: React.FC = () => {
                 </div>
               </div>
               {!telegramConnected && telegramConnected !== null && (
-                <Button onClick={goConnectTelegram} className="w-auto max-w-full sm:max-w-none px-3 py-2 text-sm">
-                  Connect Telegram
+                <Button onClick={goConnectTelegram} className="w-auto shrink-0 max-w-full sm:max-w-none px-3 py-2 text-sm">
+                  Connect
                 </Button>
               )}
             </div>
@@ -285,8 +285,8 @@ const Success: React.FC = () => {
                 </div>
               </div>
               {!whatsappConnected && whatsappConnected !== null && (
-                <Button onClick={goConnectWhatsApp} className="w-auto max-w-full sm:max-w-none px-3 py-2 text-sm">
-                  Connect WhatsApp
+                <Button onClick={goConnectWhatsApp} className="w-auto shrink-0 max-w-full sm:max-w-none px-3 py-2 text-sm">
+                  Connect
                 </Button>
               )}
             </div>
@@ -307,9 +307,9 @@ const Success: React.FC = () => {
               {!slackConnected && slackConnected !== null && appData.userId && (
                 <Button
                   onClick={() => { window.location.href = `/.netlify/functions/slack-auth-start?user_id=${encodeURIComponent(appData.userId as string)}`; }}
-                  className="w-auto max-w-full sm:max-w-none px-3 py-2 text-sm"
+                  className="w-auto shrink-0 max-w-full sm:max-w-none px-3 py-2 text-sm"
                 >
-                  Add to Slack
+                  Connect
                 </Button>
               )}
             </div>
