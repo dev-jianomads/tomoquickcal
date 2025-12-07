@@ -5,44 +5,39 @@ type IconProps = {
   className?: string;
 };
 
-export const TelegramIcon: React.FC<IconProps> = ({ size = 20, className = '' }) => (
+export const TelegramIcon: React.FC<IconProps> = ({ size = 24, className = '' }) => (
   <svg
     width={size}
     height={size}
-    viewBox="0 0 240 240"
+    viewBox="0 0 24 24"
     xmlns="http://www.w3.org/2000/svg"
     aria-hidden="true"
     className={className}
+    preserveAspectRatio="xMidYMid meet"
   >
-    <circle cx="120" cy="120" r="120" fill="#26A5E4" />
+    {/* Paper plane without circular background, in Telegram brand blue */}
     <path
-      d="M179.2 72.5c2.5-10.3-8.3-8.7-13.9-6.4-7.9 3.2-107.9 41.5-114.9 44.3-7 2.8-4.7 6.7-4.7 6.7s3.4 1.1 7.8 2.4c4.4 1.3 10.2 2.9 13.2 2.1 3-0.8 60.8-38.7 63.6-40.4 2.9-1.6 4.9 0.3 2.8 2.1-2.1 1.8-40.6 36.5-43.6 39.4-3 2.9-1.9 4.6-0.1 6.1 1.8 1.5 33.4 22.3 35.8 23.9 2.5 1.6 5.1 2.8 9.5 0.2 4.4-2.5 24.3-15.8 30.5-20.2 6.2-4.4 12.8-9.7 13.7-15.2 0.9-5.6 6.7-41.2 7.3-44.9z"
-      fill="#fff"
+      fill="#26A5E4"
+      d="M21.94 2.26a1.1 1.1 0 00-1.15-.18L2.37 9.77a1.1 1.1 0 00.04 2.05l5.44 1.88 1.9 5.68c.15.44.52.76.97.83h.16c.39 0 .76-.19.99-.5l2.75-3.71 5.41 3.94c.2.15.43.22.66.22.18 0 .36-.04.53-.12.36-.17.61-.5.69-.89l3.04-14.67c.1-.48-.11-.96-.53-1.24zM9.37 12.8l7.86-4.83-5.88 6.54-.3.33-.42 2.54-1.26-3.76z"
     />
   </svg>
 );
 
-export const SlackIcon: React.FC<IconProps> = ({ size = 20, className = '' }) => (
+export const SlackIcon: React.FC<IconProps> = ({ size = 24, className = '' }) => (
   <svg
     width={size}
     height={size}
-    viewBox="0 0 2447 2452"
+    viewBox="0 0 24 24"
     xmlns="http://www.w3.org/2000/svg"
     aria-hidden="true"
     className={className}
+    preserveAspectRatio="xMidYMid meet"
   >
-    {/* Official Slack logo (2019) */}
-    <path d="M572 0c-158 0-286 128-286 286s128 286 286 286h286V286C858 128 730 0 572 0z" fill="#36C5F0"/>
-    <path d="M715 858H286C128 858 0 986 0 1144s128 286 286 286h429c158 0 286-128 286-286S873 858 715 858z" fill="#36C5F0"/>
-
-    <path d="M2452 1144c0-158-128-286-286-286s-286 128-286 286v286h286c158 0 286-128 286-286z" fill="#2EB67D"/>
-    <path d="M1710 1001V572c0-158-128-286-286-286s-286 128-286 286v429c0 158 128 286 286 286s286-128 286-286z" fill="#2EB67D"/>
-
-    <path d="M858 1866c0 158 128 286 286 286s286-128 286-286v-286H1144c-158 0-286 128-286 286z" fill="#E01E5A"/>
-    <path d="M1001 1144H572c-158 0-286 128-286 286s128 286 286 286h429c158 0 286-128 286-286s-128-286-286-286z" fill="#E01E5A"/>
-
-    <path d="M1144 0c-158 0-286 128-286 286v286h286c158 0 286-128 286-286S1302 0 1144 0z" fill="#ECB22E"/>
-    <path d="M858 1724v429c0 158 128 286 286 286s286-128 286-286v-429c0-158-128-286-286-286s-286 128-286 286z" fill="#ECB22E"/>
+    {/* Simplified official Slack glyph, scaled for small sizes */}
+    <path fill="#36C5F0" d="M5.1 14.2c0 .9-.8 1.7-1.7 1.7S1.7 15.1 1.7 14.2s.8-1.7 1.7-1.7h1.7v1.7zM6 14.2c0-.9.8-1.7 1.7-1.7h4.3c.9 0 1.7.8 1.7 1.7s-.8 1.7-1.7 1.7H7.7C6.8 15.9 6 15.1 6 14.2z"/>
+    <path fill="#2EB67D" d="M9.4 5.1c-.9 0-1.7-.8-1.7-1.7S8.5 1.7 9.4 1.7s1.7.8 1.7 1.7v1.7H9.4zM9.4 6c.9 0 1.7.8 1.7 1.7v4.3c0 .9-.8 1.7-1.7 1.7s-1.7-.8-1.7-1.7V7.7C7.7 6.8 8.5 6 9.4 6z"/>
+    <path fill="#E01E5A" d="M18.5 9.4c0-.9.8-1.7 1.7-1.7s1.7.8 1.7 1.7-.8 1.7-1.7 1.7h-1.7V9.4zM17.6 9.4c0 .9-.8 1.7-1.7 1.7h-4.3c-.9 0-1.7-.8-1.7-1.7s.8-1.7 1.7-1.7h4.3c.9 0 1.7.8 1.7 1.7z"/>
+    <path fill="#ECB22E" d="M14.2 18.5c.9 0 1.7.8 1.7 1.7s-.8 1.7-1.7 1.7-1.7-.8-1.7-1.7v-1.7h1.7zM14.2 17.6c-.9 0-1.7-.8-1.7-1.7V11.6c0-.9.8-1.7 1.7-1.7s1.7.8 1.7 1.7v4.3c0 .9-.8 1.7-1.7 1.7z"/>
   </svg>
 );
 

@@ -1287,7 +1287,7 @@ export default function CreateAccount() {
                     <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
                       selectedPlatform === 'telegram' ? 'bg-blue-50' : 'bg-gray-100'
                     }`}>
-                      <TelegramIcon />
+                      <TelegramIcon size={24} />
                     </div>
                     <div className="text-left min-w-0">
                       <div className={`font-semibold whitespace-normal break-words leading-snug ${
@@ -1318,7 +1318,7 @@ export default function CreateAccount() {
                     <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
                       selectedPlatform === 'slack' ? 'bg-gray-50' : 'bg-gray-100'
                     }`}>
-                      <SlackIcon />
+                      <SlackIcon size={24} />
                     </div>
                     <div className="text-left min-w-0">
                       <div className={`font-semibold whitespace-normal break-words leading-snug ${
