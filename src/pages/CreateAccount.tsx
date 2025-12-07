@@ -1271,7 +1271,7 @@ export default function CreateAccount() {
               <h3 className="font-semibold text-gray-900">Choose Your Platform</h3>
               <p className="text-gray-600 text-sm">Select where you'd like to chat with Tomo</p>
               
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {/* Telegram Option */}
                 <button
                   type="button"
@@ -1290,13 +1290,13 @@ export default function CreateAccount() {
                         selectedPlatform === 'telegram' ? 'text-white' : 'text-gray-600'
                       }`} />
                     </div>
-                    <div className="text-left">
-                      <div className={`font-semibold ${
+                    <div className="text-left min-w-0">
+                      <div className={`font-semibold whitespace-normal break-words leading-snug ${
                         selectedPlatform === 'telegram' ? 'text-blue-900' : 'text-gray-900'
                       }`}>
                         Telegram
                       </div>
-                      <div className={`text-sm ${
+                      <div className={`text-sm whitespace-normal break-words leading-snug ${
                         selectedPlatform === 'telegram' ? 'text-blue-700' : 'text-gray-600'
                       }`}>
                         Chat with @AskTomoBot
@@ -1323,53 +1323,16 @@ export default function CreateAccount() {
                         selectedPlatform === 'slack' ? 'text-white' : 'text-gray-600'
                       }`} />
                     </div>
-                    <div className="text-left">
-                      <div className={`font-semibold ${
+                    <div className="text-left min-w-0">
+                      <div className={`font-semibold whitespace-normal break-words leading-snug ${
                         selectedPlatform === 'slack' ? 'text-gray-900' : 'text-gray-900'
                       }`}>
                         Slack
                       </div>
-                      <div className={`text-sm ${
+                      <div className={`text-sm whitespace-normal break-words leading-snug ${
                         selectedPlatform === 'slack' ? 'text-gray-700' : 'text-gray-600'
                       }`}>
                         Add Tomo to your workspace
-                      </div>
-                    </div>
-                  </div>
-                </button>
-                {/* WhatsApp Option */}
-                <button
-                  type="button"
-                  onClick={() => setSelectedPlatform('whatsapp')}
-                  className={`p-4 rounded-xl border-2 transition-all ${
-                    selectedPlatform === 'whatsapp'
-                      ? 'border-green-500 bg-green-50'
-                      : 'border-gray-200 hover:border-gray-300'
-                  }`}
-                >
-                  <div className="flex items-center space-x-3">
-                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                      selectedPlatform === 'whatsapp' ? 'bg-green-500' : 'bg-gray-100'
-                    }`}>
-                      <MessageCircle className={`w-5 h-5 ${
-                        selectedPlatform === 'whatsapp' ? 'text-white' : 'text-gray-600'
-                      }`} />
-                    </div>
-                    <div className="text-left w-full">
-                      <div className={`font-semibold ${
-                        selectedPlatform === 'whatsapp' ? 'text-green-900' : 'text-gray-900'
-                      }`}>
-                        WhatsApp
-                      </div>
-                      <div className={`text-sm ${
-                        selectedPlatform === 'whatsapp' ? 'text-green-700' : 'text-gray-600'
-                      }`}>
-                        Chat with Tomo
-                      </div>
-                      <div className="mt-1 w-full flex justify-center">
-                        <span className="inline-block text-[10px] px-1.5 py-0.5 rounded-full bg-gray-200 text-gray-700">
-                          Coming Soon
-                        </span>
                       </div>
                     </div>
                   </div>
