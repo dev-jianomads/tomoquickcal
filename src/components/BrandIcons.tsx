@@ -24,16 +24,20 @@ export const TelegramIcon: React.FC<IconProps> = ({ size = 24, className = '' })
 );
 
 export const SlackIcon: React.FC<IconProps> = ({ size = 24, className = '' }) => (
-  <img
-    src="/assets/slack-icon-2019.svg"
+  <svg
     width={size}
     height={size}
-    alt="Slack"
+    viewBox="0 0 24 24"
+    xmlns="http://www.w3.org/2000/svg"
+    aria-hidden="true"
     className={className}
-    style={{ display: 'block' }}
-    loading="lazy"
-    decoding="async"
-  />
+    preserveAspectRatio="xMidYMid meet"
+  >
+    <path fill="#36C5F0" d="M5.1 14.2c0 .9-.8 1.7-1.7 1.7S1.7 15.1 1.7 14.2s.8-1.7 1.7-1.7h1.7v1.7zM6 14.2c0-.9.8-1.7 1.7-1.7h4.3c.9 0 1.7.8 1.7 1.7s-.8 1.7-1.7 1.7H7.7C6.8 15.9 6 15.1 6 14.2z"/>
+    <path fill="#2EB67D" d="M9.4 5.1c-.9 0-1.7-.8-1.7-1.7S8.5 1.7 9.4 1.7s1.7.8 1.7 1.7v1.7H9.4zM9.4 6c.9 0 1.7.8 1.7 1.7v4.3c0 .9-.8 1.7-1.7 1.7s-1.7-.8-1.7-1.7V7.7C7.7 6.8 8.5 6 9.4 6z"/>
+    <path fill="#E01E5A" d="M18.5 9.4c0-.9.8-1.7 1.7-1.7s1.7.8 1.7 1.7-.8 1.7-1.7 1.7h-1.7V9.4zM17.6 9.4c0 .9-.8 1.7-1.7 1.7h-4.3c-.9 0-1.7-.8-1.7-1.7s.8-1.7 1.7-1.7h4.3c.9 0 1.7.8 1.7 1.7z"/>
+    <path fill="#ECB22E" d="M14.2 18.5c.9 0 1.7.8 1.7 1.7s-.8 1.7-1.7 1.7-1.7-.8-1.7-1.7v-1.7h1.7zM14.2 17.6c-.9 0-1.7-.8-1.7-1.7V11.6c0-.9.8-1.7 1.7-1.7s1.7.8 1.7 1.7v4.3c0 .9-.8 1.7-1.7 1.7z"/>
+  </svg>
 );
 
 export default { TelegramIcon, SlackIcon };
