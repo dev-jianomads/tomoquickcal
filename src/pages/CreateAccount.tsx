@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, ArrowLeft, Smartphone, ChevronDown, Zap, MessageCircle } from 'lucide-react';
+import { User, ArrowLeft, Smartphone, ChevronDown, Zap } from 'lucide-react';
+import { TelegramIcon, SlackIcon } from '../components/BrandIcons';
 import PageContainer from '../components/PageContainer';
 import Button from '../components/Button';
 import { useApp } from '../contexts/AppContext';
@@ -1284,11 +1285,9 @@ export default function CreateAccount() {
                 >
                   <div className="flex items-center space-x-3">
                     <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                      selectedPlatform === 'telegram' ? 'bg-blue-500' : 'bg-gray-100'
+                      selectedPlatform === 'telegram' ? 'bg-blue-50' : 'bg-gray-100'
                     }`}>
-                      <MessageCircle className={`w-5 h-5 ${
-                        selectedPlatform === 'telegram' ? 'text-white' : 'text-gray-600'
-                      }`} />
+                      <TelegramIcon />
                     </div>
                     <div className="text-left min-w-0">
                       <div className={`font-semibold whitespace-normal break-words leading-snug ${
@@ -1317,11 +1316,9 @@ export default function CreateAccount() {
                 >
                   <div className="flex items-center space-x-3">
                     <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                      selectedPlatform === 'slack' ? 'bg-gray-600' : 'bg-gray-100'
+                      selectedPlatform === 'slack' ? 'bg-gray-50' : 'bg-gray-100'
                     }`}>
-                      <MessageCircle className={`w-5 h-5 ${
-                        selectedPlatform === 'slack' ? 'text-white' : 'text-gray-600'
-                      }`} />
+                      <SlackIcon />
                     </div>
                     <div className="text-left min-w-0">
                       <div className={`font-semibold whitespace-normal break-words leading-snug ${
